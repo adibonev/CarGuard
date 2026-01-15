@@ -1,14 +1,17 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const Car = require('../models/Car');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get models from request context
+const getModels = (req) => req.app.locals.models;
+
 // Get all cars for user
 router.get('/', auth, async (req, res) => {
   try {
-    const cars = await Car.find({ userId: req.user.id });
+    const { Car } = getModels(req);
+    const cars = await Car.findAll({ where: { userId: req.user.id } });
     res.json(cars);
   } catch (err) {
     console.error(err.message);
@@ -29,9 +32,10 @@ router.post('/',
     }
 
     try {
+      const { Car } = getModels(req);
       const { brand, model, year, licensePlate } = req.body;
 
-      const car = new Car({
+      const car = await Car.create({
         userId: req.user.id,
         brand,
         model,
@@ -39,7 +43,6 @@ router.post('/',
         licensePlate
       });
 
-      await car.save();
       res.json(car);
     } catch (err) {
       console.error(err.message);
@@ -51,13 +54,14 @@ router.post('/',
 // Update car
 router.put('/:id', auth, async (req, res) => {
   try {
-    let car = await Car.findById(req.params.id);
+    const { Car } = getModels(req);
+    let car = await Car.findByPk(req.params.id);
 
     if (!car) {
       return res.status(404).json({ msg: 'Car not found' });
     }
 
-    if (car.userId.toString() !== req.user.id) {
+    if (car.userId !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
@@ -79,17 +83,18 @@ router.put('/:id', auth, async (req, res) => {
 // Delete car
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const car = await Car.findById(req.params.id);
+    const { Car } = getModels(req);
+    const car = await Car.findByPk(req.params.id);
 
     if (!car) {
       return res.status(404).json({ msg: 'Car not found' });
     }
 
-    if (car.userId.toString() !== req.user.id) {
+    if (car.userId !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    await Car.findByIdAndDelete(req.params.id);
+    await car.destroy();
     res.json({ msg: 'Car removed' });
   } catch (err) {
     console.error(err.message);

@@ -2,9 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const User = require('../models/User');
+const { Sequelize } = require('sequelize');
 
 const router = express.Router();
+
+// Get models from request context (will be set in server.js)
+const getModels = (req) => req.app.locals.models;
 
 // Register
 router.post('/register',
@@ -18,23 +21,22 @@ router.post('/register',
     }
 
     try {
+      const { User } = getModels(req);
       const { name, email, password } = req.body;
 
-      let user = await User.findOne({ email });
+      let user = await User.findOne({ where: { email } });
       if (user) {
         return res.status(400).json({ msg: 'User already exists' });
       }
 
-      user = new User({
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      user = await User.create({
         name,
         email,
-        password
+        password: hashedPassword
       });
-
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-
-      await user.save();
 
       const payload = {
         user: {
@@ -69,9 +71,10 @@ router.post('/login',
     }
 
     try {
+      const { User } = getModels(req);
       const { email, password } = req.body;
 
-      let user = await User.findOne({ email });
+      let user = await User.findOne({ where: { email } });
       if (!user) {
         return res.status(400).json({ msg: 'Invalid credentials' });
       }

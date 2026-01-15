@@ -1,31 +1,35 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const carSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  brand: {
-    type: String,
-    required: true
-  },
-  model: {
-    type: String,
-    required: true
-  },
-  year: {
-    type: Number,
-    required: true
-  },
-  licensePlate: {
-    type: String,
-    required: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+module.exports = (sequelize) => {
+  const Car = sequelize.define('Car', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    brand: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    model: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    licensePlate: {
+      type: DataTypes.STRING,
+      allowNull: true
+    }
+  }, {
+    timestamps: true
+  });
 
-module.exports = mongoose.model('Car', carSchema);
+  return Car;
+};

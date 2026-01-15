@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
@@ -15,21 +15,34 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.log('MongoDB connection error:', err));
+// Database connection with SQLite
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'database.sqlite',
+  logging: false
+});
+
+// Import models
+const User = require('./models/User')(sequelize);
+const Car = require('./models/Car')(sequelize);
+const Service = require('./models/Service')(sequelize);
+
+// Store models in app.locals for route access
+app.locals.models = { User, Car, Service };
+
+// Sync database
+sequelize.sync().then(() => {
+  console.log('Database synced successfully');
+  // Start reminder service after database is synced
+  reminderService.startReminderCheck({ User, Car, Service });
+}).catch(err => {
+  console.log('Database sync error:', err);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/cars', carRoutes);
 app.use('/api/services', serviceRoutes);
-
-// Start reminder service
-reminderService.startReminderCheck();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

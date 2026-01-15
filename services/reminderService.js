@@ -1,32 +1,36 @@
-const Service = require('../models/Service');
-const Car = require('../models/Car');
-const User = require('../models/User');
-const { sendReminderEmail } = require('./emailService');
+const { Op } = require('sequelize');
 
-const startReminderCheck = () => {
+const startReminderCheck = (models) => {
   // Check reminders every hour
-  setInterval(checkAndSendReminders, 60 * 60 * 1000);
+  setInterval(() => checkAndSendReminders(models), 60 * 60 * 1000);
   // Also check on startup
-  checkAndSendReminders();
+  checkAndSendReminders(models);
 };
 
-const checkAndSendReminders = async () => {
+const checkAndSendReminders = async (models) => {
+  if (!models) return;
+
   try {
+    const { Service, Car, User } = models;
+    const { sendReminderEmail } = require('./emailService');
+
     const today = new Date();
     const oneMonthLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     // Find all services that expire within 30 days and haven't sent reminder yet
-    const services = await Service.find({
-      expiryDate: {
-        $gte: today,
-        $lte: oneMonthLater
-      },
-      reminderSent: false
+    const services = await Service.findAll({
+      where: {
+        expiryDate: {
+          [Op.gte]: today,
+          [Op.lte]: oneMonthLater
+        },
+        reminderSent: false
+      }
     });
 
     for (const service of services) {
-      const car = await Car.findById(service.carId);
-      const user = await User.findById(service.userId);
+      const car = await Car.findByPk(service.carId);
+      const user = await User.findByPk(service.userId);
 
       if (car && user) {
         const emailSent = await sendReminderEmail(

@@ -1,25 +1,27 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const Service = require('../models/Service');
-const Car = require('../models/Car');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get models from request context
+const getModels = (req) => req.app.locals.models;
+
 // Get all services for a car
 router.get('/car/:carId', auth, async (req, res) => {
   try {
-    const car = await Car.findById(req.params.carId);
+    const { Car, Service } = getModels(req);
+    const car = await Car.findByPk(req.params.carId);
 
     if (!car) {
       return res.status(404).json({ msg: 'Car not found' });
     }
 
-    if (car.userId.toString() !== req.user.id) {
+    if (car.userId !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    const services = await Service.find({ carId: req.params.carId });
+    const services = await Service.findAll({ where: { carId: req.params.carId } });
     res.json(services);
   } catch (err) {
     console.error(err.message);
@@ -40,26 +42,26 @@ router.post('/',
     }
 
     try {
+      const { Car, Service } = getModels(req);
       const { carId, serviceType, expiryDate } = req.body;
 
-      const car = await Car.findById(carId);
+      const car = await Car.findByPk(carId);
 
       if (!car) {
         return res.status(404).json({ msg: 'Car not found' });
       }
 
-      if (car.userId.toString() !== req.user.id) {
+      if (car.userId !== req.user.id) {
         return res.status(401).json({ msg: 'Not authorized' });
       }
 
-      const service = new Service({
+      const service = await Service.create({
         carId,
         userId: req.user.id,
         serviceType,
         expiryDate
       });
 
-      await service.save();
       res.json(service);
     } catch (err) {
       console.error(err.message);
@@ -71,13 +73,14 @@ router.post('/',
 // Update service
 router.put('/:id', auth, async (req, res) => {
   try {
-    let service = await Service.findById(req.params.id);
+    const { Service } = getModels(req);
+    let service = await Service.findByPk(req.params.id);
 
     if (!service) {
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-    if (service.userId.toString() !== req.user.id) {
+    if (service.userId !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
@@ -86,7 +89,7 @@ router.put('/:id', auth, async (req, res) => {
     if (serviceType) service.serviceType = serviceType;
     if (expiryDate) {
       service.expiryDate = expiryDate;
-      service.reminderSent = false; // Reset reminder when date changes
+      service.reminderSent = false;
     }
 
     await service.save();
@@ -100,17 +103,18 @@ router.put('/:id', auth, async (req, res) => {
 // Delete service
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const { Service } = getModels(req);
+    const service = await Service.findByPk(req.params.id);
 
     if (!service) {
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-    if (service.userId.toString() !== req.user.id) {
+    if (service.userId !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    await Service.findByIdAndDelete(req.params.id);
+    await service.destroy();
     res.json({ msg: 'Service removed' });
   } catch (err) {
     console.error(err.message);
