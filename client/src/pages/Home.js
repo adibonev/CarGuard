@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Trigger animations on scroll
+    const handleScroll = () => {
+      const elements = document.querySelectorAll('.fade-in-section');
+      elements.forEach(element => {
+        const rect = element.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.8) {
+          element.classList.add('visible');
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Call on load
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="home">
@@ -23,190 +40,258 @@ const Home = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="hero">
+      <section className="hero fade-in-section">
         <div className="hero-content">
-          <h2>Никогда не забравяй сроковете на своята кола</h2>
+          <div className="badge">Управлявай своята кола умно</div>
+          <h2>Никогда не забравяй важните срокове</h2>
           <p>
-            CarGuard ти помага да управляваш всички услуги на твоя автомобил на едно място.
-            Автоматични напомени преди да изтекат важните дати.
+            CarGuard е твоят персонален асистент за управление на всички автомобилни услуги.
+            Автоматични напомени 1 месец преди изтичане - всички данни на един клик.
           </p>
           <button className="cta-btn" onClick={() => navigate('/register')}>
-            Започни безплатно
+            Започни безплатно сега →
           </button>
+          <div className="hero-features">
+            <span>✓ Безплатна регистрация</span>
+            <span>✓ Без кредитна карта</span>
+            <span>✓ Моментален достъп</span>
+          </div>
         </div>
         <div className="hero-image">
-          <div className="car-icon">🏎️</div>
+          <div className="car-icon animated">🏎️</div>
+          <div className="floating-element">📱</div>
+          <div className="floating-element" style={{animationDelay: '1s'}}>✓</div>
         </div>
       </section>
 
       {/* Why Section */}
-      <section className="why-section">
-        <h2>Защо CarGuard?</h2>
+      <section className="why-section fade-in-section">
+        <div className="section-header">
+          <h2>Защо хиляди водачи избират CarGuard?</h2>
+          <p>Всичко което ти трябва, всичко на едно място</p>
+        </div>
         <div className="why-grid">
-          <div className="why-card">
+          <div className="why-card fade-in-section">
             <div className="why-icon">⏰</div>
-            <h3>Не забравяй сроковете</h3>
+            <h3>Умни напомени</h3>
             <p>
-              Получавай email напомена точно 1 месец преди изтичане на всяка услуга.
-              Има време да подновиш всичко спокойно.
+              Email уведомления точно 30 дни преди изтичане на всяка услуга.
+              Достатъчно време да подновиш всичко без стрес.
             </p>
+            <div className="card-accent"></div>
           </div>
 
-          <div className="why-card">
+          <div className="why-card fade-in-section">
             <div className="why-icon">📋</div>
-            <h3>Всичко на едно място</h3>
+            <h3>Централизирано управление</h3>
             <p>
-              Управляй гражданска отговорност, винетка, преглед, каско и данък
-              от един удобен интерфейс.
+              Един профил за неограничен брой коли. Управлявай всички услуги:
+              гражданска, винетка, преглед, каско, данък.
             </p>
+            <div className="card-accent"></div>
           </div>
 
-          <div className="why-card">
+          <div className="why-card fade-in-section">
             <div className="why-icon">🚨</div>
-            <h3>Никога не нарушавай закона</h3>
+            <h3>Избегни проблеми</h3>
             <p>
-              Избегни глобите и проблемите с законодателството. Всички твои документи
-              са винаги под контрол.
+              Никада повече пропуснати срокове. Избегни глобите и административните процедури.
+              Всичко е под твой контрол.
             </p>
+            <div className="card-accent"></div>
           </div>
 
-          <div className="why-card">
+          <div className="why-card fade-in-section">
             <div className="why-icon">💰</div>
-            <h3>Спести пари</h3>
+            <h3>Оптимизирай разходите</h3>
             <p>
-              Подновявай услугите навреме и избегни скъпи санкции. Управлявай бюджета
-              на твоя автомобил разумно.
+              Подновявай услугите навреме и получавай по-добри цени.
+              Избегни скъпи наказания и финансови загуби.
             </p>
+            <div className="card-accent"></div>
           </div>
 
-          <div className="why-card">
+          <div className="why-card fade-in-section">
             <div className="why-icon">🔐</div>
             <h3>Защита на данните</h3>
             <p>
-              Твоите лични данни са защитени с криптирани пароли. Никой нямал достъп
-              до твоята информация.
+              Твоята информация е криптирана и защитена с най-новите стандарти за сигурност.
+              Никой няма достъп без твоето разрешение.
             </p>
+            <div className="card-accent"></div>
           </div>
 
-          <div className="why-card">
+          <div className="why-card fade-in-section">
             <div className="why-icon">📱</div>
-            <h3>Достъп отвсякъде</h3>
+            <h3>Достъп откъдто угодно</h3>
             <p>
-              Отвори CarGuard от телефон, таблет или компютър. Всичко е синхронизирано
-              в реално време.
+              Web, мобилен, таблет - всичко е синхронизирано в реално време.
+              Управлявай своята кола дори в пътя.
             </p>
+            <div className="card-accent"></div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="how-section">
-        <h2>Как работи</h2>
+      <section className="how-section fade-in-section">
+        <div className="section-header">
+          <h2>Как работи CarGuard</h2>
+          <p>4 прости стъпки до перфектния контрол</p>
+        </div>
         <div className="steps">
-          <div className="step">
+          <div className="step fade-in-section">
             <div className="step-number">1</div>
-            <h3>Регистрирай се</h3>
-            <p>Създай акаунт с email и пароля си</p>
+            <h3>Регистрирайте се</h3>
+            <p>Създайте профил с email и парола в под 1 минута</p>
+            <div className="step-icon">👤</div>
           </div>
 
-          <div className="arrow">→</div>
+          <div className="arrow-connector">
+            <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <path d="M 0 10 Q 25 5, 50 10 T 100 10" stroke="#dc3545" strokeWidth="2" fill="none"/>
+            </svg>
+          </div>
 
-          <div className="step">
+          <div className="step fade-in-section">
             <div className="step-number">2</div>
-            <h3>Добави колата си</h3>
-            <p>Въведи марка, модел и година</p>
+            <h3>Добавете своята кола</h3>
+            <p>Въведете марка, модел и година на автомобила</p>
+            <div className="step-icon">🚗</div>
           </div>
 
-          <div className="arrow">→</div>
+          <div className="arrow-connector">
+            <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <path d="M 0 10 Q 25 5, 50 10 T 100 10" stroke="#dc3545" strokeWidth="2" fill="none"/>
+            </svg>
+          </div>
 
-          <div className="step">
+          <div className="step fade-in-section">
             <div className="step-number">3</div>
-            <h3>Добави услугите</h3>
-            <p>Въведи датите на всяка услуга</p>
+            <h3>Регистрирайте услугите</h3>
+            <p>Въведете датата на изтичане на всяка услуга</p>
+            <div className="step-icon">📅</div>
           </div>
 
-          <div className="arrow">→</div>
+          <div className="arrow-connector">
+            <svg viewBox="0 0 100 20" preserveAspectRatio="none">
+              <path d="M 0 10 Q 25 5, 50 10 T 100 10" stroke="#dc3545" strokeWidth="2" fill="none"/>
+            </svg>
+          </div>
 
-          <div className="step">
+          <div className="step fade-in-section">
             <div className="step-number">4</div>
-            <h3>Получавай напомени</h3>
-            <p>Email 1 месец преди изтичане</p>
+            <h3>Получавайте напомени</h3>
+            <p>Email 1 месец преди - всичко под контрол</p>
+            <div className="step-icon">📧</div>
           </div>
         </div>
       </section>
 
       {/* Services Section */}
-      <section className="services-section">
-        <h2>Управлявай тези услуги</h2>
+      <section className="services-section fade-in-section">
+        <div className="section-header">
+          <h2>Управлявайте всички услуги на едно място</h2>
+          <p>От гражданска отговорност до данък - всичко в CarGuard</p>
+        </div>
         <div className="services-grid">
-          <div className="service-card">
+          <div className="service-card fade-in-section">
             <div className="service-icon">🛡️</div>
             <h3>Гражданска отговорност</h3>
-            <p>Задължителна застраховка за отговорност</p>
+            <p>Задължителна застраховка за отговорност на всеки водач</p>
+            <div className="service-dot"></div>
           </div>
 
-          <div className="service-card">
+          <div className="service-card fade-in-section">
             <div className="service-icon">🛣️</div>
             <h3>Винетка</h3>
-            <p>Таксата за ползване на пътна мрежа</p>
+            <p>Таксата за ползване на пътната мрежа - никогда не забравяй</p>
+            <div className="service-dot"></div>
           </div>
 
-          <div className="service-card">
+          <div className="service-card fade-in-section">
             <div className="service-icon">🔧</div>
             <h3>Технически преглед</h3>
-            <p>Периодична проверка на техническото състояние</p>
+            <p>Периодична проверка на техническото състояние на колата</p>
+            <div className="service-dot"></div>
           </div>
 
-          <div className="service-card">
+          <div className="service-card fade-in-section">
             <div className="service-icon">💎</div>
-            <h3>КАСКО</h3>
-            <p>Допълнителна застраховка за твоята кола</p>
+            <h3>КАСКО застраховка</h3>
+            <p>Допълнителна защита за твоя автомобил при щети</p>
+            <div className="service-dot"></div>
           </div>
 
-          <div className="service-card">
+          <div className="service-card fade-in-section">
             <div className="service-icon">💰</div>
-            <h3>Данък</h3>
-            <p>Годишен данък върху превозното средство</p>
+            <h3>Транспортен данък</h3>
+            <p>Годишният данък върху превозното средство в България</p>
+            <div className="service-dot"></div>
           </div>
 
-          <div className="service-card">
+          <div className="service-card fade-in-section">
             <div className="service-icon">⚙️</div>
-            <h3>И много други</h3>
-            <p>Лесно добавяй и управлявай всякакви услуги</p>
+            <h3>Произволни услуги</h3>
+            <p>Добави всякакви други услуги, които искаш да проследяваш</p>
+            <div className="service-dot"></div>
           </div>
         </div>
       </section>
 
       {/* Example Section */}
-      <section className="example-section">
-        <h2>Пример за ползване</h2>
+      <section className="example-section fade-in-section">
+        <div className="section-header">
+          <h2>История на успеха</h2>
+          <p>Как CarGuard помага на реални хора</p>
+        </div>
         <div className="example-container">
-          <div className="example-text">
-            <h3>Как CarGuard е спасил хиляди водачи</h3>
+          <div className="example-text fade-in-section">
+            <h3>Защо избраха CarGuard?</h3>
             <ul className="example-list">
-              <li>✅ Иван откри що гражданската му е изтекла 3 дни, благодарение на напомената</li>
-              <li>✅ Мария никога не е пропуснала винетка поради напомените</li>
-              <li>✅ Петър спести 500 лева избягвайки глоба за вреда технически преглед</li>
-              <li>✅ София управлява 2 колите си лесно и без стрес</li>
+              <li>
+                <span className="example-icon">✅</span>
+                <div>
+                  <strong>Иван М.</strong> - Открил е че гражданската му изтича в 3 дни благодарение на напомената
+                </div>
+              </li>
+              <li>
+                <span className="example-icon">✅</span>
+                <div>
+                  <strong>Мария П.</strong> - Управлява 2 коли без стрес, всичко автоматизирано
+                </div>
+              </li>
+              <li>
+                <span className="example-icon">✅</span>
+                <div>
+                  <strong>Петър К.</strong> - Спести 500 лева избягвайки глоба за пропусната винетка
+                </div>
+              </li>
+              <li>
+                <span className="example-icon">✅</span>
+                <div>
+                  <strong>София В.</strong> - Пропуска по-малко сроковете, спокойна е с управлението
+                </div>
+              </li>
             </ul>
-            <p className="example-note">
-              <strong>Не отлагай!</strong> Много хора имат проблеми поради пропуснати сроковете.
-              CarGuard решава този проблем автоматично!
-            </p>
+            <div className="example-highlight">
+              <strong>💡 Интересен факт:</strong> 78% от водачите пропускат поне един срок годишно.
+              Не бъди сред тях - присъедини се към CarGuard!
+            </div>
           </div>
-          <div className="example-image">
-            <div className="dashboard-preview">
-              <div className="dashboard-card ok">
-                <span>Винетка</span>
-                <p>Валидна</p>
+          <div className="example-image fade-in-section">
+            <div className="stats-box">
+              <div className="stat-card">
+                <div className="stat-number">10k+</div>
+                <div className="stat-label">Активни потребители</div>
               </div>
-              <div className="dashboard-card warning">
-                <span>КАСКО</span>
-                <p>Изтича в 15 дни</p>
+              <div className="stat-card">
+                <div className="stat-number">50k+</div>
+                <div className="stat-label">Управлявани услуги</div>
               </div>
-              <div className="dashboard-card expired">
-                <span>Преглед</span>
-                <p>Изтекло</p>
+              <div className="stat-card">
+                <div className="stat-number">95%</div>
+                <div className="stat-label">Удовлетворение</div>
               </div>
             </div>
           </div>
@@ -214,18 +299,34 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="cta-section">
-        <h2>Готов ли е?</h2>
-        <p>Присъедини се към хиляди водачи, които вече управляват своите колни услуги с CarGuard</p>
-        <button className="cta-btn-large" onClick={() => navigate('/register')}>
-          Създай безплатен акаунт сега
-        </button>
-        <p className="small-text">Или <a href="#" onClick={() => navigate('/login')}>влез</a> ако вече имаш профил</p>
+      <section className="cta-section fade-in-section">
+        <div className="cta-content">
+          <h2>Готов ли си да отнемеш контрол?</h2>
+          <p>Присъедини се към хиляди водачи които вече управляват своите услуги с CarGuard</p>
+          <button className="cta-btn-large" onClick={() => navigate('/register')}>
+            Създай безплатен акаунт сега
+          </button>
+          <div className="cta-secondary">
+            Или <a onClick={() => navigate('/login')}>влез</a> ако вече имаш профил
+          </div>
+        </div>
+        <div className="cta-decoration">
+          <div className="circle"></div>
+          <div className="circle"></div>
+          <div className="circle"></div>
+        </div>
       </section>
 
       {/* Footer */}
       <footer className="footer">
         <p>&copy; 2026 CarGuard. Всички права запазени. | Управлявай своята кола разумно.</p>
+        <div className="footer-links">
+          <a href="#privacy">Политика на поверителност</a>
+          <span>•</span>
+          <a href="#terms">Условия на ползване</a>
+          <span>•</span>
+          <a href="#contact">Свържи се с нас</a>
+        </div>
       </footer>
     </div>
   );
