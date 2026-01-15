@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { carsAPI, servicesAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
-import CarList from '../components/CarList';
 import CarForm from '../components/CarForm';
-import ServiceList from '../components/ServiceList';
 import ServiceForm from '../components/ServiceForm';
+import { getBrandLogo } from '../data/brandLogos';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -13,7 +12,9 @@ const Dashboard = () => {
   const [services, setServices] = useState([]);
   const [showCarForm, setShowCarForm] = useState(false);
   const [showServiceForm, setShowServiceForm] = useState(false);
+  const [editingCar, setEditingCar] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -31,6 +32,9 @@ const Dashboard = () => {
       setLoading(true);
       const response = await carsAPI.getCars();
       setCars(response.data);
+      if (response.data.length > 0 && !selectedCar) {
+        setSelectedCar(response.data[0]);
+      }
     } catch (err) {
       console.error('Error loading cars:', err);
     } finally {
@@ -49,24 +53,45 @@ const Dashboard = () => {
 
   const handleAddCar = async (carData) => {
     try {
-      await carsAPI.addCar(
-        carData.brand,
-        carData.model,
-        carData.year,
-        carData.licensePlate
-      );
+      if (editingCar) {
+        // Редактиране
+        await carsAPI.updateCar(
+          editingCar._id,
+          carData.brand,
+          carData.model,
+          carData.year
+        );
+        setEditingCar(null);
+      } else {
+        // Добавяне
+        await carsAPI.addCar(
+          carData.brand,
+          carData.model,
+          carData.year
+        );
+      }
       loadCars();
       setShowCarForm(false);
     } catch (err) {
-      console.error('Error adding car:', err);
+      console.error('Error saving car:', err);
     }
   };
 
+  const handleEditCar = (car) => {
+    setEditingCar(car);
+    setShowCarForm(true);
+  };
+
   const handleDeleteCar = async (carId) => {
+    if (!window.confirm('Сигурен ли си, че искаш да изтриеш този автомобил?')) {
+      return;
+    }
     try {
       await carsAPI.deleteCar(carId);
       loadCars();
-      setSelectedCar(null);
+      if (selectedCar?._id === carId) {
+        setSelectedCar(null);
+      }
     } catch (err) {
       console.error('Error deleting car:', err);
     }
@@ -95,66 +120,363 @@ const Dashboard = () => {
     }
   };
 
-  return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>🚗 Car Checker</h1>
-        <div className="header-right">
-          <span>Привет, {user?.name}!</span>
-          <button onClick={logout} className="logout-btn">Изход</button>
-        </div>
-      </header>
+  const getServiceIcon = (type) => {
+    const icons = {
+      'Гражданска отговорност': '🛡️',
+      'Винетка': '🛣️',
+      'Технически преглед': '🔧',
+      'КАСКО': '💎',
+      'Данък МПС': '💰',
+      'Друго': '📋'
+    };
+    return icons[type] || '📋';
+  };
 
-      <div className="dashboard-content">
-        <div className="cars-section">
-          <h2>Моите Автомобили</h2>
-          <button 
-            className="add-btn"
-            onClick={() => setShowCarForm(!showCarForm)}
-          >
-            + Добави Автомобил
-          </button>
+  const getServiceStatus = (expiryDate) => {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft < 0) return { status: 'expired', text: 'Изтекъл!', class: 'status-expired' };
+    if (daysLeft <= 30) return { status: 'warning', text: `${daysLeft} дни`, class: 'status-warning' };
+    return { status: 'ok', text: `${daysLeft} дни`, class: 'status-ok' };
+  };
 
-          {showCarForm && (
-            <CarForm onSubmit={handleAddCar} onCancel={() => setShowCarForm(false)} />
-          )}
+  const getExpiringServices = () => {
+    return services.filter(s => {
+      const status = getServiceStatus(s.expiryDate);
+      return status.status === 'warning' || status.status === 'expired';
+    });
+  };
 
-          {loading ? (
-            <p>Зареждане...</p>
-          ) : (
-            <CarList
-              cars={cars}
-              selectedCar={selectedCar}
-              onSelectCar={setSelectedCar}
-              onDeleteCar={handleDeleteCar}
-            />
-          )}
-        </div>
+  const renderDashboard = () => (
+    <div className="tab-content dashboard-overview">
+      <div className="overview-header">
+        <h2>👋 Добре дошъл, {user?.name}!</h2>
+        <p>Ето преглед на твоите автомобили и услуги</p>
+      </div>
 
-        {selectedCar && (
-          <div className="services-section">
-            <h2>Услуги за {selectedCar.brand} {selectedCar.model} ({selectedCar.year})</h2>
-            <button 
-              className="add-btn"
-              onClick={() => setShowServiceForm(!showServiceForm)}
-            >
-              + Добави Услуга
-            </button>
-
-            {showServiceForm && (
-              <ServiceForm
-                onSubmit={handleAddService}
-                onCancel={() => setShowServiceForm(false)}
-              />
-            )}
-
-            <ServiceList
-              services={services}
-              onDeleteService={handleDeleteService}
-            />
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon">🚗</div>
+          <div className="stat-info">
+            <div className="stat-number">{cars.length}</div>
+            <div className="stat-label">Автомобили</div>
           </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">📋</div>
+          <div className="stat-info">
+            <div className="stat-number">{services.length}</div>
+            <div className="stat-label">Услуги</div>
+          </div>
+        </div>
+        <div className="stat-card warning">
+          <div className="stat-icon">⚠️</div>
+          <div className="stat-info">
+            <div className="stat-number">{getExpiringServices().length}</div>
+            <div className="stat-label">Изтичащи скоро</div>
+          </div>
+        </div>
+      </div>
+
+      {selectedCar && (
+        <div className="quick-view">
+          <h3>🚘 {selectedCar.brand} {selectedCar.model}</h3>
+          <div className="services-quick-list">
+            {services.length === 0 ? (
+              <p className="no-services">Няма добавени услуги. <button onClick={() => setActiveTab('services')}>Добави сега →</button></p>
+            ) : (
+              services.map(service => {
+                const status = getServiceStatus(service.expiryDate);
+                return (
+                  <div key={service._id} className={`service-quick-item ${status.class}`}>
+                    <span className="service-icon">{getServiceIcon(service.serviceType)}</span>
+                    <span className="service-name">{service.serviceType}</span>
+                    <span className={`service-status ${status.class}`}>{status.text}</span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {cars.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-icon">🚗</div>
+          <h3>Нямаш добавени автомобили</h3>
+          <p>Добави първия си автомобил, за да започнеш да следиш сроковете</p>
+          <button className="primary-btn" onClick={() => { setActiveTab('cars'); setShowCarForm(true); }}>
+            + Добави автомобил
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderCars = () => (
+    <div className="tab-content cars-content">
+      <div className="content-header">
+        <h2>🚘 Моите автомобили</h2>
+        <button className="primary-btn" onClick={() => { setShowCarForm(!showCarForm); setEditingCar(null); }}>
+          {showCarForm ? '✕ Затвори' : '+ Добави автомобил'}
+        </button>
+      </div>
+
+      {showCarForm && (
+        <div className="form-container slide-in">
+          <h3 className="form-title">{editingCar ? '✏️ Редактирай автомобил' : '➕ Нов автомобил'}</h3>
+          <CarForm 
+            onSubmit={handleAddCar} 
+            onCancel={() => { setShowCarForm(false); setEditingCar(null); }}
+            initialData={editingCar}
+          />
+        </div>
+      )}
+
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Зареждане...</p>
+        </div>
+      ) : cars.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">🚗</div>
+          <h3>Нямаш добавени автомобили</h3>
+          <p>Добави първия си автомобил</p>
+        </div>
+      ) : (
+        <div className="cars-grid">
+          {cars.map(car => {
+            const logo = getBrandLogo(car.brand);
+            return (
+              <div 
+                key={car._id} 
+                className={`car-card ${selectedCar?._id === car._id ? 'selected' : ''}`}
+                onClick={() => setSelectedCar(car)}
+              >
+                <div className="car-card-header">
+                  {logo ? (
+                    <img src={logo} alt={car.brand} className="brand-logo" />
+                  ) : (
+                    <span className="car-icon">🚗</span>
+                  )}
+                  <div className="car-actions">
+                    <button 
+                      className="edit-btn" 
+                      onClick={(e) => { e.stopPropagation(); handleEditCar(car); }}
+                      title="Редактирай"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      className="delete-btn" 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCar(car._id); }}
+                      title="Изтрий"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+                <h3>{car.brand} {car.model}</h3>
+                <div className="car-details">
+                  <span className="car-year">📅 {car.year}</span>
+                </div>
+                {selectedCar?._id === car._id && (
+                  <div className="selected-badge">✓ Избран</div>
+                )}
+              </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderServices = () => (
+    <div className="tab-content services-content">
+      <div className="content-header">
+        <h2>📋 Услуги {selectedCar && `за ${selectedCar.brand} ${selectedCar.model}`}</h2>
+        {selectedCar && (
+          <button className="primary-btn" onClick={() => setShowServiceForm(!showServiceForm)}>
+            {showServiceForm ? '✕ Затвори' : '+ Добави услуга'}
+          </button>
         )}
       </div>
+
+      {!selectedCar ? (
+        <div className="empty-state">
+          <div className="empty-icon">🚗</div>
+          <h3>Избери автомобил</h3>
+          <p>Първо избери автомобил от секция "Коли"</p>
+          <button className="primary-btn" onClick={() => setActiveTab('cars')}>
+            Към колите →
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Car selector tabs */}
+          <div className="car-tabs">
+            {cars.map(car => (
+              <button
+                key={car._id}
+                className={`car-tab ${selectedCar?._id === car._id ? 'active' : ''}`}
+                onClick={() => setSelectedCar(car)}
+              >
+                🚗 {car.brand} {car.model}
+              </button>
+            ))}
+          </div>
+
+          {showServiceForm && (
+            <div className="form-container slide-in">
+              <ServiceForm onSubmit={handleAddService} onCancel={() => setShowServiceForm(false)} />
+            </div>
+          )}
+
+          {services.length === 0 ? (
+            <div className="empty-state small">
+              <div className="empty-icon">📋</div>
+              <h3>Няма услуги</h3>
+              <p>Добави първата услуга за този автомобил</p>
+            </div>
+          ) : (
+            <div className="services-list">
+              {services.map(service => {
+                const status = getServiceStatus(service.expiryDate);
+                return (
+                  <div key={service._id} className={`service-card ${status.class}`}>
+                    <div className="service-icon-large">{getServiceIcon(service.serviceType)}</div>
+                    <div className="service-info">
+                      <h4>{service.serviceType}</h4>
+                      <p>Изтича: {new Date(service.expiryDate).toLocaleDateString('bg-BG')}</p>
+                    </div>
+                    <div className={`service-status-badge ${status.class}`}>
+                      {status.status === 'ok' && '✅ '}
+                      {status.status === 'warning' && '⚠️ '}
+                      {status.status === 'expired' && '❌ '}
+                      {status.text}
+                    </div>
+                    <button 
+                      className="delete-service-btn"
+                      onClick={() => handleDeleteService(service._id)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  const renderSettings = () => (
+    <div className="tab-content settings-content">
+      <div className="content-header">
+        <h2>⚙️ Настройки</h2>
+      </div>
+
+      <div className="settings-section">
+        <h3>👤 Профил</h3>
+        <div className="setting-item">
+          <label>Име:</label>
+          <span>{user?.name}</span>
+        </div>
+        <div className="setting-item">
+          <label>Email:</label>
+          <span>{user?.email}</span>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h3>🔔 Напомняния</h3>
+        <div className="setting-item">
+          <label>Email напомняния:</label>
+          <span className="badge-active">Активни</span>
+        </div>
+        <div className="setting-item">
+          <label>Дни преди изтичане:</label>
+          <span>30 дни</span>
+        </div>
+      </div>
+
+      <div className="settings-section danger-zone">
+        <h3>⚠️ Опасна зона</h3>
+        <button className="danger-btn" onClick={logout}>
+          🚪 Изход от профила
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="dashboard-new">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <span className="logo-icon">🚗</span>
+          <span className="logo-text">CarGuard</span>
+        </div>
+
+        <nav className="sidebar-nav">
+          <button 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <span className="nav-icon">🏠</span>
+            <span className="nav-text">Табло</span>
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'cars' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cars')}
+          >
+            <span className="nav-icon">🚘</span>
+            <span className="nav-text">Коли</span>
+            {cars.length > 0 && <span className="nav-badge">{cars.length}</span>}
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'services' ? 'active' : ''}`}
+            onClick={() => setActiveTab('services')}
+          >
+            <span className="nav-icon">📋</span>
+            <span className="nav-text">Услуги</span>
+            {getExpiringServices().length > 0 && (
+              <span className="nav-badge warning">{getExpiringServices().length}</span>
+            )}
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <span className="nav-icon">⚙️</span>
+            <span className="nav-text">Настройки</span>
+          </button>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="user-info">
+            <div className="user-avatar">👤</div>
+            <div className="user-details">
+              <span className="user-name">{user?.name}</span>
+              <span className="user-email">{user?.email}</span>
+            </div>
+          </div>
+          <button className="logout-btn-sidebar" onClick={logout}>
+            🚪
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="main-content">
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'cars' && renderCars()}
+        {activeTab === 'services' && renderServices()}
+        {activeTab === 'settings' && renderSettings()}
+      </main>
     </div>
   );
 };
