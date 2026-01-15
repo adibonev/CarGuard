@@ -1,9 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('');
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   useEffect(() => {
     // Trigger animations on scroll
@@ -15,6 +23,19 @@ const Home = () => {
           element.classList.add('visible');
         }
       });
+
+      // Update active section for navigation highlight
+      const sections = ['why', 'how', 'services', 'demo', 'testimonials'];
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 150 && rect.bottom >= 150) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -27,13 +48,48 @@ const Home = () => {
       {/* Header */}
       <header className="home-header">
         <div className="header-container">
-          <h1 className="logo">🚗 CarGuard</h1>
+          <h1 className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>🚗 CarGuard</h1>
+          
+          {/* Navigation Tabs */}
+          <nav className="nav-tabs">
+            <button 
+              className={`nav-tab ${activeSection === 'why' ? 'active' : ''}`}
+              onClick={() => scrollToSection('why')}
+            >
+              Защо CarGuard
+            </button>
+            <button 
+              className={`nav-tab ${activeSection === 'how' ? 'active' : ''}`}
+              onClick={() => scrollToSection('how')}
+            >
+              Как работи
+            </button>
+            <button 
+              className={`nav-tab ${activeSection === 'services' ? 'active' : ''}`}
+              onClick={() => scrollToSection('services')}
+            >
+              Услуги
+            </button>
+            <button 
+              className={`nav-tab ${activeSection === 'demo' ? 'active' : ''}`}
+              onClick={() => scrollToSection('demo')}
+            >
+              Демо
+            </button>
+            <button 
+              className={`nav-tab ${activeSection === 'testimonials' ? 'active' : ''}`}
+              onClick={() => scrollToSection('testimonials')}
+            >
+              Отзиви
+            </button>
+          </nav>
+
           <nav className="nav-links">
             <button className="nav-btn login-btn" onClick={() => navigate('/login')}>
               Вход
             </button>
             <button className="nav-btn register-btn" onClick={() => navigate('/register')}>
-              Регистрация
+              Регистрирай се
             </button>
           </nav>
         </div>
@@ -65,7 +121,7 @@ const Home = () => {
       </section>
 
       {/* Why Section */}
-      <section className="why-section fade-in-section">
+      <section id="why" className="why-section fade-in-section">
         <div className="section-header">
           <h2>Защо хиляди водачи избират CarGuard?</h2>
           <p>Всичко което ти трябва, всичко на едно място</p>
@@ -134,7 +190,7 @@ const Home = () => {
       </section>
 
       {/* How It Works */}
-      <section className="how-section fade-in-section">
+      <section id="how" className="how-section fade-in-section">
         <div className="section-header">
           <h2>Как работи CarGuard</h2>
           <p>4 прости стъпки до перфектния контрол</p>
@@ -189,7 +245,7 @@ const Home = () => {
       </section>
 
       {/* Services Section */}
-      <section className="services-section fade-in-section">
+      <section id="services" className="services-section fade-in-section">
         <div className="section-header">
           <h2>Управлявайте всички услуги на едно място</h2>
           <p>От гражданска отговорност до данък - всичко в CarGuard</p>
@@ -240,7 +296,7 @@ const Home = () => {
       </section>
 
       {/* Example Section */}
-      <section className="example-section fade-in-section">
+      <section id="testimonials" className="example-section fade-in-section">
         <div className="section-header">
           <h2>История на успеха</h2>
           <p>Как CarGuard помага на реални хора</p>
@@ -293,6 +349,91 @@ const Home = () => {
                 <div className="stat-number">95%</div>
                 <div className="stat-label">Удовлетворение</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Section */}
+      <section id="demo" className="demo-section fade-in-section">
+        <div className="section-header">
+          <h2>🎬 Виж как работи CarGuard</h2>
+          <p>Стъпка по стъпка демонстрация</p>
+        </div>
+        <div className="demo-container">
+          <div className="demo-steps">
+            <div className="demo-step fade-in-section">
+              <div className="demo-step-number">1</div>
+              <div className="demo-animation">
+                <div className="demo-screen">
+                  <div className="demo-header">🚗 CarGuard - Регистрация</div>
+                  <div className="demo-form">
+                    <div className="demo-input typing">👤 Име: Иван Петров</div>
+                    <div className="demo-input typing" style={{animationDelay: '1s'}}>📧 Email: ivan@email.com</div>
+                    <div className="demo-input typing" style={{animationDelay: '2s'}}>🔒 Парола: ********</div>
+                    <div className="demo-button pulse-btn">Регистрирай се</div>
+                  </div>
+                </div>
+              </div>
+              <h3>Създай акаунт</h3>
+              <p>Регистрацията е безплатна и отнема само 30 секунди</p>
+            </div>
+
+            <div className="demo-step fade-in-section">
+              <div className="demo-step-number">2</div>
+              <div className="demo-animation">
+                <div className="demo-screen">
+                  <div className="demo-header">🚗 Добави кола</div>
+                  <div className="demo-form">
+                    <div className="demo-input typing">🎨 Марка: BMW</div>
+                    <div className="demo-input typing" style={{animationDelay: '0.8s'}}>🚘 Модел: 320d</div>
+                    <div className="demo-input typing" style={{animationDelay: '1.6s'}}>📅 Година: 2020</div>
+                    <div className="demo-button pulse-btn">Добави кола</div>
+                  </div>
+                </div>
+              </div>
+              <h3>Добави своята кола</h3>
+              <p>Въведи информация за твоя автомобил</p>
+            </div>
+
+            <div className="demo-step fade-in-section">
+              <div className="demo-step-number">3</div>
+              <div className="demo-animation">
+                <div className="demo-screen">
+                  <div className="demo-header">📝 Добави услуга</div>
+                  <div className="demo-form">
+                    <div className="demo-select">
+                      <span>🛡️ Гражданска отговорност</span>
+                      <span className="dropdown-icon">▼</span>
+                    </div>
+                    <div className="demo-input typing">📅 Изтича: 15.03.2026</div>
+                    <div className="demo-button pulse-btn">Съхрани услуга</div>
+                  </div>
+                </div>
+              </div>
+              <h3>Добави услуги</h3>
+              <p>Избери тип и дата на изтичане</p>
+            </div>
+
+            <div className="demo-step fade-in-section">
+              <div className="demo-step-number">4</div>
+              <div className="demo-animation">
+                <div className="demo-screen email-screen">
+                  <div className="demo-header">📧 Нов Email</div>
+                  <div className="email-content">
+                    <div className="email-from">От: CarGuard</div>
+                    <div className="email-subject">⚠️ Напомена: Гражданска изтича!</div>
+                    <div className="email-body">
+                      <p>🚗 BMW 320d</p>
+                      <p>Изтича след <strong>30 дни</strong></p>
+                      <p>Поднови навреме!</p>
+                    </div>
+                  </div>
+                  <div className="email-notification">🔔</div>
+                </div>
+              </div>
+              <h3>Получаваш напомена</h3>
+              <p>Email 1 месец преди изтичане</p>
             </div>
           </div>
         </div>
