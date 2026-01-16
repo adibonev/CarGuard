@@ -3,8 +3,14 @@ const { Op } = require('sequelize');
 const startReminderCheck = (models) => {
   // Check reminders every hour
   setInterval(() => checkAndSendReminders(models), 60 * 60 * 1000);
-  // Also check on startup
-  checkAndSendReminders(models);
+  // Also check on startup - wrapped in try/catch to prevent server crash
+  setTimeout(() => {
+    try {
+      checkAndSendReminders(models);
+    } catch (err) {
+      console.error('Error on startup reminder check:', err.message);
+    }
+  }, 2000);
 };
 
 const checkAndSendReminders = async (models) => {

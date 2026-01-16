@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const carRoutes = require('./routes/cars');
 const serviceRoutes = require('./routes/services');
+const adminRoutes = require('./routes/admin');
 const reminderService = require('./services/reminderService');
 
 dotenv.config();
@@ -26,9 +27,10 @@ const sequelize = new Sequelize({
 const User = require('./models/User')(sequelize);
 const Car = require('./models/Car')(sequelize);
 const Service = require('./models/Service')(sequelize);
+const Admin = require('./models/Admin')(sequelize);
 
 // Store models in app.locals for route access
-app.locals.models = { User, Car, Service };
+app.locals.models = { User, Car, Service, Admin };
 
 // Sync database
 sequelize.sync().then(() => {
@@ -43,6 +45,7 @@ sequelize.sync().then(() => {
 app.use('/api/auth', authRoutes);
 app.use('/api/cars', carRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
