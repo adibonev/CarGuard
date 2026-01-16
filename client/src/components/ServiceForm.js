@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ServiceForm = ({ onSubmit, onCancel }) => {
+const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) => {
   const [formData, setFormData] = useState({
     serviceType: 'гражданска',
     expiryDate: ''
@@ -24,7 +24,20 @@ const ServiceForm = ({ onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (!formData.expiryDate) {
+      alert('Моля, изберете дата на изтичане');
+      return;
+    }
+    if (!selectedCarId) {
+      alert('Моля, изберете автомобил');
+      return;
+    }
+    // Convert date to ISO format for API
+    const submitData = {
+      ...formData,
+      expiryDate: new Date(formData.expiryDate).toISOString()
+    };
+    onSubmit(submitData);
     setFormData({
       serviceType: 'гражданска',
       expiryDate: ''
@@ -33,6 +46,23 @@ const ServiceForm = ({ onSubmit, onCancel }) => {
 
   return (
     <form className="service-form" onSubmit={handleSubmit}>
+      {cars && cars.length > 0 && (
+        <div className="form-group">
+          <label>Автомобил</label>
+          <select
+            value={selectedCarId || ''}
+            onChange={(e) => onCarChange && onCarChange(e.target.value)}
+            required
+          >
+            <option value="">-- Избери автомобил --</option>
+            {cars.map(car => (
+              <option key={car.id} value={car.id}>
+                {car.brand} {car.model} ({car.year})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="form-group">
         <label>Вид услуга</label>
         <select

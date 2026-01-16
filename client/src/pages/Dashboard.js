@@ -15,7 +15,17 @@ const Dashboard = () => {
   const [editingCar, setEditingCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [reminderDays, setReminderDays] = useState(() => {
+    const saved = localStorage.getItem('reminderDays');
+    return saved ? parseInt(saved) : 30;
+  });
   const { user, logout } = useAuth();
+
+  const handleReminderDaysChange = (days) => {
+    const value = parseInt(days);
+    setReminderDays(value);
+    localStorage.setItem('reminderDays', value.toString());
+  };
 
   useEffect(() => {
     loadCars();
@@ -23,7 +33,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (selectedCar) {
-      loadServices(selectedCar._id);
+      loadServices(selectedCar.id);
     }
   }, [selectedCar]);
 
@@ -56,7 +66,7 @@ const Dashboard = () => {
       if (editingCar) {
         // Редактиране
         await carsAPI.updateCar(
-          editingCar._id,
+          editingCar.id,
           carData.brand,
           carData.model,
           carData.year
@@ -89,7 +99,7 @@ const Dashboard = () => {
     try {
       await carsAPI.deleteCar(carId);
       loadCars();
-      if (selectedCar?._id === carId) {
+      if (selectedCar?.id === carId) {
         setSelectedCar(null);
       }
     } catch (err) {
@@ -97,24 +107,36 @@ const Dashboard = () => {
     }
   };
 
+  const handleCarChangeForService = (carId) => {
+    const car = cars.find(c => c.id === parseInt(carId));
+    if (car) {
+      setSelectedCar(car);
+    }
+  };
+
   const handleAddService = async (serviceData) => {
     try {
+      console.log('Adding service:', serviceData);
       await servicesAPI.addService(
-        selectedCar._id,
+        selectedCar.id,
         serviceData.serviceType,
         serviceData.expiryDate
       );
-      loadServices(selectedCar._id);
+      loadServices(selectedCar.id);
       setShowServiceForm(false);
     } catch (err) {
       console.error('Error adding service:', err);
+      alert('Грешка при добавяне на услуга: ' + (err.response?.data?.errors?.[0]?.msg || err.message));
     }
   };
 
   const handleDeleteService = async (serviceId) => {
+    if (!window.confirm('Сигурен ли си, че искаш да изтриеш тази услуга?')) {
+      return;
+    }
     try {
       await servicesAPI.deleteService(serviceId);
-      loadServices(selectedCar._id);
+      loadServices(selectedCar.id);
     } catch (err) {
       console.error('Error deleting service:', err);
     }
@@ -122,14 +144,24 @@ const Dashboard = () => {
 
   const getServiceIcon = (type) => {
     const icons = {
-      'Гражданска отговорност': '🛡️',
-      'Винетка': '🛣️',
-      'Технически преглед': '🔧',
-      'КАСКО': '💎',
-      'Данък МПС': '💰',
-      'Друго': '📋'
+      'гражданска': '🛡️',
+      'винетка': '🛣️',
+      'преглед': '🔧',
+      'каско': '💎',
+      'данък': '💰'
     };
     return icons[type] || '📋';
+  };
+
+  const getServiceName = (type) => {
+    const names = {
+      'гражданска': 'Гражданска отговорност',
+      'винетка': 'Винетка',
+      'преглед': 'Технически преглед',
+      'каско': 'КАСКО',
+      'данък': 'Данък МПС'
+    };
+    return names[type] || type;
   };
 
   const getServiceStatus = (expiryDate) => {
@@ -138,7 +170,7 @@ const Dashboard = () => {
     const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
     
     if (daysLeft < 0) return { status: 'expired', text: 'Изтекъл!', class: 'status-expired' };
-    if (daysLeft <= 30) return { status: 'warning', text: `${daysLeft} дни`, class: 'status-warning' };
+    if (daysLeft <= reminderDays) return { status: 'warning', text: `${daysLeft} дни`, class: 'status-warning' };
     return { status: 'ok', text: `${daysLeft} дни`, class: 'status-ok' };
   };
 
@@ -190,9 +222,9 @@ const Dashboard = () => {
               services.map(service => {
                 const status = getServiceStatus(service.expiryDate);
                 return (
-                  <div key={service._id} className={`service-quick-item ${status.class}`}>
+                  <div key={service.id} className={`service-quick-item ${status.class}`}>
                     <span className="service-icon">{getServiceIcon(service.serviceType)}</span>
-                    <span className="service-name">{service.serviceType}</span>
+                    <span className="service-name">{getServiceName(service.serviceType)}</span>
                     <span className={`service-status ${status.class}`}>{status.text}</span>
                   </div>
                 );
@@ -252,8 +284,8 @@ const Dashboard = () => {
             const logo = getBrandLogo(car.brand);
             return (
               <div 
-                key={car._id} 
-                className={`car-card ${selectedCar?._id === car._id ? 'selected' : ''}`}
+                key={car.id} 
+                className={`car-card ${selectedCar?.id === car.id ? 'selected' : ''}`}
                 onClick={() => setSelectedCar(car)}
               >
                 <div className="car-card-header">
@@ -272,7 +304,7 @@ const Dashboard = () => {
                     </button>
                     <button 
                       className="delete-btn" 
-                      onClick={(e) => { e.stopPropagation(); handleDeleteCar(car._id); }}
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCar(car.id); }}
                       title="Изтрий"
                     >
                       🗑️
@@ -283,11 +315,12 @@ const Dashboard = () => {
                 <div className="car-details">
                   <span className="car-year">📅 {car.year}</span>
                 </div>
-                {selectedCar?._id === car._id && (
+                {selectedCar?.id === car.id && (
                   <div className="selected-badge">✓ Избран</div>
                 )}
               </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -296,43 +329,50 @@ const Dashboard = () => {
   const renderServices = () => (
     <div className="tab-content services-content">
       <div className="content-header">
-        <h2>📋 Услуги {selectedCar && `за ${selectedCar.brand} ${selectedCar.model}`}</h2>
-        {selectedCar && (
-          <button className="primary-btn" onClick={() => setShowServiceForm(!showServiceForm)}>
-            {showServiceForm ? '✕ Затвори' : '+ Добави услуга'}
-          </button>
-        )}
+        <h2>📋 Услуги</h2>
+        <button className="primary-btn" onClick={() => setShowServiceForm(!showServiceForm)}>
+          {showServiceForm ? '✕ Затвори' : '+ Добави услуга'}
+        </button>
       </div>
 
-      {!selectedCar ? (
+      {cars.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🚗</div>
-          <h3>Избери автомобил</h3>
-          <p>Първо избери автомобил от секция "Коли"</p>
+          <h3>Първо добави автомобил</h3>
+          <p>За да добавиш услуга, трябва да имаш поне един автомобил</p>
           <button className="primary-btn" onClick={() => setActiveTab('cars')}>
             Към колите →
           </button>
         </div>
       ) : (
         <>
-          {/* Car selector tabs */}
-          <div className="car-tabs">
-            {cars.map(car => (
-              <button
-                key={car._id}
-                className={`car-tab ${selectedCar?._id === car._id ? 'active' : ''}`}
-                onClick={() => setSelectedCar(car)}
-              >
-                🚗 {car.brand} {car.model}
-              </button>
-            ))}
-          </div>
-
           {showServiceForm && (
             <div className="form-container slide-in">
-              <ServiceForm onSubmit={handleAddService} onCancel={() => setShowServiceForm(false)} />
+              <h3 className="form-title">➕ Нова услуга</h3>
+              <ServiceForm 
+                onSubmit={handleAddService} 
+                onCancel={() => setShowServiceForm(false)}
+                cars={cars}
+                selectedCarId={selectedCar?.id}
+                onCarChange={handleCarChangeForService}
+              />
             </div>
           )}
+
+          {/* Car selector dropdown */}
+          <div className="car-selector">
+            <label>Преглед на услуги за:</label>
+            <select 
+              value={selectedCar?.id || ''} 
+              onChange={(e) => handleCarChangeForService(e.target.value)}
+            >
+              {cars.map(car => (
+                <option key={car.id} value={car.id}>
+                  {car.brand} {car.model} ({car.year})
+                </option>
+              ))}
+            </select>
+          </div>
 
           {services.length === 0 ? (
             <div className="empty-state small">
@@ -345,10 +385,10 @@ const Dashboard = () => {
               {services.map(service => {
                 const status = getServiceStatus(service.expiryDate);
                 return (
-                  <div key={service._id} className={`service-card ${status.class}`}>
+                  <div key={service.id} className={`service-card ${status.class}`}>
                     <div className="service-icon-large">{getServiceIcon(service.serviceType)}</div>
                     <div className="service-info">
-                      <h4>{service.serviceType}</h4>
+                      <h4>{getServiceName(service.serviceType)}</h4>
                       <p>Изтича: {new Date(service.expiryDate).toLocaleDateString('bg-BG')}</p>
                     </div>
                     <div className={`service-status-badge ${status.class}`}>
@@ -359,7 +399,7 @@ const Dashboard = () => {
                     </div>
                     <button 
                       className="delete-service-btn"
-                      onClick={() => handleDeleteService(service._id)}
+                      onClick={() => handleDeleteService(service.id)}
                     >
                       🗑️
                     </button>
@@ -399,7 +439,20 @@ const Dashboard = () => {
         </div>
         <div className="setting-item">
           <label>Дни преди изтичане:</label>
-          <span>30 дни</span>
+          <div className="reminder-days-control">
+            <select 
+              value={reminderDays} 
+              onChange={(e) => handleReminderDaysChange(e.target.value)}
+              className="reminder-select"
+            >
+              <option value="7">7 дни</option>
+              <option value="14">14 дни</option>
+              <option value="30">30 дни</option>
+              <option value="45">45 дни</option>
+              <option value="60">60 дни</option>
+              <option value="90">90 дни</option>
+            </select>
+          </div>
         </div>
       </div>
 
