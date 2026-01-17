@@ -33,14 +33,20 @@ router.post('/',
 
     try {
       const { Car } = getModels(req);
-      const { brand, model, year, licensePlate } = req.body;
+      const { 
+        brand, model, year, licensePlate, 
+        vin, engineType, horsepower, transmission, euroStandard, mileage, fuelType,
+        tireWidth, tireHeight, tireDiameter, tireSeason, tireBrand, tireDot 
+      } = req.body;
 
       const car = await Car.create({
         userId: req.user.id,
         brand,
         model,
         year,
-        licensePlate
+        licensePlate,
+        vin, engineType, horsepower, transmission, euroStandard, mileage, fuelType,
+        tireWidth, tireHeight, tireDiameter, tireSeason, tireBrand, tireDot
       });
 
       res.json(car);
@@ -65,12 +71,32 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    const { brand, model, year, licensePlate } = req.body;
+    const { 
+      brand, model, year, licensePlate,
+      vin, engineType, horsepower, transmission, euroStandard, mileage, fuelType,
+      tireWidth, tireHeight, tireDiameter, tireSeason, tireBrand, tireDot 
+    } = req.body;
 
     if (brand) car.brand = brand;
     if (model) car.model = model;
     if (year) car.year = year;
     if (licensePlate) car.licensePlate = licensePlate;
+    
+    // Update optional fields regardless if they are present strings or null (to allow clearing)
+    // Checking undefined to only update if sent in body
+    if (vin !== undefined) car.vin = vin;
+    if (engineType !== undefined) car.engineType = engineType;
+    if (horsepower !== undefined) car.horsepower = horsepower;
+    if (transmission !== undefined) car.transmission = transmission;
+    if (euroStandard !== undefined) car.euroStandard = euroStandard;
+    if (mileage !== undefined) car.mileage = mileage;
+    if (fuelType !== undefined) car.fuelType = fuelType;
+    if (tireWidth !== undefined) car.tireWidth = tireWidth;
+    if (tireHeight !== undefined) car.tireHeight = tireHeight;
+    if (tireDiameter !== undefined) car.tireDiameter = tireDiameter;
+    if (tireSeason !== undefined) car.tireSeason = tireSeason;
+    if (tireBrand !== undefined) car.tireBrand = tireBrand;
+    if (tireDot !== undefined) car.tireDot = tireDot;
 
     await car.save();
     res.json(car);

@@ -23,6 +23,11 @@ module.exports = (sequelize) => {
       type: DataTypes.DATE,
       allowNull: false
     },
+    cost: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: 0
+    },
     reminderSent: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

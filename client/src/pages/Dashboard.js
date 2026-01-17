@@ -4,17 +4,21 @@ import { useAuth } from '../context/AuthContext';
 import CarForm from '../components/CarForm';
 import ServiceForm from '../components/ServiceForm';
 import { getBrandLogo } from '../data/brandLogos';
+import { FaBarcode, FaCogs, FaExchangeAlt, FaRoad, FaLeaf, FaHashtag, FaGasPump, FaTachometerAlt, FaCompactDisc } from 'react-icons/fa';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
   const [cars, setCars] = useState([]);
   const [selectedCar, setSelectedCar] = useState(null);
   const [services, setServices] = useState([]);
+  const [allServices, setAllServices] = useState([]);
   const [showCarForm, setShowCarForm] = useState(false);
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [editingCar, setEditingCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [reminderDays, setReminderDays] = useState(() => {
     const saved = localStorage.getItem('reminderDays');
     return saved ? parseInt(saved) : 30;
@@ -29,6 +33,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadCars();
+    loadAllServices();
   }, []);
 
   useEffect(() => {
@@ -36,6 +41,15 @@ const Dashboard = () => {
       loadServices(selectedCar.id);
     }
   }, [selectedCar]);
+
+  const loadAllServices = async () => {
+    try {
+      const response = await servicesAPI.getAllServices();
+      setAllServices(response.data);
+    } catch (err) {
+      console.error('Error loading all services:', err);
+    }
+  };
 
   const loadCars = async () => {
     try {
@@ -65,20 +79,11 @@ const Dashboard = () => {
     try {
       if (editingCar) {
         // Редактиране
-        await carsAPI.updateCar(
-          editingCar.id,
-          carData.brand,
-          carData.model,
-          carData.year
-        );
+        await carsAPI.updateCar(editingCar.id, carData);
         setEditingCar(null);
       } else {
         // Добавяне
-        await carsAPI.addCar(
-          carData.brand,
-          carData.model,
-          carData.year
-        );
+        await carsAPI.addCar(carData);
       }
       loadCars();
       setShowCarForm(false);
@@ -120,9 +125,11 @@ const Dashboard = () => {
       await servicesAPI.addService(
         selectedCar.id,
         serviceData.serviceType,
-        serviceData.expiryDate
+        serviceData.expiryDate,
+        serviceData.cost
       );
       loadServices(selectedCar.id);
+      loadAllServices();
       setShowServiceForm(false);
     } catch (err) {
       console.error('Error adding service:', err);
@@ -175,152 +182,577 @@ const Dashboard = () => {
   };
 
   const getExpiringServices = () => {
-    return services.filter(s => {
+    return allServices.filter(s => {
       const status = getServiceStatus(s.expiryDate);
       return status.status === 'warning' || status.status === 'expired';
     });
   };
 
+  // Calendar helpers
+  const getMonthDays = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay();
+    
+    const days = [];
+    // Add empty days for padding
+    for (let i = 0; i < startingDay; i++) {
+      days.push(null);
+    }
+    // Add actual days
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(new Date(year, month, i));
+    }
+    return days;
+  };
+
+  const getEventsForDay = (day) => {
+    if (!day) return [];
+    return allServices.filter(s => {
+      const expiry = new Date(s.expiryDate);
+      return expiry.getDate() === day.getDate() && 
+             expiry.getMonth() === day.getMonth() && 
+             expiry.getFullYear() === day.getFullYear();
+    });
+  };
+
+  const monthNames = ['Януари', 'Февруари', 'Март', 'Април', 'Май', 'Юни', 
+                      'Юли', 'Август', 'Септември', 'Октомври', 'Ноември', 'Декември'];
+
+  const navigateMonth = (direction) => {
+    setCurrentMonth(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + direction);
+      return newDate;
+    });
+  };
+
+  // Chart data helper - monthly costs per car
+  const getChartData = () => {
+    const months = [];
+    const now = new Date();
+    
+    // Last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthName = monthNames[date.getMonth()].substring(0, 3);
+      
+      const monthData = { name: monthName, month: monthKey };
+      
+      // Calculate costs per car for this month
+      cars.forEach(car => {
+        const carServices = allServices.filter(s => {
+          const serviceDate = new Date(s.createdAt);
+          const sMonth = `${serviceDate.getFullYear()}-${String(serviceDate.getMonth() + 1).padStart(2, '0')}`;
+          return s.carId === car.id && sMonth === monthKey;
+        });
+        
+        const totalCost = carServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
+        monthData[`${car.brand} ${car.model}`] = totalCost;
+      });
+      
+      months.push(monthData);
+    }
+    
+    return months;
+  };
+
+  // Generate distinct colors for each car
+  const carColors = ['#dc3545', '#28a745', '#007bff', '#ffc107', '#6f42c1', '#17a2b8'];
+
+  const getTotalCosts = () => {
+    return allServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
+  };
+
   const renderDashboard = () => (
-    <div className="tab-content dashboard-overview">
-      <div className="overview-header">
-        <h2>👋 Добре дошъл, {user?.name}!</h2>
-        <p>Ето преглед на твоите автомобили и услуги</p>
+    <div className="tab-content dashboard-view">
+      {/* Top Stats Row */}
+      <div className="stats-row">
+        <div className="stat-box">
+          <div className="stat-box-icon cars">🚗</div>
+          <div className="stat-box-content">
+            <span className="stat-box-value">{cars.length}</span>
+            <span className="stat-box-label">Автомобили</span>
+          </div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-box-icon services">📋</div>
+          <div className="stat-box-content">
+            <span className="stat-box-value">{allServices.length}</span>
+            <span className="stat-box-label">Общо услуги</span>
+          </div>
+        </div>
+        <div className="stat-box warning">
+          <div className="stat-box-icon">⚠️</div>
+          <div className="stat-box-content">
+            <span className="stat-box-value">{getExpiringServices().length}</span>
+            <span className="stat-box-label">Изтичащи скоро</span>
+          </div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-box-icon money">💰</div>
+          <div className="stat-box-content">
+            <span className="stat-box-value">{getTotalCosts().toFixed(0)} лв</span>
+            <span className="stat-box-label">Общо разходи</span>
+          </div>
+        </div>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">🚗</div>
-          <div className="stat-info">
-            <div className="stat-number">{cars.length}</div>
-            <div className="stat-label">Автомобили</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📋</div>
-          <div className="stat-info">
-            <div className="stat-number">{services.length}</div>
-            <div className="stat-label">Услуги</div>
-          </div>
-        </div>
-        <div className="stat-card warning">
-          <div className="stat-icon">⚠️</div>
-          <div className="stat-info">
-            <div className="stat-number">{getExpiringServices().length}</div>
-            <div className="stat-label">Изтичащи скоро</div>
-          </div>
-        </div>
-      </div>
-
-      {selectedCar && (
-        <div className="quick-view">
-          <h3>🚘 {selectedCar.brand} {selectedCar.model}</h3>
-          <div className="services-quick-list">
-            {services.length === 0 ? (
-              <p className="no-services">Няма добавени услуги. <button onClick={() => setActiveTab('services')}>Добави сега →</button></p>
-            ) : (
-              services.map(service => {
-                const status = getServiceStatus(service.expiryDate);
-                return (
-                  <div key={service.id} className={`service-quick-item ${status.class}`}>
-                    <span className="service-icon">{getServiceIcon(service.serviceType)}</span>
-                    <span className="service-name">{getServiceName(service.serviceType)}</span>
-                    <span className={`service-status ${status.class}`}>{status.text}</span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-
-      {cars.length === 0 && (
-        <div className="empty-state">
+      {cars.length === 0 ? (
+        <div className="empty-state-dashboard">
           <div className="empty-icon">🚗</div>
-          <h3>Нямаш добавени автомобили</h3>
-          <p>Добави първия си автомобил, за да започнеш да следиш сроковете</p>
+          <h3>Добави първия си автомобил</h3>
+          <p>Започни да следиш сроковете на застраховки и винетки</p>
           <button className="primary-btn" onClick={() => { setActiveTab('cars'); setShowCarForm(true); }}>
             + Добави автомобил
           </button>
+        </div>
+      ) : (
+        <div className="dashboard-main-grid">
+          {/* Calendar Section */}
+          <div className="dashboard-section calendar-section">
+            <div className="section-title">
+              <h3>📅 Календар с предстоящи събития</h3>
+              <div className="calendar-nav">
+                <button onClick={() => navigateMonth(-1)}>‹</button>
+                <span>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
+                <button onClick={() => navigateMonth(1)}>›</button>
+              </div>
+            </div>
+            <div className="calendar-grid">
+              <div className="calendar-header">
+                <span>Нед</span>
+                <span>Пон</span>
+                <span>Вто</span>
+                <span>Сря</span>
+                <span>Чет</span>
+                <span>Пет</span>
+                <span>Съб</span>
+              </div>
+              <div className="calendar-days">
+                {getMonthDays(currentMonth).map((day, idx) => {
+                  const events = day ? getEventsForDay(day) : [];
+                  const isToday = day && day.toDateString() === new Date().toDateString();
+                  const hasExpired = events.some(e => getServiceStatus(e.expiryDate).status === 'expired');
+                  const hasWarning = events.some(e => getServiceStatus(e.expiryDate).status === 'warning');
+                  
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`calendar-day ${!day ? 'empty' : ''} ${isToday ? 'today' : ''} ${hasExpired ? 'has-expired' : hasWarning ? 'has-warning' : events.length > 0 ? 'has-events' : ''}`}
+                    >
+                      {day && (
+                        <>
+                          <span className="day-number">{day.getDate()}</span>
+                          {events.length > 0 && (
+                            <div className="day-events">
+                              {events.slice(0, 2).map((e, i) => {
+                                const car = cars.find(c => c.id === e.carId);
+                                return (
+                                  <div key={i} className={`day-event ${getServiceStatus(e.expiryDate).class}`}>
+                                    {getServiceIcon(e.serviceType)} {car?.brand}
+                                  </div>
+                                );
+                              })}
+                              {events.length > 2 && (
+                                <span className="more-events">+{events.length - 2}</span>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Chart Section */}
+          <div className="dashboard-section chart-section">
+            <div className="section-title">
+              <h3>📊 Месечни разходи по автомобили</h3>
+            </div>
+            <div className="chart-container">
+              {allServices.length > 0 && allServices.some(s => parseFloat(s.cost) > 0) ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={getChartData()}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                    <XAxis dataKey="name" stroke="#666" fontSize={12} />
+                    <YAxis stroke="#666" fontSize={12} />
+                    <Tooltip 
+                      formatter={(value) => [`${value} лв`, '']}
+                      contentStyle={{ background: 'white', border: '1px solid #eee', borderRadius: '8px' }}
+                    />
+                    <Legend />
+                    {cars.map((car, idx) => (
+                      <Line 
+                        key={car.id}
+                        type="monotone" 
+                        dataKey={`${car.brand} ${car.model}`} 
+                        stroke={carColors[idx % carColors.length]}
+                        strokeWidth={2}
+                        dot={{ fill: carColors[idx % carColors.length] }}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="no-chart-data">
+                  <span>📊</span>
+                  <p>Няма данни за разходи</p>
+                  <small>Добави услуги с цена за да видиш графиката</small>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Notifications Section */}
+          <div className="dashboard-section notifications-section">
+            <div className="section-title">
+              <h3>🔔 Напомняния</h3>
+            </div>
+            <div className="notifications-list">
+              {(() => {
+                const notifications = [];
+                const today = new Date();
+                
+                // Generate notifications based on service status
+                getExpiringServices().forEach(service => {
+                  const car = cars.find(c => c.id === service.carId);
+                  const status = getServiceStatus(service.expiryDate);
+                  const expiryDate = new Date(service.expiryDate);
+                  const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                  
+                  if (status.status === 'expired') {
+                    notifications.push({
+                      id: `exp-${service.id}`,
+                      type: 'danger',
+                      icon: '🚨',
+                      title: `${getServiceName(service.serviceType)} е изтекла!`,
+                      message: `${car?.brand} ${car?.model} - изтекла на ${expiryDate.toLocaleDateString('bg-BG')}`,
+                      time: 'Спешно'
+                    });
+                  } else if (daysLeft <= 7) {
+                    notifications.push({
+                      id: `warn-${service.id}`,
+                      type: 'warning',
+                      icon: '⚠️',
+                      title: `${getServiceName(service.serviceType)} изтича скоро`,
+                      message: `${car?.brand} ${car?.model} - остават ${daysLeft} дни`,
+                      time: `${daysLeft} дни`
+                    });
+                  } else if (daysLeft <= 30) {
+                    notifications.push({
+                      id: `info-${service.id}`,
+                      type: 'info',
+                      icon: '📋',
+                      title: `Напомняне за ${getServiceName(service.serviceType)}`,
+                      message: `${car?.brand} ${car?.model} - изтича на ${expiryDate.toLocaleDateString('bg-BG')}`,
+                      time: `${daysLeft} дни`
+                    });
+                  }
+                });
+
+                if (notifications.length === 0) {
+                  return (
+                    <div className="no-notifications">
+                      <span>🔔</span>
+                      <p>Няма нови известия</p>
+                      <small>Всичко е наред с вашите автомобили</small>
+                    </div>
+                  );
+                }
+
+                return notifications.slice(0, 5).map(notif => (
+                  <div key={notif.id} className={`notification-item ${notif.type}`}>
+                    <div className="notification-icon">{notif.icon}</div>
+                    <div className="notification-content">
+                      <span className="notification-title">{notif.title}</span>
+                      <span className="notification-message">{notif.message}</span>
+                    </div>
+                    <div className="notification-time">{notif.time}</div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 
   const renderCars = () => (
-    <div className="tab-content cars-content">
-      <div className="content-header">
-        <h2>🚘 Моите автомобили</h2>
-        <button className="primary-btn" onClick={() => { setShowCarForm(!showCarForm); setEditingCar(null); }}>
-          {showCarForm ? '✕ Затвори' : '+ Добави автомобил'}
-        </button>
-      </div>
-
-      {showCarForm && (
-        <div className="form-container slide-in">
-          <h3 className="form-title">{editingCar ? '✏️ Редактирай автомобил' : '➕ Нов автомобил'}</h3>
-          <CarForm 
-            onSubmit={handleAddCar} 
-            onCancel={() => { setShowCarForm(false); setEditingCar(null); }}
-            initialData={editingCar}
-          />
-        </div>
-      )}
-
+    <div className="tab-content cars-content-new">
       {loading ? (
         <div className="loading-state">
           <div className="spinner"></div>
           <p>Зареждане...</p>
         </div>
-      ) : cars.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">🚗</div>
-          <h3>Нямаш добавени автомобили</h3>
-          <p>Добави първия си автомобил</p>
-        </div>
       ) : (
-        <div className="cars-grid">
-          {cars.map(car => {
-            const logo = getBrandLogo(car.brand);
-            return (
-              <div 
-                key={car.id} 
-                className={`car-card ${selectedCar?.id === car.id ? 'selected' : ''}`}
-                onClick={() => setSelectedCar(car)}
+        <div className="cars-layout">
+          {showCarForm && (
+            <div className="modal-overlay">
+              <div className="modal-content-wrapper">
+                <div className="modal-header">
+                  <h3>{editingCar ? 'Редактиране на автомобил' : 'Добавяне на нов автомобил'}</h3>
+                  <button className="modal-close-btn" onClick={() => { setShowCarForm(false); setEditingCar(null); }}>✕</button>
+                </div>
+                <CarForm 
+                  onSubmit={handleAddCar} 
+                  onCancel={() => { setShowCarForm(false); setEditingCar(null); }}
+                  initialData={editingCar}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Left Panel - Car List */}
+          <div className="cars-list-panel">
+            <div className="panel-header">
+              <h3>🚘 Автомобили ({cars.length})</h3>
+              <button 
+                className="add-car-btn" 
+                onClick={() => { setShowCarForm(true); setEditingCar(null); }}
               >
-                <div className="car-card-header">
-                  {logo ? (
-                    <img src={logo} alt={car.brand} className="brand-logo" />
-                  ) : (
-                    <span className="car-icon">🚗</span>
-                  )}
-                  <div className="car-actions">
-                    <button 
-                      className="edit-btn" 
-                      onClick={(e) => { e.stopPropagation(); handleEditCar(car); }}
-                      title="Редактирай"
+                + Добави
+              </button>
+            </div>
+            
+            <div className="cars-list-scroll">
+              {cars.length === 0 ? (
+                <div className="empty-cars">
+                  <span>🚗</span>
+                  <p>Нямаш автомобили</p>
+                  <button onClick={() => setShowCarForm(true)}>Добави първия</button>
+                </div>
+              ) : (
+                cars.map(car => {
+                  const logo = getBrandLogo(car.brand);
+                  const isSelected = selectedCar?.id === car.id;
+                  const carServices = services.filter(s => s.carId === car.id);
+                  const expiringCount = carServices.filter(s => {
+                    const status = getServiceStatus(s.expiryDate);
+                    return status.status === 'warning' || status.status === 'expired';
+                  }).length;
+                  
+                  return (
+                    <div 
+                      key={car.id} 
+                      className={`car-list-item ${isSelected ? 'selected' : ''} ${expiringCount > 0 ? 'has-warning' : ''}`}
+                      onClick={() => setSelectedCar(car)}
                     >
-                      ✏️
+                      <div className="car-list-logo">
+                        {logo ? <img src={logo} alt={car.brand} /> : <span>🚗</span>}
+                      </div>
+                      <div className="car-list-info">
+                        <span className="car-list-name">{car.brand} {car.model}</span>
+                        <span className="car-list-year">{car.year} • {car.licensePlate || 'Без номер'}</span>
+                      </div>
+                      {expiringCount > 0 && (
+                        <span className="car-warning-badge">{expiringCount}</span>
+                      )}
+                      {isSelected && <span className="car-selected-mark">✓</span>}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel - Selected Car Details */}
+          <div className="car-detail-panel">
+            {selectedCar ? (
+              <>
+                <div className="car-detail-header">
+                  <div className="car-header-main">
+                    <div className="car-detail-logo">
+                      {getBrandLogo(selectedCar.brand) ? (
+                        <img src={getBrandLogo(selectedCar.brand)} alt={selectedCar.brand} />
+                      ) : (
+                        <span>🚗</span>
+                      )}
+                    </div>
+                    <div className="car-detail-title">
+                      <h2>{selectedCar.brand} {selectedCar.model}</h2>
+                      <p>{selectedCar.year} г. {selectedCar.licensePlate && `• ${selectedCar.licensePlate}`}</p>
+                    </div>
+                  </div>
+                  <div className="car-detail-actions">
+                    <button 
+                      className="action-btn edit"
+                      onClick={() => handleEditCar(selectedCar)}
+                    >
+                      ✏️ Редактирай
                     </button>
                     <button 
-                      className="delete-btn" 
-                      onClick={(e) => { e.stopPropagation(); handleDeleteCar(car.id); }}
-                      title="Изтрий"
+                      className="action-btn delete"
+                      onClick={() => handleDeleteCar(selectedCar.id)}
                     >
-                      🗑️
+                      🗑️ Изтрий
                     </button>
                   </div>
                 </div>
-                <h3>{car.brand} {car.model}</h3>
-                <div className="car-details">
-                  <span className="car-year">📅 {car.year}</span>
+
+                <div className="car-detail-specs">
+                  <div className="spec-card">
+                    <div className="spec-icon"><FaHashtag /></div>
+                    <div>
+                      <h4>Рег. номер</h4>
+                      <p>{selectedCar.licensePlate || '—'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="spec-card">
+                    <div className="spec-icon"><FaBarcode /></div>
+                    <div>
+                      <h4>VIN (Рама)</h4>
+                      <p>{selectedCar.vin || '—'}</p>
+                    </div>
+                  </div>
+
+                  <div className="spec-card">
+                    <div className="spec-icon"><FaCogs /></div>
+                    <div>
+                      <h4>Двигател</h4>
+                      <p>
+                        {[
+                          selectedCar.engineType === 'Benzin' ? 'Бензин' :
+                          selectedCar.engineType === 'Diesel' ? 'Дизел' :
+                          selectedCar.engineType === 'Electric' ? 'Електрически' :
+                          selectedCar.engineType === 'Hybrid' ? 'Хибрид' :
+                          selectedCar.engineType,
+                          selectedCar.horsepower ? `${selectedCar.horsepower} к.с.` : null
+                        ].filter(Boolean).join(', ') || '—'}
+                      </p>
+                      {selectedCar.euroStandard && <span>{selectedCar.euroStandard}</span>}
+                    </div>
+                  </div>
+
+                  <div className="spec-card">
+                    <div className="spec-icon"><FaExchangeAlt /></div>
+                    <div>
+                      <h4>Скоростна кутия</h4>
+                      <p>
+                        {selectedCar.transmission === 'Manual' ? 'Ръчна' : 
+                         selectedCar.transmission === 'Automatic' ? 'Автоматична' : 
+                         selectedCar.transmission || '—'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="spec-card">
+                    <div className="spec-icon"><FaRoad /></div>
+                    <div>
+                      <h4>Пробег</h4>
+                      <p>{selectedCar.mileage ? `${selectedCar.mileage.toLocaleString()} км` : '—'}</p>
+                    </div>
+                  </div>
                 </div>
-                {selectedCar?.id === car.id && (
-                  <div className="selected-badge">✓ Избран</div>
+
+                {(selectedCar.tireWidth || selectedCar.tireDiameter || selectedCar.tireBrand) && (
+                   <div className="car-tires-section">
+                     <h4>Гуми и джанти</h4>
+                     <div className={`tire-summary-card ${selectedCar.tireSeason ? selectedCar.tireSeason.toLowerCase() : ''}`}>
+                        <div className="tire-season-visual">
+                          {selectedCar.tireSeason === 'Summer' && <span className="season-emoji">☀️</span>}
+                          {selectedCar.tireSeason === 'Winter' && <span className="season-emoji">❄️</span>}
+                          {selectedCar.tireSeason === 'AllSeasons' && <span className="season-emoji">⛅</span>}
+                          {!selectedCar.tireSeason && <span className="season-emoji">🔘</span>}
+                        </div>
+                        
+                        <div className="tire-details-content">
+                           <span className="tire-size-display">
+                             {selectedCar.tireWidth || '?'}/{selectedCar.tireHeight || '?'} R{selectedCar.tireDiameter || '?'}
+                           </span>
+                           
+                           <div className="tire-meta-row">
+                             <span className="tire-brand-display">
+                               {selectedCar.tireBrand || 'Неизвестна марка'}
+                             </span>
+                             {selectedCar.tireDot && (
+                               <span className="tire-dot-badge">DOT {selectedCar.tireDot}</span>
+                             )}
+                           </div>
+                           
+                           <span className="tire-season-name">
+                              {selectedCar.tireSeason === 'Summer' ? 'Летни гуми' : 
+                               selectedCar.tireSeason === 'Winter' ? 'Зимни гуми' : 
+                               selectedCar.tireSeason === 'AllSeasons' ? 'Всесезонни гуми' : 'Неопределен сезон'}
+                           </span>
+                        </div>
+                     </div>
+                   </div>
                 )}
+
+                <div className="car-services-section">
+                  <div className="section-header">
+                    <h3>📋 Услуги ({services.length})</h3>
+                    <button 
+                      className="add-service-btn"
+                      onClick={() => setShowServiceForm(true)}
+                    >
+                      + Добави услуга
+                    </button>
+                  </div>
+
+                  {showServiceForm && (
+                    <div className="service-form-inline">
+                      <ServiceForm 
+                        onSubmit={handleAddService} 
+                        onCancel={() => setShowServiceForm(false)}
+                        cars={cars}
+                        selectedCarId={selectedCar?.id}
+                        onCarChange={handleCarChangeForService}
+                      />
+                    </div>
+                  )}
+
+                  {services.length === 0 ? (
+                    <div className="empty-services-detail">
+                      <span>📭</span>
+                      <p>Няма добавени услуги за този автомобил</p>
+                      <small>Добави застраховка, винетка или технически преглед</small>
+                    </div>
+                  ) : (
+                    <div className="services-grid-detail">
+                      {services.map(service => {
+                        const status = getServiceStatus(service.expiryDate);
+                        return (
+                          <div key={service.id} className={`service-detail-card ${status.class}`}>
+                            <div className="service-detail-icon">{getServiceIcon(service.serviceType)}</div>
+                            <div className="service-detail-info">
+                              <h4>{getServiceName(service.serviceType)}</h4>
+                              <p>Изтича: {new Date(service.expiryDate).toLocaleDateString('bg-BG')}</p>
+                            </div>
+                            <div className={`service-detail-status ${status.class}`}>
+                              {status.status === 'expired' ? '❌' : status.status === 'warning' ? '⚠️' : '✅'} {status.text}
+                            </div>
+                            <button 
+                              className="service-delete-btn"
+                              onClick={() => handleDeleteService(service.id)}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="no-car-selected">
+                <span>👈</span>
+                <h3>Избери автомобил</h3>
+                <p>Кликни върху автомобил от списъка, за да видиш детайли</p>
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -487,7 +919,7 @@ const Dashboard = () => {
             onClick={() => setActiveTab('cars')}
           >
             <span className="nav-icon">🚘</span>
-            <span className="nav-text">Коли</span>
+            <span className="nav-text">Автопарк</span>
             {cars.length > 0 && <span className="nav-badge">{cars.length}</span>}
           </button>
           <button 

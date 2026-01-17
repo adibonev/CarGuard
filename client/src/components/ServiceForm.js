@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) => {
   const [formData, setFormData] = useState({
     serviceType: 'гражданска',
-    expiryDate: ''
+    expiryDate: '',
+    cost: ''
   });
 
   const serviceOptions = [
@@ -35,12 +36,14 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     // Convert date to ISO format for API
     const submitData = {
       ...formData,
-      expiryDate: new Date(formData.expiryDate).toISOString()
+      expiryDate: new Date(formData.expiryDate).toISOString(),
+      cost: parseFloat(formData.cost) || 0
     };
     onSubmit(submitData);
     setFormData({
       serviceType: 'гражданска',
-      expiryDate: ''
+      expiryDate: '',
+      cost: ''
     });
   };
 
@@ -86,6 +89,18 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
           value={formData.expiryDate}
           onChange={handleChange}
           required
+        />
+      </div>
+      <div className="form-group">
+        <label>Цена (лв.)</label>
+        <input
+          type="number"
+          name="cost"
+          value={formData.cost}
+          onChange={handleChange}
+          placeholder="0.00"
+          min="0"
+          step="0.01"
         />
       </div>
       <div className="form-buttons">

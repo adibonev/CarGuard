@@ -29,6 +29,22 @@ router.get('/car/:carId', auth, async (req, res) => {
   }
 });
 
+// Get all services for the user (all cars)
+router.get('/all', auth, async (req, res) => {
+  try {
+    const { Service, Car } = getModels(req);
+    const services = await Service.findAll({
+      where: { userId: req.user.id },
+      include: [{ model: Car, as: 'car' }],
+      order: [['expiryDate', 'ASC']]
+    });
+    res.json(services);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // Add service
 router.post('/',
   auth,
@@ -43,7 +59,7 @@ router.post('/',
 
     try {
       const { Car, Service } = getModels(req);
-      const { carId, serviceType, expiryDate } = req.body;
+      const { carId, serviceType, expiryDate, cost } = req.body;
 
       const car = await Car.findByPk(carId);
 
@@ -59,7 +75,8 @@ router.post('/',
         carId,
         userId: req.user.id,
         serviceType,
-        expiryDate
+        expiryDate,
+        cost: cost || 0
       });
 
       res.json(service);
@@ -84,13 +101,14 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    const { serviceType, expiryDate } = req.body;
+    const { serviceType, expiryDate, cost } = req.body;
 
     if (serviceType) service.serviceType = serviceType;
     if (expiryDate) {
       service.expiryDate = expiryDate;
       service.reminderSent = false;
     }
+    if (cost !== undefined) service.cost = cost;
 
     await service.save();
     res.json(service);

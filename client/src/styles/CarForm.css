@@ -1,0 +1,168 @@
+.car-form-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.car-form-tabs {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.form-tab-btn {
+  flex: 1;
+  padding: 12px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  font-size: 13px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  align-items: center;
+}
+
+.form-tab-btn.active {
+  color: #2196f3;
+  border-bottom-color: #2196f3;
+  background: white;
+}
+
+.form-tab-btn:hover:not(.active) {
+  background: #eee;
+}
+
+.car-form {
+  padding: 20px;
+}
+
+.form-content {
+  min-height: 250px;
+}
+
+.form-section {
+  animation: fadeIn 0.3s ease;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+}
+
+.form-row.three-cols {
+  gap: 10px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  flex: 1;
+}
+
+.form-group.half {
+  flex: 1;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #2196f3;
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+}
+
+.submit-btn {
+  background: #2196f3;
+  color: white;
+}
+
+.submit-btn:hover {
+  background: #1976d2;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.tire-visual-hint {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.tire-diagram {
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  border: 15px solid #333;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 5px;
+  background: #f5f5f5;
+}
+
+.tire-diagram span {
+  font-weight: 700;
+  color: #333;
+  font-size: 12px;
+}
+
+.tire-hint-text {
+  color: #888;
+  font-size: 11px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -29,11 +29,15 @@ const Car = require('./models/Car')(sequelize);
 const Service = require('./models/Service')(sequelize);
 const Admin = require('./models/Admin')(sequelize);
 
+// Define associations
+Service.belongsTo(Car, { foreignKey: 'carId', as: 'car' });
+Car.hasMany(Service, { foreignKey: 'carId', as: 'services' });
+
 // Store models in app.locals for route access
 app.locals.models = { User, Car, Service, Admin };
 
-// Sync database
-sequelize.sync().then(() => {
+// Sync database with alter to add new columns
+sequelize.sync({ alter: true }).then(() => {
   console.log('Database synced successfully');
   // Start reminder service after database is synced
   reminderService.startReminderCheck({ User, Car, Service });

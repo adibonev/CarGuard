@@ -23,19 +23,20 @@ export const authAPI = {
 
 export const carsAPI = {
   getCars: () => api.get('/cars'),
-  addCar: (brand, model, year, licensePlate) =>
-    api.post('/cars', { brand, model, year, licensePlate }),
-  updateCar: (id, brand, model, year, licensePlate) =>
-    api.put(`/cars/${id}`, { brand, model, year, licensePlate }),
+  addCar: (carData) =>
+    api.post('/cars', carData),
+  updateCar: (id, carData) =>
+    api.put(`/cars/${id}`, carData),
   deleteCar: (id) => api.delete(`/cars/${id}`)
 };
 
 export const servicesAPI = {
   getServices: (carId) => api.get(`/services/car/${carId}`),
-  addService: (carId, serviceType, expiryDate) =>
-    api.post('/services', { carId, serviceType, expiryDate }),
-  updateService: (id, serviceType, expiryDate) =>
-    api.put(`/services/${id}`, { serviceType, expiryDate }),
+  getAllServices: () => api.get('/services/all'),
+  addService: (carId, serviceType, expiryDate, cost) =>
+    api.post('/services', { carId, serviceType, expiryDate, cost }),
+  updateService: (id, serviceType, expiryDate, cost) =>
+    api.put(`/services/${id}`, { serviceType, expiryDate, cost }),
   deleteService: (id) => api.delete(`/services/${id}`)
 };
 
