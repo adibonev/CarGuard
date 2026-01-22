@@ -9,6 +9,22 @@ const router = express.Router();
 // Get models from request context (will be set in server.js)
 const getModels = (req) => req.app.locals.models;
 
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const token = req.header('x-auth-token');
+  if (!token) {
+    return res.status(401).json({ msg: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.user.id;
+    next();
+  } catch (err) {
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
+};
+
 // Register
 router.post('/register',
   body('name').notEmpty().withMessage('Name is required'),
@@ -35,7 +51,8 @@ router.post('/register',
       user = await User.create({
         name,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        reminderDays: 30
       });
 
       const payload = {
@@ -50,7 +67,7 @@ router.post('/register',
         { expiresIn: '7d' },
         (err, token) => {
           if (err) throw err;
-          res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+          res.json({ token, user: { id: user.id, name: user.name, email: user.email, reminderDays: user.reminderDays } });
         }
       );
     } catch (err) {
@@ -96,7 +113,7 @@ router.post('/login',
         { expiresIn: '7d' },
         (err, token) => {
           if (err) throw err;
-          res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+          res.json({ token, user: { id: user.id, name: user.name, email: user.email, reminderDays: user.reminderDays } });
         }
       );
     } catch (err) {
@@ -106,4 +123,49 @@ router.post('/login',
   }
 );
 
+// Get user profile
+router.get('/me', verifyToken, async (req, res) => {
+  try {
+    const { User } = getModels(req);
+    const user = await User.findByPk(req.userId, {
+      attributes: ['id', 'name', 'email', 'reminderDays']
+    });
+    
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Update reminder days
+router.put('/reminder-days', verifyToken, async (req, res) => {
+  try {
+    const { User } = getModels(req);
+    const { reminderDays } = req.body;
+
+    if (!reminderDays || reminderDays < 1 || reminderDays > 365) {
+      return res.status(400).json({ msg: 'Reminder days must be between 1 and 365' });
+    }
+
+    const user = await User.findByPk(req.userId);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    user.reminderDays = reminderDays;
+    await user.save();
+
+    res.json({ msg: 'Reminder days updated successfully', reminderDays: user.reminderDays });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 module.exports = router;
+

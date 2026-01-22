@@ -20,6 +20,11 @@ module.exports = (sequelize) => {
     password: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    reminderDays: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 30
     }
   }, {
     timestamps: true
@@ -27,3 +32,4 @@ module.exports = (sequelize) => {
 
   return User;
 };
+

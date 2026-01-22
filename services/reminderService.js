@@ -1,16 +1,21 @@
 const { Op } = require('sequelize');
 
 const startReminderCheck = (models) => {
+  console.log('🔔 Reminder service starting...');
+  
   // Check reminders every hour
-  setInterval(() => checkAndSendReminders(models), 60 * 60 * 1000);
-  // Also check on startup - wrapped in try/catch to prevent server crash
+  setInterval(() => {
+    console.log('⏰ Running scheduled reminder check...');
+    checkAndSendReminders(models);
+  }, 60 * 60 * 1000);
+  
+  // Also check on startup
   setTimeout(() => {
-    try {
-      checkAndSendReminders(models);
-    } catch (err) {
-      console.error('Error on startup reminder check:', err.message);
-    }
-  }, 2000);
+    console.log('🚀 Running startup reminder check...');
+    checkAndSendReminders(models);
+  }, 3000);
+  
+  console.log('✅ Reminder service started successfully');
 };
 
 const checkAndSendReminders = async (models) => {
@@ -20,25 +25,40 @@ const checkAndSendReminders = async (models) => {
     const { Service, Car, User } = models;
     const { sendReminderEmail } = require('./emailService');
 
-    const today = new Date();
-    const oneMonthLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    // Find all services that expire within 30 days and haven't sent reminder yet
+    // Get all services that haven't sent reminder yet
     const services = await Service.findAll({
       where: {
-        expiryDate: {
-          [Op.gte]: today,
-          [Op.lte]: oneMonthLater
-        },
         reminderSent: false
       }
     });
 
+    console.log(`Found ${services.length} services without reminder sent`);
+
+    const today = new Date();
+
     for (const service of services) {
+      // Load car separately since include might not work
       const car = await Car.findByPk(service.carId);
       const user = await User.findByPk(service.userId);
 
-      if (car && user) {
+      console.log(`Checking service: ${service.serviceType}, Car: ${car?.brand}, User: ${user?.email}`);
+
+      if (!car || !user) {
+        console.log(`Skipping - car or user not found`);
+        continue;
+      }
+
+      // Get user's reminder days setting (default 30)
+      const reminderDays = user.reminderDays || 30;
+      const reminderDate = new Date(today.getTime() + reminderDays * 24 * 60 * 60 * 1000);
+      const expiryDate = new Date(service.expiryDate);
+
+      console.log(`Today: ${today.toISOString()}, Expiry: ${expiryDate.toISOString()}, Reminder threshold: ${reminderDate.toISOString()}`);
+      console.log(`Condition check: expiry <= reminderDate = ${expiryDate <= reminderDate}, expiry >= today = ${expiryDate >= today}`);
+
+      // Check if service expires within the user's reminder period
+      if (expiryDate <= reminderDate && expiryDate >= today) {
+        console.log(`Sending email to ${user.email}...`);
         const emailSent = await sendReminderEmail(
           user.email,
           {
@@ -53,7 +73,12 @@ const checkAndSendReminders = async (models) => {
         if (emailSent) {
           service.reminderSent = true;
           await service.save();
+          console.log(`✅ Reminder sent to ${user.email} for ${service.serviceType}`);
+        } else {
+          console.log(`❌ Failed to send email to ${user.email}`);
         }
+      } else {
+        console.log(`Service not in reminder period yet`);
       }
     }
 
@@ -64,3 +89,4 @@ const checkAndSendReminders = async (models) => {
 };
 
 module.exports = { startReminderCheck };
+

@@ -9,7 +9,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers['x-auth-token'] = token;
   }
   return config;
 });
@@ -18,7 +18,10 @@ export const authAPI = {
   register: (name, email, password) =>
     api.post('/auth/register', { name, email, password }),
   login: (email, password) =>
-    api.post('/auth/login', { email, password })
+    api.post('/auth/login', { email, password }),
+  getProfile: () => api.get('/auth/me'),
+  updateReminderDays: (reminderDays) =>
+    api.put('/auth/reminder-days', { reminderDays })
 };
 
 export const carsAPI = {
@@ -41,3 +44,4 @@ export const servicesAPI = {
 };
 
 export default api;
+

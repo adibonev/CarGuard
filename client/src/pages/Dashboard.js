@@ -19,24 +19,32 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [reminderDays, setReminderDays] = useState(() => {
-    const saved = localStorage.getItem('reminderDays');
-    return saved ? parseInt(saved) : 30;
-  });
+  const [reminderDays, setReminderDays] = useState(30);
   
   // States for Events Filter
   const [eventFilterType, setEventFilterType] = useState('all');
   const [eventFilterYear, setEventFilterYear] = useState(new Date().getFullYear().toString());
 
-  const { user, logout } = useAuth();
+  const { user, logout, updateReminderDays: updateReminderDaysContext } = useAuth();
 
-  const handleReminderDaysChange = (days) => {
+  const handleReminderDaysChange = async (days) => {
     const value = parseInt(days);
-    setReminderDays(value);
-    localStorage.setItem('reminderDays', value.toString());
+    try {
+      await updateReminderDaysContext(value);
+      setReminderDays(value);
+    } catch (err) {
+      console.error('Error updating reminder days:', err);
+      alert('Грешка при актуализиране на напомянията');
+    }
   };
 
   useEffect(() => {
+    // Initialize reminder days from user profile
+    if (user?.reminderDays) {
+      setReminderDays(user.reminderDays);
+    } else {
+      setReminderDays(30);
+    }
     loadCars();
     loadAllServices();
   }, []);

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
+import { authAPI } from '../api';
 
 const AuthContext = createContext();
 
@@ -22,8 +23,21 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
   };
 
+  const updateReminderDays = async (reminderDays) => {
+    try {
+      const response = await authAPI.updateReminderDays(reminderDays);
+      const updatedUser = { ...user, reminderDays: response.data.reminderDays };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return response.data;
+    } catch (err) {
+      console.error('Error updating reminder days:', err);
+      throw err;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateReminderDays }}>
       {children}
     </AuthContext.Provider>
   );
@@ -36,3 +50,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

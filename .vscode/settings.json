@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd \"c:\\\\Users\\\\bonev\\\\Нова папка\\\\Car Checker\"; node fix-db\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
