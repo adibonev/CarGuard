@@ -16,7 +16,7 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     serviceType: {
-      type: DataTypes.ENUM('гражданска', 'винетка', 'преглед', 'каско', 'данък'),
+      type: DataTypes.STRING,
       allowNull: false
     },
     expiryDate: {
@@ -27,6 +27,22 @@ module.exports = (sequelize) => {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
       defaultValue: 0
+    },
+    notes: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    liters: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true
+    },
+    pricePerLiter: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true
+    },
+    fuelType: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     reminderSent: {
       type: DataTypes.BOOLEAN,

@@ -23,6 +23,11 @@ const Dashboard = () => {
     const saved = localStorage.getItem('reminderDays');
     return saved ? parseInt(saved) : 30;
   });
+  
+  // States for Events Filter
+  const [eventFilterType, setEventFilterType] = useState('all');
+  const [eventFilterYear, setEventFilterYear] = useState(new Date().getFullYear().toString());
+
   const { user, logout } = useAuth();
 
   const handleReminderDaysChange = (days) => {
@@ -155,7 +160,11 @@ const Dashboard = () => {
       'винетка': '🛣️',
       'преглед': '🔧',
       'каско': '💎',
-      'данък': '💰'
+      'данък': '💰',
+      'ремонт': '🛠️',
+      'обслужване': '🛢️',
+      'гуми': '🍩',
+      'друго': '📝'
     };
     return icons[type] || '📋';
   };
@@ -166,7 +175,11 @@ const Dashboard = () => {
       'винетка': 'Винетка',
       'преглед': 'Технически преглед',
       'каско': 'КАСКО',
-      'данък': 'Данък МПС'
+      'данък': 'Данък МПС',
+      'ремонт': 'Ремонт',
+      'обслужване': 'Обслужване',
+      'гуми': 'Смяна гуми',
+      'друго': 'Друго'
     };
     return names[type] || type;
   };
@@ -182,7 +195,9 @@ const Dashboard = () => {
   };
 
   const getExpiringServices = () => {
+    const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък'];
     return allServices.filter(s => {
+      if (!expiringTypes.includes(s.serviceType)) return false;
       const status = getServiceStatus(s.expiryDate);
       return status.status === 'warning' || status.status === 'expired';
     });
@@ -283,7 +298,7 @@ const Dashboard = () => {
           <div className="stat-box-icon services">📋</div>
           <div className="stat-box-content">
             <span className="stat-box-value">{allServices.length}</span>
-            <span className="stat-box-label">Общо услуги</span>
+            <span className="stat-box-label">Общо събития</span>
           </div>
         </div>
         <div className="stat-box warning">
@@ -337,8 +352,9 @@ const Dashboard = () => {
                 {getMonthDays(currentMonth).map((day, idx) => {
                   const events = day ? getEventsForDay(day) : [];
                   const isToday = day && day.toDateString() === new Date().toDateString();
-                  const hasExpired = events.some(e => getServiceStatus(e.expiryDate).status === 'expired');
-                  const hasWarning = events.some(e => getServiceStatus(e.expiryDate).status === 'warning');
+                  const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък'];
+                  const hasExpired = events.some(e => expiringTypes.includes(e.serviceType) && getServiceStatus(e.expiryDate).status === 'expired');
+                  const hasWarning = events.some(e => expiringTypes.includes(e.serviceType) && getServiceStatus(e.expiryDate).status === 'warning');
                   
                   return (
                     <div 
@@ -352,8 +368,10 @@ const Dashboard = () => {
                             <div className="day-events">
                               {events.slice(0, 2).map((e, i) => {
                                 const car = cars.find(c => c.id === e.carId);
+                                const isExpirable = expiringTypes.includes(e.serviceType);
+                                const statusClass = isExpirable ? getServiceStatus(e.expiryDate).class : 'status-ok';
                                 return (
-                                  <div key={i} className={`day-event ${getServiceStatus(e.expiryDate).class}`}>
+                                  <div key={i} className={`day-event ${statusClass}`}>
                                     {getServiceIcon(e.serviceType)} {car?.brand}
                                   </div>
                                 );
@@ -405,7 +423,7 @@ const Dashboard = () => {
                 <div className="no-chart-data">
                   <span>📊</span>
                   <p>Няма данни за разходи</p>
-                  <small>Добави услуги с цена за да видиш графиката</small>
+                  <small>Добави събития с цена за да видиш графиката</small>
                 </div>
               )}
             </div>
@@ -691,12 +709,12 @@ const Dashboard = () => {
 
                 <div className="car-services-section">
                   <div className="section-header">
-                    <h3>📋 Услуги ({services.length})</h3>
+                    <h3>📋 Събития ({services.length})</h3>
                     <button 
                       className="add-service-btn"
                       onClick={() => setShowServiceForm(true)}
                     >
-                      + Добави услуга
+                      + Добави събитие
                     </button>
                   </div>
 
@@ -715,23 +733,35 @@ const Dashboard = () => {
                   {services.length === 0 ? (
                     <div className="empty-services-detail">
                       <span>📭</span>
-                      <p>Няма добавени услуги за този автомобил</p>
-                      <small>Добави застраховка, винетка или технически преглед</small>
+                      <p>Няма добавени събития за този автомобил</p>
+                      <small>Добави застраховка, ремонт или друго събитие</small>
                     </div>
                   ) : (
                     <div className="services-grid-detail">
                       {services.map(service => {
-                        const status = getServiceStatus(service.expiryDate);
+                        const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък'];
+                        const isExpirable = expiringTypes.includes(service.serviceType);
+                        const status = isExpirable ? getServiceStatus(service.expiryDate) : { class: 'status-neutral', text: '' };
+                        
                         return (
                           <div key={service.id} className={`service-detail-card ${status.class}`}>
                             <div className="service-detail-icon">{getServiceIcon(service.serviceType)}</div>
                             <div className="service-detail-info">
                               <h4>{getServiceName(service.serviceType)}</h4>
-                              <p>Изтича: {new Date(service.expiryDate).toLocaleDateString('bg-BG')}</p>
+                              <p>
+                                {isExpirable ? 'Изтича: ' : 'Дата: '}
+                                {new Date(service.expiryDate).toLocaleDateString('bg-BG')}
+                              </p>
+                              {service.liters && <span className="service-sub-info">⛽ {service.liters}L</span>}
+                              {service.cost > 0 && <span className="service-cost-badge">{service.cost.toFixed(2)} лв.</span>}
                             </div>
-                            <div className={`service-detail-status ${status.class}`}>
-                              {status.status === 'expired' ? '❌' : status.status === 'warning' ? '⚠️' : '✅'} {status.text}
-                            </div>
+                            {isExpirable ? (
+                              <div className={`service-detail-status ${status.class}`}>
+                                {status.status === 'expired' ? '❌' : status.status === 'warning' ? '⚠️' : '✅'} {status.text}
+                              </div>
+                            ) : (
+                               <div className="service-detail-status"></div>
+                            )}
                             <button 
                               className="service-delete-btn"
                               onClick={() => handleDeleteService(service.id)}
@@ -758,12 +788,40 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderServices = () => (
+  const renderServices = () => {
+    // 1. Filter Logic
+    const filteredServices = services.filter(s => {
+      const date = new Date(s.expiryDate);
+      const matchesYear = eventFilterYear === 'all' || date.getFullYear().toString() === eventFilterYear;
+      const matchesType = eventFilterType === 'all' || s.serviceType === eventFilterType;
+      return matchesYear && matchesType;
+    });
+
+    // 2. Chart Data Preparation
+    const getExpensesChartData = () => {
+      const expenses = {};
+      const months = ['Яну', 'Фев', 'Мар', 'Апр', 'Май', 'Юни', 'Юли', 'Авг', 'Сеп', 'Окт', 'Ное', 'Дек'];
+      
+      // Initialize months
+      months.forEach(m => expenses[m] = 0);
+
+      filteredServices.forEach(s => {
+         const date = new Date(s.expiryDate);
+         const monthName = months[date.getMonth()];
+         if (s.cost) {
+            expenses[monthName] += parseFloat(s.cost);
+         }
+      });
+
+      return months.map(m => ({ name: m, cost: expenses[m] }));
+    };
+
+    return (
     <div className="tab-content services-content">
       <div className="content-header">
-        <h2>📋 Услуги</h2>
+        <h2>📋 Събития</h2>
         <button className="primary-btn" onClick={() => setShowServiceForm(!showServiceForm)}>
-          {showServiceForm ? '✕ Затвори' : '+ Добави услуга'}
+          {showServiceForm ? '✕ Затвори' : '+ Добави събитие'}
         </button>
       </div>
 
@@ -771,7 +829,7 @@ const Dashboard = () => {
         <div className="empty-state">
           <div className="empty-icon">🚗</div>
           <h3>Първо добави автомобил</h3>
-          <p>За да добавиш услуга, трябва да имаш поне един автомобил</p>
+          <p>За да добавиш събитие, трябва да имаш поне един автомобил</p>
           <button className="primary-btn" onClick={() => setActiveTab('cars')}>
             Към колите →
           </button>
@@ -780,7 +838,7 @@ const Dashboard = () => {
         <>
           {showServiceForm && (
             <div className="form-container slide-in">
-              <h3 className="form-title">➕ Нова услуга</h3>
+              <h3 className="form-title">➕ Ново събитие</h3>
               <ServiceForm 
                 onSubmit={handleAddService} 
                 onCancel={() => setShowServiceForm(false)}
@@ -791,59 +849,151 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Car selector dropdown */}
-          <div className="car-selector">
-            <label>Преглед на услуги за:</label>
-            <select 
-              value={selectedCar?.id || ''} 
-              onChange={(e) => handleCarChangeForService(e.target.value)}
-            >
-              {cars.map(car => (
-                <option key={car.id} value={car.id}>
-                  {car.brand} {car.model} ({car.year})
-                </option>
-              ))}
-            </select>
+          {/* Controls Row */}
+          <div className="services-controls-row">
+                <div className="control-group">
+                  <label>Автомобил:</label>
+                  <select 
+                    value={selectedCar?.id || ''} 
+                    onChange={(e) => handleCarChangeForService(e.target.value)}
+                    className="control-select"
+                  >
+                    {cars.map(car => (
+                      <option key={car.id} value={car.id}>
+                        {car.brand} {car.model}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="control-group">
+                  <label>Година:</label>
+                  <select 
+                    value={eventFilterYear} 
+                    onChange={(e) => setEventFilterYear(e.target.value)}
+                    className="control-select"
+                  >
+                    <option value="all">Всички</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                  </select>
+                </div>
+                <div className="control-group">
+                  <label>Категория:</label>
+                  <select 
+                    value={eventFilterType} 
+                    onChange={(e) => setEventFilterType(e.target.value)}
+                    className="control-select"
+                  >
+                    <option value="all">Всички</option>
+                    <option value="ремонт">🛠️ Ремонт</option>
+                    <option value="обслужване">🛢️ Обслужване</option>
+                    <option value="гуми">🍩 Гуми</option>
+                    <option value="зареждане">⛽ Зареждане</option>
+                    <option value="друго">📝 Друго</option>
+                  </select>
+                </div>
           </div>
 
-          {services.length === 0 ? (
+          {/* Stats Summary */}
+          <div className="events-stats-summary">
+                <div className="event-stat-card">
+                  <span className="ev-stat-label">Общо разходи</span>
+                  <span className="ev-stat-value">
+                      {filteredServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0).toFixed(2)} лв.
+                  </span>
+                </div>
+                <div className="event-stat-card">
+                  <span className="ev-stat-label">Брой събития</span>
+                  <span className="ev-stat-value">{filteredServices.length}</span>
+                </div>
+          </div>
+
+          {filteredServices.length === 0 ? (
             <div className="empty-state small">
-              <div className="empty-icon">📋</div>
-              <h3>Няма услуги</h3>
-              <p>Добави първата услуга за този автомобил</p>
+              <div className="empty-icon">📅</div>
+              <h3>Няма намерени събития</h3>
+              <p>Няма записи за избраните филтри</p>
             </div>
           ) : (
-            <div className="services-list">
-              {services.map(service => {
-                const status = getServiceStatus(service.expiryDate);
+            <div className="services-list-new">
+              {filteredServices.map(service => {
                 return (
-                  <div key={service.id} className={`service-card ${status.class}`}>
-                    <div className="service-icon-large">{getServiceIcon(service.serviceType)}</div>
-                    <div className="service-info">
-                      <h4>{getServiceName(service.serviceType)}</h4>
-                      <p>Изтича: {new Date(service.expiryDate).toLocaleDateString('bg-BG')}</p>
+                  <div key={service.id} className="service-card-detailed">
+                    <div className="service-card-left">
+                        <div className="service-icon-circle">{getServiceIcon(service.serviceType)}</div>
+                        <div className="service-main-info">
+                          <h4>{getServiceName(service.serviceType)}</h4>
+                          <span className="service-date">{new Date(service.expiryDate).toLocaleDateString('bg-BG')}</span>
+                        </div>
                     </div>
-                    <div className={`service-status-badge ${status.class}`}>
-                      {status.status === 'ok' && '✅ '}
-                      {status.status === 'warning' && '⚠️ '}
-                      {status.status === 'expired' && '❌ '}
-                      {status.text}
+                    
+                    <div className="service-card-center">
+                        {service.serviceType === 'зареждане' && service.liters && (
+                            <div className="fuel-info">
+                              <span>⛽ {service.liters} L</span>
+                              {service.pricePerLiter && <span> • {service.pricePerLiter} лв./л</span>}
+                              {service.fuelType && <span> ({service.fuelType})</span>}
+                            </div>
+                        )}
+                        {service.notes && (
+                            <div className="service-notes">
+                              "{service.notes}"
+                            </div>
+                        )}
                     </div>
-                    <button 
-                      className="delete-service-btn"
-                      onClick={() => handleDeleteService(service.id)}
-                    >
-                      🗑️
-                    </button>
+
+                    <div className="service-card-right">
+                        <span className="service-cost-large">
+                          {service.cost > 0 ? `${parseFloat(service.cost).toFixed(2)} лв.` : '-'}
+                        </span>
+                        <button 
+                          className="delete-mini-btn"
+                          onClick={() => handleDeleteService(service.id)}
+                          title="Изтрий"
+                        >
+                          ×
+                        </button>
+                    </div>
                   </div>
                 );
               })}
             </div>
           )}
+
+          {/* Chart Section */}
+          {filteredServices.length > 0 && (
+              <div className="chart-section-filtered">
+                  <h3>📊 Графика на разходите</h3>
+                  <div className="chart-wrapper">
+                      <ResponsiveContainer width="100%" height={300}>
+                          <LineChart data={getExpensesChartData()}>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                              <XAxis dataKey="name" stroke="#999" fontSize={12} tickLine={false} axisLine={false} />
+                              <YAxis stroke="#999" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}`} />
+                              <Tooltip 
+                                  formatter={(value) => [`${value} лв`, 'Разход']}
+                                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                              />
+                              <Line 
+                                  type="monotone" 
+                                  dataKey="cost" 
+                                  stroke="#007bff" 
+                                  strokeWidth={3} 
+                                  dot={{ fill: '#007bff', r: 4 }} 
+                                  activeDot={{ r: 6 }} 
+                              />
+                          </LineChart>
+                      </ResponsiveContainer>
+                  </div>
+              </div>
+          )}
         </>
       )}
     </div>
   );
+  };
 
   const renderSettings = () => (
     <div className="tab-content settings-content">
@@ -927,7 +1077,7 @@ const Dashboard = () => {
             onClick={() => setActiveTab('services')}
           >
             <span className="nav-icon">📋</span>
-            <span className="nav-text">Услуги</span>
+            <span className="nav-text">Събития</span>
             {getExpiringServices().length > 0 && (
               <span className="nav-badge warning">{getExpiringServices().length}</span>
             )}

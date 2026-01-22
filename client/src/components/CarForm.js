@@ -65,15 +65,24 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
         model: ''
       }));
     } else {
+      let finalValue = value;
+      // Handle numeric fields
+      if ((name === 'year' || name === 'horsepower' || name === 'mileage' || name.startsWith('tire')) 
+           && name !== 'tireBrand' && name !== 'tireSeason' && name !== 'tireDot') {
+        const intVal = parseInt(value);
+        finalValue = isNaN(intVal) ? '' : intVal;
+      }
+
       setFormData(prev => ({
         ...prev,
-        [name]: name === 'year' || name === 'horsepower' || name === 'mileage' || name.startsWith('tire') && name !== 'tireBrand' && name !== 'tireSeason' && name !== 'tireDot' ? parseInt(value) || '' : value
+        [name]: finalValue
       }));
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("Submitting form data:", formData);
     onSubmit(formData);
     if (!initialData) {
       // Reset form if used for adding new car
