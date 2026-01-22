@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import CarForm from '../components/CarForm';
 import ServiceForm from '../components/ServiceForm';
 import { getBrandLogo } from '../data/brandLogos';
-import { FaBarcode, FaCogs, FaExchangeAlt, FaRoad, FaLeaf, FaHashtag, FaGasPump, FaTachometerAlt, FaCompactDisc } from 'react-icons/fa';
+import { FaBarcode, FaCogs, FaExchangeAlt, FaRoad, FaHashtag } from 'react-icons/fa';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Dashboard.css';
 
@@ -47,7 +47,8 @@ const Dashboard = () => {
     }
     loadCars();
     loadAllServices();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.reminderDays]);
 
   useEffect(() => {
     if (selectedCar) {

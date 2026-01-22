@@ -29,6 +29,7 @@ const AdminDashboard = () => {
     }
     setAdmin(JSON.parse(adminUser));
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const loadData = async () => {
