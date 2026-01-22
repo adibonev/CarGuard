@@ -494,7 +494,7 @@ const Home = () => {
             Започни безплатно сега →
           </button>
           <div className="cta-secondary">
-            Вече имаш акаунт? <a onClick={() => navigate('/login')}>Влез тук</a>
+            Вече имаш акаунт? <a href="/login" onClick={(e) => { e.preventDefault(); navigate('/login'); }}>Влез тук</a>
           </div>
         </div>
         <div className="cta-decoration">
