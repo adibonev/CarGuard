@@ -1,0 +1,11 @@
+[build]
+  command = "cd client && npm ci && npm run build"
+  publish = "client/build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production]
+  environment = { REACT_APP_API_URL = "YOUR_BACKEND_URL" }
