@@ -49,7 +49,7 @@ router.get('/all', auth, async (req, res) => {
 router.post('/',
   auth,
   body('carId').notEmpty().withMessage('Car ID is required'),
-  body('serviceType').isIn(['гражданска', 'винетка', 'преглед', 'каско', 'данък']).withMessage('Invalid service type'),
+  body('serviceType').isIn(['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'ремонт', 'обслужване', 'гуми', 'зареждане', 'друго']).withMessage('Invalid service type'),
   body('expiryDate').isISO8601().withMessage('Valid expiry date is required'),
   async (req, res) => {
     const errors = validationResult(req);
@@ -59,7 +59,7 @@ router.post('/',
 
     try {
       const { Car, Service } = getModels(req);
-      const { carId, serviceType, expiryDate, cost } = req.body;
+      const { carId, serviceType, expiryDate, cost, notes, liters, pricePerLiter, fuelType } = req.body;
 
       const car = await Car.findByPk(carId);
 
@@ -76,7 +76,11 @@ router.post('/',
         userId: req.user.id,
         serviceType,
         expiryDate,
-        cost: cost || 0
+        cost: cost || 0,
+        notes,
+        liters,
+        pricePerLiter,
+        fuelType
       });
 
       res.json(service);
@@ -101,7 +105,7 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    const { serviceType, expiryDate, cost } = req.body;
+    const { serviceType, expiryDate, cost, notes, liters, pricePerLiter, fuelType } = req.body;
 
     if (serviceType) service.serviceType = serviceType;
     if (expiryDate) {
@@ -109,6 +113,10 @@ router.put('/:id', auth, async (req, res) => {
       service.reminderSent = false;
     }
     if (cost !== undefined) service.cost = cost;
+    if (notes !== undefined) service.notes = notes;
+    if (liters !== undefined) service.liters = liters;
+    if (pricePerLiter !== undefined) service.pricePerLiter = pricePerLiter;
+    if (fuelType !== undefined) service.fuelType = fuelType;
 
     await service.save();
     res.json(service);
