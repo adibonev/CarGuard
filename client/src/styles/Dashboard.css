@@ -3558,3 +3558,288 @@
   color: #212529;
 }
 
+/* ===== MOBILE RESPONSIVE IMPROVEMENTS ===== */
+
+/* Small phones */
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 10px 5px;
+  }
+  
+  .sidebar-header {
+    padding: 10px 5px;
+  }
+  
+  .logo-text {
+    font-size: 16px;
+  }
+  
+  .sidebar-nav {
+    gap: 3px;
+  }
+  
+  .nav-item {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .nav-icon {
+    font-size: 16px;
+  }
+  
+  .main-content {
+    padding: 15px 10px;
+  }
+  
+  .content-header h1 {
+    font-size: 20px;
+  }
+  
+  .add-car-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .stats-row {
+    gap: 10px;
+  }
+  
+  .stat-box {
+    padding: 15px;
+  }
+  
+  .stat-box-value {
+    font-size: 24px;
+  }
+  
+  .stat-box-label {
+    font-size: 11px;
+  }
+  
+  .dashboard-section {
+    padding: 15px;
+  }
+  
+  .section-title h3 {
+    font-size: 14px;
+  }
+  
+  /* Calendar mobile */
+  .calendar-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .calendar-nav button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .calendar-weekdays span,
+  .calendar-day {
+    font-size: 11px;
+    padding: 3px;
+  }
+  
+  .calendar-day {
+    min-height: 35px;
+  }
+  
+  /* Chart filters mobile */
+  .chart-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .chart-filter-select {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .chart-section .section-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+  
+  /* Notifications mobile */
+  .notification-item {
+    padding: 12px;
+  }
+  
+  .notification-icon {
+    font-size: 20px;
+  }
+  
+  .notification-title {
+    font-size: 13px;
+  }
+  
+  .notification-message {
+    font-size: 11px;
+  }
+  
+  /* Car list mobile */
+  .car-item {
+    padding: 12px;
+  }
+  
+  .car-item-brand {
+    font-size: 14px;
+  }
+  
+  .car-item-plate {
+    font-size: 11px;
+  }
+  
+  /* Forms mobile */
+  .car-form-container,
+  .service-form {
+    padding: 15px;
+  }
+  
+  .form-tabs,
+  .car-form-tabs {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .form-tab-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .form-group.half,
+  .form-group.third {
+    width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+  
+  /* Settings mobile */
+  .settings-section {
+    padding: 15px;
+  }
+  
+  .settings-row {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .settings-row select,
+  .settings-row input {
+    width: 100%;
+  }
+  
+  /* Modal mobile */
+  .modal-overlay {
+    padding: 10px;
+  }
+  
+  .modal-content-wrapper {
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+  
+  .modal-header {
+    padding: 15px;
+  }
+  
+  .modal-body {
+    padding: 15px;
+  }
+  
+  /* Service cards mobile */
+  .service-card-modern {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+  }
+  
+  .service-card-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .service-notes {
+    max-width: 100%;
+  }
+  
+  /* Car detail specs mobile */
+  .car-detail-specs {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .spec-card {
+    min-width: unset;
+    padding: 15px;
+  }
+  
+  /* Tire summary mobile */
+  .tire-summary-card {
+    padding: 15px;
+  }
+}
+
+/* Very small phones (under 360px) */
+@media (max-width: 360px) {
+  .sidebar-nav {
+    padding: 5px;
+  }
+  
+  .nav-item {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .nav-icon {
+    font-size: 14px;
+  }
+  
+  .content-header h1 {
+    font-size: 18px;
+  }
+  
+  .stat-box-value {
+    font-size: 20px;
+  }
+  
+  .dashboard-section {
+    padding: 12px;
+  }
+  
+  .section-title h3 {
+    font-size: 13px;
+  }
+}
+
+/* Fix iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+  .dashboard-new {
+    min-height: -webkit-fill-available;
+  }
+  
+  .modal-overlay {
+    min-height: -webkit-fill-available;
+  }
+}
