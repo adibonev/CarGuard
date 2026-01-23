@@ -31,6 +31,9 @@ const Dashboard = () => {
   const [chartFilterCar, setChartFilterCar] = useState('all');
   const [chartFilterService, setChartFilterService] = useState('all');
   const [chartPeriod, setChartPeriod] = useState('6');
+  
+  // Mobile menu state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { user, logout, updateReminderDays: updateReminderDaysContext } = useAuth();
 
@@ -1125,6 +1128,69 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-new">
+      {/* Mobile Header */}
+      <div className="mobile-header">
+        <div className="mobile-header-left">
+          <span className="logo-icon">🚗</span>
+          <span className="logo-text">CarGuard</span>
+        </div>
+        <button 
+          className={`hamburger-btn ${mobileMenuOpen ? 'open' : ''}`}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      {/* Mobile Dropdown Menu */}
+      <div className={`mobile-dropdown-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
+        >
+          <span className="nav-icon">🏠</span>
+          <span className="nav-text">Табло</span>
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'cars' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('cars'); setMobileMenuOpen(false); }}
+        >
+          <span className="nav-icon">🚘</span>
+          <span className="nav-text">Автопарк</span>
+          {cars.length > 0 && <span className="nav-badge">{cars.length}</span>}
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'services' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('services'); setMobileMenuOpen(false); }}
+        >
+          <span className="nav-icon">📋</span>
+          <span className="nav-text">Събития</span>
+          {getExpiringServices().length > 0 && (
+            <span className="nav-badge warning">{getExpiringServices().length}</span>
+          )}
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
+        >
+          <span className="nav-icon">⚙️</span>
+          <span className="nav-text">Настройки</span>
+        </button>
+        <div className="mobile-user-info">
+          <span>👤 {user?.name}</span>
+          <button className="mobile-logout-btn" onClick={logout}>
+            🚪 Изход
+          </button>
+        </div>
+      </div>
+
+      {/* Overlay for mobile menu */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
