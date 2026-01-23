@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../api';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const [activeSection, setActiveSection] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -25,7 +34,7 @@ const Home = () => {
       });
 
       // Update active section for navigation highlight
-      const sections = ['why', 'how', 'services', 'demo', 'testimonials'];
+      const sections = ['why', 'how', 'services', 'demo'];
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -42,6 +51,42 @@ const Home = () => {
     handleScroll(); // Call on load
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const response = await authAPI.login(loginData.email, loginData.password);
+      authLogin(response.data.user, response.data.token);
+      setShowLoginModal(false);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.msg || 'Грешка при вход');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (registerData.password !== registerData.confirmPassword) {
+      setError('Паролите не съвпадат');
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await authAPI.register(registerData.name, registerData.email, registerData.password);
+      authLogin(response.data.user, response.data.token);
+      setShowRegisterModal(false);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.msg || 'Грешка при регистрация');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="home">
@@ -76,24 +121,116 @@ const Home = () => {
             >
               Демо
             </button>
-            <button 
-              className={`nav-tab ${activeSection === 'testimonials' ? 'active' : ''}`}
-              onClick={() => scrollToSection('testimonials')}
-            >
-              Отзиви
-            </button>
           </nav>
 
           <nav className="nav-links">
-            <button className="nav-btn login-btn" onClick={() => navigate('/login')}>
+            <button className="nav-btn login-btn" onClick={() => { setShowLoginModal(true); setError(''); }}>
               Вход
             </button>
-            <button className="nav-btn register-btn" onClick={() => navigate('/register')}>
+            <button className="nav-btn register-btn" onClick={() => { setShowRegisterModal(true); setError(''); }}>
               Регистрирай се
             </button>
           </nav>
         </div>
       </header>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="auth-modal-overlay" onClick={() => setShowLoginModal(false)}>
+          <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
+            <h2>🚗 Вход в CarGuard</h2>
+            {error && <div className="auth-error">{error}</div>}
+            <form onSubmit={handleLogin}>
+              <div className="auth-field">
+                <label>Email</label>
+                <input 
+                  type="email" 
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                  placeholder="Въведи email"
+                  required
+                />
+              </div>
+              <div className="auth-field">
+                <label>Парола</label>
+                <input 
+                  type="password" 
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  placeholder="Въведи парола"
+                  required
+                />
+              </div>
+              <button type="submit" className="auth-submit" disabled={loading}>
+                {loading ? 'Зареждане...' : 'Влез'}
+              </button>
+            </form>
+            <p className="auth-switch">
+              Нямаш акаунт? <span onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); setError(''); }}>Регистрирай се</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Register Modal */}
+      {showRegisterModal && (
+        <div className="auth-modal-overlay" onClick={() => setShowRegisterModal(false)}>
+          <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowRegisterModal(false)}>✕</button>
+            <h2>🚗 Регистрация в CarGuard</h2>
+            {error && <div className="auth-error">{error}</div>}
+            <form onSubmit={handleRegister}>
+              <div className="auth-field">
+                <label>Име</label>
+                <input 
+                  type="text" 
+                  value={registerData.name}
+                  onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
+                  placeholder="Въведи име"
+                  required
+                />
+              </div>
+              <div className="auth-field">
+                <label>Email</label>
+                <input 
+                  type="email" 
+                  value={registerData.email}
+                  onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                  placeholder="Въведи email"
+                  required
+                />
+              </div>
+              <div className="auth-field">
+                <label>Парола</label>
+                <input 
+                  type="password" 
+                  value={registerData.password}
+                  onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                  placeholder="Въведи парола"
+                  required
+                />
+              </div>
+              <div className="auth-field">
+                <label>Потвърди парола</label>
+                <input 
+                  type="password" 
+                  value={registerData.confirmPassword}
+                  onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                  placeholder="Потвърди парола"
+                  required
+                />
+              </div>
+              <button type="submit" className="auth-submit" disabled={loading}>
+                {loading ? 'Зареждане...' : 'Регистрирай се'}
+              </button>
+            </form>
+            <p className="auth-switch">
+              Вече имаш акаунт? <span onClick={() => { setShowRegisterModal(false); setShowLoginModal(true); setError(''); }}>Влез</span>
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="hero fade-in-section">
@@ -101,10 +238,10 @@ const Home = () => {
           <div className="badge">🚀 Най-лесният начин да следиш сроковете</div>
           <h2>Спри да се тревожиш за глоби и пропуснати срокове</h2>
           <p>
-            CarGuard ти изпраща напомена <strong>1 месец преди</strong> да изтече гражданската, винетката, прегледът или данъкът.
+            CarGuard ти изпраща напомняне <strong>1 месец преди</strong> да изтече гражданската, винетката, прегледът или данъкът.
             Всички твои коли и услуги на едно място.
           </p>
-          <button className="cta-btn" onClick={() => navigate('/register')}>
+          <button className="cta-btn" onClick={() => setShowRegisterModal(true)}>
             Започни безплатно сега →
           </button>
           <div className="hero-features">
@@ -283,7 +420,7 @@ const Home = () => {
 
           <div className="step fade-in-section">
             <div className="step-number">4</div>
-            <h3>Получаваш напомена</h3>
+            <h3>Получаваш напомняне</h3>
             <p>Email 1 месец преди. Никога повече глоби!</p>
             <div className="step-icon">📧</div>
           </div>
@@ -294,9 +431,16 @@ const Home = () => {
       <section id="services" className="services-section fade-in-section">
         <div className="section-header">
           <h2>Какво можеш да следиш?</h2>
-          <p>Всички важни услуги за твоя автомобил</p>
+          <p>Всички важни услуги за твоя автомобил на едно място</p>
         </div>
         <div className="services-grid">
+          <div className="service-card fade-in-section">
+            <div className="service-icon">🔧</div>
+            <h3>Технически преглед</h3>
+            <p>Задължителен годишно. Без него колата не е легална на пътя!</p>
+            <div className="service-dot"></div>
+          </div>
+
           <div className="service-card fade-in-section">
             <div className="service-icon">🛡️</div>
             <h3>Гражданска отговорност</h3>
@@ -305,96 +449,155 @@ const Home = () => {
           </div>
 
           <div className="service-card fade-in-section">
-            <div className="service-icon">🛣️</div>
-            <h3>Винетка</h3>
-            <p>Годишна такса за пътната мрежа. Глоба: 300 лв!</p>
-            <div className="service-dot"></div>
-          </div>
-
-          <div className="service-card fade-in-section">
-            <div className="service-icon">🔧</div>
-            <h3>Технически преглед</h3>
-            <p>Задължителен всяка година. Без него - без застраховка!</p>
-            <div className="service-dot"></div>
-          </div>
-
-          <div className="service-card fade-in-section">
             <div className="service-icon">💎</div>
             <h3>КАСКО застраховка</h3>
-            <p>Допълнителна защита за твоя автомобил при щети</p>
+            <p>Пълна защита при кражба, катастрофа или природни бедствия</p>
+            <div className="service-dot"></div>
+          </div>
+
+          <div className="service-card fade-in-section">
+            <div className="service-icon">🛣️</div>
+            <h3>Винетка</h3>
+            <p>Електронна или хартиена. Глоба без нея: 300 лв!</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">💰</div>
             <h3>Данък МПС</h3>
-            <p>Годишен данък върху превозното средство</p>
+            <p>Годишен данък - плати до 30 юни за 5% отстъпка!</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
-            <div className="service-icon">➕</div>
-            <h3>Други услуги</h3>
-            <p>Добави каквото искаш: смяна на масло, гуми...</p>
+            <div className="service-icon">🧯</div>
+            <h3>Заверка на пожарогасител</h3>
+            <p>Задължително на 1-2 години. Необходим за преглед!</p>
+            <div className="service-dot"></div>
+          </div>
+
+          <div className="service-card fade-in-section">
+            <div className="service-icon">�💨</div>
+            <h3>Смяна на гуми</h3>
+            <p>Зимни ↔ Летни. Следи DOT кода за износване!</p>
+            <div className="service-dot"></div>
+          </div>
+
+          <div className="service-card fade-in-section">
+            <div className="service-icon">🔧</div>
+            <h3>Сервизно обслужване</h3>
+            <p>Смяна на масло, филтри, ремъци - всичко на едно място</p>
             <div className="service-dot"></div>
           </div>
         </div>
       </section>
 
-      {/* Example Section */}
-      <section id="testimonials" className="example-section fade-in-section">
+      {/* Features Section - What you get */}
+      <section className="features-section fade-in-section">
         <div className="section-header">
-          <h2>Реални истории от наши потребители</h2>
-          <p>Виж как CarGuard помага на хора като теб</p>
+          <h2>Какво получаваш с CarGuard?</h2>
+          <p>Пълен контрол над автопарка ти</p>
         </div>
-        <div className="example-container">
-          <div className="example-text fade-in-section">
-            <h3>Те вече избраха CarGuard:</h3>
-            <ul className="example-list">
-              <li>
-                <span className="example-icon">✅</span>
-                <div>
-                  <strong>Иван М.</strong> - "Открих, че гражданската ми изтича след 3 дни! Спасиха ме от глоба 3000 лв."
+        <div className="features-showcase">
+          <div className="feature-item fade-in-section">
+            <div className="feature-visual">
+              <div className="feature-screen">
+                <div className="mini-dashboard">
+                  <div className="mini-car-card">
+                    <span className="car-emoji">🚗</span>
+                    <div className="car-info">
+                      <strong>BMW 320d</strong>
+                      <small>CB 1234 AB • 2020</small>
+                    </div>
+                  </div>
+                  <div className="mini-car-card">
+                    <span className="car-emoji">🚙</span>
+                    <div className="car-info">
+                      <strong>Audi A4</strong>
+                      <small>PB 5678 CD • 2019</small>
+                    </div>
+                  </div>
+                  <div className="mini-car-card add-new">
+                    <span>➕</span>
+                    <span>Добави кола</span>
+                  </div>
                 </div>
-              </li>
-              <li>
-                <span className="example-icon">✅</span>
-                <div>
-                  <strong>Мария П.</strong> - "Управлявам 2 коли без стрес. Всичко е автоматизирано!"
-                </div>
-              </li>
-              <li>
-                <span className="example-icon">✅</span>
-                <div>
-                  <strong>Петър К.</strong> - "Спестих 500 лв от глоба за пропусната винетка."
-                </div>
-              </li>
-              <li>
-                <span className="example-icon">✅</span>
-                <div>
-                  <strong>София В.</strong> - "Най-после не се стресирам за срокове. Супер лесно!"
-                </div>
-              </li>
-            </ul>
-            <div className="example-highlight">
-              <strong>💡 Знаеш ли?</strong> 78% от водачите пропускат поне един срок годишно.
-              Не бъди сред тях - започни сега!
+              </div>
+            </div>
+            <div className="feature-text">
+              <h3>📊 Управлявай неограничен брой коли</h3>
+              <p>Семейни коли, фирмен автопарк, лизингови автомобили - всички на едно място. Всяка кола с пълна информация: марка, модел, VIN, пробег, технически данни.</p>
             </div>
           </div>
-          <div className="example-image fade-in-section">
-            <div className="stats-box">
-              <div className="stat-card">
-                <div className="stat-number">10k+</div>
-                <div className="stat-label">Активни потребители</div>
+
+          <div className="feature-item reverse fade-in-section">
+            <div className="feature-visual">
+              <div className="feature-screen">
+                <div className="mini-calendar">
+                  <div className="calendar-header">Януари 2026</div>
+                  <div className="calendar-events">
+                    <div className="calendar-event warning">
+                      <span>⚠️</span> Гражданска - 28 дни
+                    </div>
+                    <div className="calendar-event ok">
+                      <span>✅</span> Винетка - 180 дни
+                    </div>
+                    <div className="calendar-event expired">
+                      <span>❌</span> Преглед - изтекъл!
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="stat-card">
-                <div className="stat-number">50k+</div>
-                <div className="stat-label">Следени услуги</div>
+            </div>
+            <div className="feature-text">
+              <h3>📅 Календар с всички срокове</h3>
+              <p>Виж на един поглед кое изтича скоро, кое е наред и кое вече е просрочено. Цветова индикация за бърза ориентация - зелено, жълто, червено.</p>
+            </div>
+          </div>
+
+          <div className="feature-item fade-in-section">
+            <div className="feature-visual">
+              <div className="feature-screen">
+                <div className="mini-email">
+                  <div className="email-header-mini">
+                    <span className="email-icon">📧</span>
+                    <strong>Ново напомняне от CarGuard</strong>
+                  </div>
+                  <div className="email-preview-content">
+                    <p>🚗 <strong>BMW 320d</strong></p>
+                    <p>Гражданската ти изтича след <span className="highlight">30 дни</span></p>
+                    <p>Дата: 15.02.2026</p>
+                    <small>Настрой напомнянията: 7, 14, 30 или 60 дни</small>
+                  </div>
+                </div>
               </div>
-              <div className="stat-card">
-                <div className="stat-number">95%</div>
-                <div className="stat-label">Доволни клиенти</div>
+            </div>
+            <div className="feature-text">
+              <h3>📧 Автоматични email напомняния</h3>
+              <p>Избери колко дни преди изтичане да получиш напомняне - 7, 14, 30 или 60 дни. Никога повече пропуснати срокове и глоби!</p>
+            </div>
+          </div>
+
+          <div className="feature-item reverse fade-in-section">
+            <div className="feature-visual">
+              <div className="feature-screen">
+                <div className="mini-tech-data">
+                  <div className="tech-header">⚙️ Технически данни</div>
+                  <div className="tech-grid">
+                    <div className="tech-item"><span>🔧</span> Дизел</div>
+                    <div className="tech-item"><span>💪</span> 190 к.с.</div>
+                    <div className="tech-item"><span>⚙️</span> Автоматик</div>
+                    <div className="tech-item"><span>🌿</span> Euro 6</div>
+                  </div>
+                  <div className="tire-info">
+                    <span>🛞 Гуми: 225/45 R17 • Зимни • Michelin</span>
+                  </div>
+                </div>
               </div>
+            </div>
+            <div className="feature-text">
+              <h3>🔧 Пълни технически данни</h3>
+              <p>Запиши всичко за колата: тип двигател, конски сили, скоростна кутия, евро стандарт, размер на гумите, DOT код. Имай информацията винаги под ръка!</p>
             </div>
           </div>
         </div>
@@ -468,7 +671,7 @@ const Home = () => {
                   <div className="demo-header">📧 Нов Email</div>
                   <div className="email-content">
                     <div className="email-from">От: CarGuard</div>
-                    <div className="email-subject">⚠️ Напомена: Гражданска изтича!</div>
+                    <div className="email-subject">⚠️ Напомняне: Гражданска изтича!</div>
                     <div className="email-body">
                       <p>🚗 BMW 320d</p>
                       <p>Изтича след <strong>30 дни</strong></p>
@@ -478,7 +681,7 @@ const Home = () => {
                   <div className="email-notification">🔔</div>
                 </div>
               </div>
-              <h3>Получаваш напомена</h3>
+              <h3>Получаваш напомняне</h3>
               <p>Email 1 месец преди изтичане</p>
             </div>
           </div>
@@ -490,11 +693,11 @@ const Home = () => {
         <div className="cta-content">
           <h2>🚀 Готов ли си да забравиш за глобите?</h2>
           <p>Регистрацията е <strong>100% безплатна</strong> и отнема само 30 секунди. Присъедини се към 10,000+ водачи!</p>
-          <button className="cta-btn-large" onClick={() => navigate('/register')}>
+          <button className="cta-btn-large" onClick={() => { setShowRegisterModal(true); setError(''); }}>
             Започни безплатно сега →
           </button>
           <div className="cta-secondary">
-            Вече имаш акаунт? <a href="/login" onClick={(e) => { e.preventDefault(); navigate('/login'); }}>Влез тук</a>
+            Вече имаш акаунт? <span className="cta-link" onClick={() => { setShowLoginModal(true); setError(''); }}>Влез тук</span>
           </div>
         </div>
         <div className="cta-decoration">

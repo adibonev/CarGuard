@@ -35,8 +35,20 @@ const checkAndSendReminders = async (models) => {
     console.log(`Found ${services.length} services without reminder sent`);
 
     const today = new Date();
+    
+    // Helper function to add delay between emails (avoid rate limiting)
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    // Only send reminders for these service types (ones that expire)
+    const reminderTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
 
     for (const service of services) {
+      // Skip service types that don't need reminders
+      if (!reminderTypes.includes(service.serviceType)) {
+        console.log(`Skipping ${service.serviceType} - not a reminder type`);
+        continue;
+      }
+      
       // Load car separately since include might not work
       const car = await Car.findByPk(service.carId);
       const user = await User.findByPk(service.userId);
@@ -52,15 +64,19 @@ const checkAndSendReminders = async (models) => {
       const reminderDays = user.reminderDays || 30;
       const reminderDate = new Date(today.getTime() + reminderDays * 24 * 60 * 60 * 1000);
       const expiryDate = new Date(service.expiryDate);
+      
+      // Normalize email to lowercase
+      const userEmail = user.email.toLowerCase();
 
       console.log(`Today: ${today.toISOString()}, Expiry: ${expiryDate.toISOString()}, Reminder threshold: ${reminderDate.toISOString()}`);
-      console.log(`Condition check: expiry <= reminderDate = ${expiryDate <= reminderDate}, expiry >= today = ${expiryDate >= today}`);
+      console.log(`Condition check: expiry <= reminderDate = ${expiryDate <= reminderDate}`);
 
-      // Check if service expires within the user's reminder period
-      if (expiryDate <= reminderDate && expiryDate >= today) {
-        console.log(`Sending email to ${user.email}...`);
+      // Check if service expires within the user's reminder period OR is already expired
+      // Send reminder if: expiry is in the past OR expiry is within reminder period
+      if (expiryDate <= reminderDate) {
+        console.log(`Sending email to ${userEmail}...`);
         const emailSent = await sendReminderEmail(
-          user.email,
+          userEmail,
           {
             brand: car.brand,
             model: car.model,
@@ -74,6 +90,8 @@ const checkAndSendReminders = async (models) => {
           service.reminderSent = true;
           await service.save();
           console.log(`✅ Reminder sent to ${user.email} for ${service.serviceType}`);
+          // Add delay to avoid rate limiting (Resend allows 2 requests/second)
+          await delay(600);
         } else {
           console.log(`❌ Failed to send email to ${user.email}`);
         }

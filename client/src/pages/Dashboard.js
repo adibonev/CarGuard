@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { carsAPI, servicesAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 import CarForm from '../components/CarForm';
@@ -9,6 +10,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [cars, setCars] = useState([]);
   const [selectedCar, setSelectedCar] = useState(null);
   const [services, setServices] = useState([]);
@@ -24,6 +26,11 @@ const Dashboard = () => {
   // States for Events Filter
   const [eventFilterType, setEventFilterType] = useState('all');
   const [eventFilterYear, setEventFilterYear] = useState(new Date().getFullYear().toString());
+  
+  // States for Chart Filters
+  const [chartFilterCar, setChartFilterCar] = useState('all');
+  const [chartFilterService, setChartFilterService] = useState('all');
+  const [chartPeriod, setChartPeriod] = useState('6');
 
   const { user, logout, updateReminderDays: updateReminderDaysContext } = useAuth();
 
@@ -208,7 +215,7 @@ const Dashboard = () => {
   };
 
   const getExpiringServices = () => {
-    const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък'];
+    const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
     return allServices.filter(s => {
       if (!expiringTypes.includes(s.serviceType)) return false;
       const status = getServiceStatus(s.expiryDate);
@@ -258,13 +265,19 @@ const Dashboard = () => {
     });
   };
 
-  // Chart data helper - monthly costs per car
+  // Chart data helper - monthly costs per car with filters
   const getChartData = () => {
     const months = [];
     const now = new Date();
+    const periodMonths = parseInt(chartPeriod);
     
-    // Last 6 months
-    for (let i = 5; i >= 0; i--) {
+    // Filter cars based on selection
+    const filteredCars = chartFilterCar === 'all' 
+      ? cars 
+      : cars.filter(c => c.id === parseInt(chartFilterCar));
+    
+    // Dynamic period
+    for (let i = periodMonths - 1; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthName = monthNames[date.getMonth()].substring(0, 3);
@@ -272,11 +285,14 @@ const Dashboard = () => {
       const monthData = { name: monthName, month: monthKey };
       
       // Calculate costs per car for this month
-      cars.forEach(car => {
+      filteredCars.forEach(car => {
         const carServices = allServices.filter(s => {
           const serviceDate = new Date(s.createdAt);
           const sMonth = `${serviceDate.getFullYear()}-${String(serviceDate.getMonth() + 1).padStart(2, '0')}`;
-          return s.carId === car.id && sMonth === monthKey;
+          const matchesCar = s.carId === car.id;
+          const matchesMonth = sMonth === monthKey;
+          const matchesService = chartFilterService === 'all' || s.serviceType === chartFilterService;
+          return matchesCar && matchesMonth && matchesService;
         });
         
         const totalCost = carServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
@@ -365,7 +381,7 @@ const Dashboard = () => {
                 {getMonthDays(currentMonth).map((day, idx) => {
                   const events = day ? getEventsForDay(day) : [];
                   const isToday = day && day.toDateString() === new Date().toDateString();
-                  const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък'];
+                  const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
                   const hasExpired = events.some(e => expiringTypes.includes(e.serviceType) && getServiceStatus(e.expiryDate).status === 'expired');
                   const hasWarning = events.some(e => expiringTypes.includes(e.serviceType) && getServiceStatus(e.expiryDate).status === 'warning');
                   
@@ -406,7 +422,48 @@ const Dashboard = () => {
           {/* Chart Section */}
           <div className="dashboard-section chart-section">
             <div className="section-title">
-              <h3>📊 Месечни разходи по автомобили</h3>
+              <h3>📊 Месечни разходи</h3>
+              <div className="chart-filters">
+                <select 
+                  value={chartFilterCar} 
+                  onChange={(e) => setChartFilterCar(e.target.value)}
+                  className="chart-filter-select"
+                >
+                  <option value="all">🚗 Всички автомобили</option>
+                  {cars.map(car => (
+                    <option key={car.id} value={car.id}>
+                      {car.brand} {car.model}
+                    </option>
+                  ))}
+                </select>
+                <select 
+                  value={chartFilterService} 
+                  onChange={(e) => setChartFilterService(e.target.value)}
+                  className="chart-filter-select"
+                >
+                  <option value="all">📋 Всички разходи</option>
+                  <option value="гражданска">🛡️ Гражданска</option>
+                  <option value="винетка">🎫 Винетка</option>
+                  <option value="преглед">🔧 Технически преглед</option>
+                  <option value="каско">🔒 КАСКО</option>
+                  <option value="данък">💰 Данък МПС</option>
+                  <option value="пожарогасител">🧯 Пожарогасител</option>
+                  <option value="ремонт">🔨 Ремонт</option>
+                  <option value="обслужване">⚙️ Обслужване</option>
+                  <option value="гуми">🚗 Гуми</option>
+                  <option value="зареждане">⛽ Зареждане</option>
+                  <option value="друго">📝 Друго</option>
+                </select>
+                <select 
+                  value={chartPeriod} 
+                  onChange={(e) => setChartPeriod(e.target.value)}
+                  className="chart-filter-select"
+                >
+                  <option value="3">📅 3 месеца</option>
+                  <option value="6">📅 6 месеца</option>
+                  <option value="12">📅 12 месеца</option>
+                </select>
+              </div>
             </div>
             <div className="chart-container">
               {allServices.length > 0 && allServices.some(s => parseFloat(s.cost) > 0) ? (
@@ -414,13 +471,13 @@ const Dashboard = () => {
                   <LineChart data={getChartData()}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="name" stroke="#666" fontSize={12} />
-                    <YAxis stroke="#666" fontSize={12} />
+                    <YAxis stroke="#666" fontSize={12} tickFormatter={(value) => `${value} лв`} />
                     <Tooltip 
-                      formatter={(value) => [`${value} лв`, '']}
+                      formatter={(value, name) => [`${value} лв`, name]}
                       contentStyle={{ background: 'white', border: '1px solid #eee', borderRadius: '8px' }}
                     />
                     <Legend />
-                    {cars.map((car, idx) => (
+                    {(chartFilterCar === 'all' ? cars : cars.filter(c => c.id === parseInt(chartFilterCar))).map((car, idx) => (
                       <Line 
                         key={car.id}
                         type="monotone" 
@@ -429,6 +486,7 @@ const Dashboard = () => {
                         strokeWidth={2}
                         dot={{ fill: carColors[idx % carColors.length] }}
                       />
+                    ))}
                     ))}
                   </LineChart>
                 </ResponsiveContainer>
@@ -752,7 +810,7 @@ const Dashboard = () => {
                   ) : (
                     <div className="services-grid-detail">
                       {services.map(service => {
-                        const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък'];
+                        const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
                         const isExpirable = expiringTypes.includes(service.serviceType);
                         const status = isExpirable ? getServiceStatus(service.expiryDate) : { class: 'status-neutral', text: '' };
                         
@@ -1057,9 +1115,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="settings-section danger-zone">
-        <h3>⚠️ Опасна зона</h3>
-        <button className="danger-btn" onClick={logout}>
+      <div className="settings-section">
+        <button className="danger-btn" onClick={() => { logout(); navigate('/'); }}>
           🚪 Изход от профила
         </button>
       </div>

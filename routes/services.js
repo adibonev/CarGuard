@@ -49,7 +49,7 @@ router.get('/all', auth, async (req, res) => {
 router.post('/',
   auth,
   body('carId').notEmpty().withMessage('Car ID is required'),
-  body('serviceType').isIn(['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'ремонт', 'обслужване', 'гуми', 'зареждане', 'друго']).withMessage('Invalid service type'),
+  body('serviceType').isIn(['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител', 'ремонт', 'обслужване', 'гуми', 'зареждане', 'друго']).withMessage('Invalid service type'),
   body('expiryDate').isISO8601().withMessage('Valid expiry date is required'),
   async (req, res) => {
     const errors = validationResult(req);
