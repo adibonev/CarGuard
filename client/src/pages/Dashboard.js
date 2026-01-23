@@ -37,6 +37,12 @@ const Dashboard = () => {
 
   const { user, logout, updateReminderDays: updateReminderDaysContext } = useAuth();
 
+  // Handle logout and redirect to home page
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   const handleReminderDaysChange = async (days) => {
     const value = parseInt(days);
     try {
@@ -1180,7 +1186,7 @@ const Dashboard = () => {
         </button>
         <div className="mobile-user-info">
           <span>👤 {user?.name}</span>
-          <button className="mobile-logout-btn" onClick={logout}>
+          <button className="mobile-logout-btn" onClick={handleLogout}>
             🚪 Изход
           </button>
         </div>
@@ -1241,7 +1247,7 @@ const Dashboard = () => {
               <span className="user-email">{user?.email}</span>
             </div>
           </div>
-          <button className="logout-btn-sidebar" onClick={logout}>
+          <button className="logout-btn-sidebar" onClick={handleLogout}>
             🚪
           </button>
         </div>
