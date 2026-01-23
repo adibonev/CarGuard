@@ -36,8 +36,8 @@ Car.hasMany(Service, { foreignKey: 'carId', as: 'services' });
 // Store models in app.locals for route access
 app.locals.models = { User, Car, Service, Admin };
 
-// Sync database - using force: false to preserve data, alter: true to add missing columns
-sequelize.sync({ alter: true }).then(() => {
+// Sync database - simple sync to avoid SQLite alter issues
+sequelize.sync().then(() => {
   console.log('Database synced successfully');
   // Start reminder service after database is synced
   reminderService.startReminderCheck({ User, Car, Service });
