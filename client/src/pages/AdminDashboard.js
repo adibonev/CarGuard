@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/AdminDashboard.css';
 
+const API_URL = 'https://web-production-2e60.up.railway.app/api/admin';
+
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -15,7 +17,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const api = axios.create({
-    baseURL: 'http://localhost:5000/api/admin',
+    baseURL: API_URL,
     headers: {
       'x-admin-token': localStorage.getItem('adminToken')
     }

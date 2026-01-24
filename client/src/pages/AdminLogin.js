@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/AdminLogin.css';
 
+const API_URL = 'https://web-production-2e60.up.railway.app/api';
+
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -27,7 +29,7 @@ const AdminLogin = () => {
 
     try {
       console.log('Attempting admin login with:', { username: formData.username });
-      const res = await axios.post('http://localhost:5000/api/admin/login', formData);
+      const res = await axios.post(`${API_URL}/admin/login`, formData);
       console.log('Login successful:', res.data);
       localStorage.setItem('adminToken', res.data.token);
       localStorage.setItem('adminUser', JSON.stringify(res.data.admin));
