@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getBrands, getModels } from '../data/carBrands';
+import { carsAPI } from '../api';
 import '../styles/CarForm.css';
 
 const CarForm = ({ onSubmit, onCancel, initialData }) => {
+  const [inputMode, setInputMode] = useState('manual'); // 'manual' или 'vin'
   const [activeTab, setActiveTab] = useState('basic');
+  const [vinInput, setVinInput] = useState('');
+  const [vinLoading, setVinLoading] = useState(false);
+  const [vinError, setVinError] = useState('');
+  const [vinData, setVinData] = useState(null);
   const [formData, setFormData] = useState({
     brand: '',
     model: '',
@@ -50,8 +56,67 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
         tireDot: initialData.tireDot || '',
       });
       setAvailableModels(getModels(initialData.brand));
+      if (initialData.vin) {
+        setVinInput(initialData.vin);
+      }
     }
   }, [initialData]);
+
+  // Функция за декодиране на VIN
+  const handleVinDecode = async () => {
+    if (!vinInput || vinInput.length !== 17) {
+      setVinError('VIN номерът трябва да е точно 17 символа');
+      return;
+    }
+
+    setVinLoading(true);
+    setVinError('');
+    setVinData(null);
+
+    try {
+      const response = await carsAPI.decodeVin(vinInput);
+      const data = response.data;
+      
+      setVinData(data);
+      
+      // Намери марката в списъка (case-insensitive)
+      let matchedBrand = '';
+      if (data.brand) {
+        const brandLower = data.brand.toLowerCase();
+        matchedBrand = brands.find(b => b.toLowerCase() === brandLower) || '';
+      }
+      
+      // Обнови моделите ако има марка
+      let matchedModel = '';
+      if (matchedBrand) {
+        const models = getModels(matchedBrand);
+        setAvailableModels(models);
+        
+        // Намери модела в списъка (case-insensitive)
+        if (data.model) {
+          const modelLower = data.model.toLowerCase();
+          matchedModel = models.find(m => m.toLowerCase() === modelLower) || data.model;
+        }
+      }
+      
+      // Попълни формата с данните от VIN
+      setFormData(prev => ({
+        ...prev,
+        brand: matchedBrand || prev.brand,
+        model: matchedModel || prev.model,
+        year: data.year || prev.year,
+        vin: vinInput,
+        engineType: data.engineType || prev.engineType,
+        horsepower: data.horsepower || prev.horsepower,
+        transmission: data.transmission || prev.transmission,
+      }));
+      
+    } catch (err) {
+      setVinError(err.response?.data?.error || 'Грешка при декодиране на VIN');
+    } finally {
+      setVinLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -112,6 +177,79 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
 
   return (
     <div className="car-form-container">
+      {/* Избор на режим - ръчно или VIN */}
+      {!initialData && (
+        <div className="input-mode-selector">
+          <button 
+            type="button"
+            className={`mode-btn ${inputMode === 'manual' ? 'active' : ''}`}
+            onClick={() => setInputMode('manual')}
+          >
+            ✏️ Ръчно въвеждане
+          </button>
+          <button 
+            type="button"
+            className={`mode-btn ${inputMode === 'vin' ? 'active' : ''}`}
+            onClick={() => setInputMode('vin')}
+          >
+            🔍 По VIN номер
+          </button>
+        </div>
+      )}
+
+      {/* VIN секция */}
+      {inputMode === 'vin' && !initialData && (
+        <div className="vin-section">
+          <div className="vin-input-group">
+            <label>VIN номер (17 символа)</label>
+            <div className="vin-input-row">
+              <input
+                type="text"
+                value={vinInput}
+                onChange={(e) => setVinInput(e.target.value.toUpperCase())}
+                placeholder="Въведи VIN номер"
+                maxLength={17}
+                className="vin-input"
+              />
+              <button 
+                type="button" 
+                className="vin-decode-btn"
+                onClick={handleVinDecode}
+                disabled={vinLoading || vinInput.length !== 17}
+              >
+                {vinLoading ? '⏳ Зареждане...' : '🔍 Провери'}
+              </button>
+            </div>
+            <div className="vin-counter">{vinInput.length}/17</div>
+            {vinError && <div className="vin-error">⚠️ {vinError}</div>}
+          </div>
+
+          {vinData && (
+            <div className="vin-result">
+              {/* Предупреждение за европейски VIN */}
+              {vinData.isEuropean && (
+                <div className="vin-warning">
+                  ⚠️ <strong>Европейски VIN</strong> - Данните може да са непълни. 
+                  Проверете и коригирайте във формата по-долу.
+                </div>
+              )}
+
+              {/* Показване на намерена информация */}
+              <div className="vin-found-info">
+                <h4>✅ Намерена информация:</h4>
+                <div className="vin-found-grid">
+                  {vinData.brand && <span><strong>Марка:</strong> {vinData.brand}</span>}
+                  {vinData.year && <span><strong>Година:</strong> {vinData.year}</span>}
+                  {vinData.plantCountry && <span><strong>Произведен в:</strong> {vinData.plantCountry}</span>}
+                </div>
+              </div>
+
+              <p className="vin-hint">💡 Данните са попълнени във формата по-долу. Коригирай ги ако е нужно.</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="car-form-tabs">
         <button 
           type="button" 

@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'https://web-production-2e60.up.railway.app/api';
+// Използвай локалния сървър при development, production URL в production
+const API_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5000/api'
+  : 'https://web-production-2e60.up.railway.app/api';
+
+console.log('API URL:', API_URL, 'ENV:', process.env.NODE_ENV);
 
 const api = axios.create({
   baseURL: API_URL
@@ -13,6 +18,23 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Обработка на 401 грешки - автоматичен logout
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Токенът е невалиден или изтекъл - изчисти и пренасочи
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Пренасочи към login само ако не сме вече там
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register' && window.location.pathname !== '/') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const authAPI = {
   register: (name, email, password) =>
@@ -30,7 +52,8 @@ export const carsAPI = {
     api.post('/cars', carData),
   updateCar: (id, carData) =>
     api.put(`/cars/${id}`, carData),
-  deleteCar: (id) => api.delete(`/cars/${id}`)
+  deleteCar: (id) => api.delete(`/cars/${id}`),
+  decodeVin: (vin) => api.get(`/cars/decode-vin/${vin}`)
 };
 
 export const servicesAPI = {

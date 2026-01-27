@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from '../api';
 
 const AuthContext = createContext();
@@ -8,6 +8,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null
   );
   const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // На първо зареждане на приложението
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    }
+    
+    setIsInitialized(true);
+  }, []);
 
   const login = (userData, userToken) => {
     setUser(userData);
@@ -37,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateReminderDays }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateReminderDays, isInitialized }}>
       {children}
     </AuthContext.Provider>
   );

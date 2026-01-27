@@ -35,7 +35,7 @@ const Dashboard = () => {
   // Mobile menu state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { user, logout, updateReminderDays: updateReminderDaysContext } = useAuth();
+  const { user, logout, updateReminderDays: updateReminderDaysContext, isInitialized } = useAuth();
 
   // Handle logout and redirect to home page
   const handleLogout = () => {
@@ -55,6 +55,9 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    // Чакай приложението да се инициализира преди да зареди данните
+    if (!isInitialized) return;
+    
     // Initialize reminder days from user profile
     if (user?.reminderDays) {
       setReminderDays(user.reminderDays);
@@ -64,7 +67,7 @@ const Dashboard = () => {
     loadCars();
     loadAllServices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.reminderDays]);
+  }, [isInitialized, user?.reminderDays]);
 
   useEffect(() => {
     if (selectedCar) {

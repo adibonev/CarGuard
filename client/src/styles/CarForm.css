@@ -7,6 +7,254 @@
   margin: 0 auto;
 }
 
+/* Избор на режим */
+.input-mode-selector {
+  display: flex;
+  gap: 10px;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: 1px solid #eee;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.mode-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.mode-btn.active {
+  background: white;
+  color: #667eea;
+  border-color: white;
+}
+
+/* VIN секция */
+.vin-section {
+  padding: 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.vin-input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.vin-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.vin-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: border-color 0.2s;
+}
+
+.vin-input:focus {
+  border-color: #667eea;
+  outline: none;
+}
+
+.vin-decode-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.vin-decode-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.vin-decode-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vin-counter {
+  text-align: right;
+  font-size: 12px;
+  color: #888;
+  margin-top: 5px;
+}
+
+.vin-error {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background: #fee;
+  color: #c00;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* VIN резултат */
+.vin-result {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid #4CAF50;
+}
+
+.vin-result h4 {
+  margin: 0 0 15px 0;
+  color: #4CAF50;
+  font-size: 16px;
+}
+
+.vin-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.vin-item {
+  font-size: 14px;
+  color: #333;
+}
+
+.vin-item span {
+  font-weight: 600;
+  color: #666;
+}
+
+.vin-hint {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+}
+
+/* Предупреждение за европейски VIN */
+.vin-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+  border: 1px solid #ffc107;
+  border-left: 4px solid #ff9800;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #856404;
+}
+
+/* Намерена информация от VIN */
+.vin-found-info {
+  background: #f0fff0;
+  border: 1px solid #4CAF50;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.vin-found-info h4 {
+  margin: 0 0 10px 0;
+  color: #2e7d32;
+  font-size: 15px;
+}
+
+.vin-found-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.vin-found-grid span {
+  font-size: 14px;
+  color: #333;
+}
+
+.vin-found-grid strong {
+  color: #666;
+}
+
+/* Намерени полета */
+.vin-item.vin-found {
+  background: #e8f5e9;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #4CAF50;
+}
+
+/* Липсващи полета секция */
+.vin-missing-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff8e1;
+  border-radius: 10px;
+  border: 2px solid #ffc107;
+}
+
+.vin-missing-section h4 {
+  margin: 0 0 15px 0;
+  color: #f57c00;
+  font-size: 15px;
+}
+
+.vin-missing-fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.vin-missing-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.vin-missing-field label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.vin-missing-field input,
+.vin-missing-field select {
+  padding: 10px 12px;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.vin-missing-field input:focus,
+.vin-missing-field select:focus {
+  border-color: #f57c00;
+  outline: none;
+}
+
+@media (max-width: 500px) {
+  .vin-missing-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
 .car-form-tabs {
   display: flex;
   background: #f8f9fa;
