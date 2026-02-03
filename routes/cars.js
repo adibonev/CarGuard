@@ -4,8 +4,8 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get models from request context
-const getModels = (req) => req.app.locals.models;
+// Get supabase client from request context
+const getSupabase = (req) => req.app.locals.supabase;
 
 // Decode VIN using NHTSA API (безплатен API)
 router.get('/decode-vin/:vin', auth, async (req, res) => {
@@ -107,9 +107,45 @@ function mapTransmission(transmission) {
 // Get all cars for user
 router.get('/', auth, async (req, res) => {
   try {
-    const { Car } = getModels(req);
-    const cars = await Car.findAll({ where: { userId: req.user.id } });
-    res.json(cars);
+    const supabase = getSupabase(req);
+    
+    const { data: cars, error } = await supabase
+      .from('cars')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    // Transform snake_case to camelCase for frontend compatibility
+    const transformedCars = cars.map(car => ({
+      id: car.id,
+      userId: car.user_id,
+      brand: car.brand,
+      model: car.model,
+      year: car.year,
+      licensePlate: car.license_plate,
+      vin: car.vin,
+      engineType: car.engine_type,
+      horsepower: car.horsepower,
+      transmission: car.transmission,
+      euroStandard: car.euro_standard,
+      mileage: car.mileage,
+      fuelType: car.fuel_type,
+      tireWidth: car.tire_width,
+      tireHeight: car.tire_height,
+      tireDiameter: car.tire_diameter,
+      tireSeason: car.tire_season,
+      tireBrand: car.tire_brand,
+      tireDot: car.tire_dot,
+      createdAt: car.created_at,
+      updatedAt: car.updated_at
+    }));
+
+    res.json(transformedCars);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -129,24 +165,69 @@ router.post('/',
     }
 
     try {
-      const { Car } = getModels(req);
+      const supabase = getSupabase(req);
       const { 
         brand, model, year, licensePlate, 
         vin, engineType, horsepower, transmission, euroStandard, mileage, fuelType,
         tireWidth, tireHeight, tireDiameter, tireSeason, tireBrand, tireDot 
       } = req.body;
 
-      const car = await Car.create({
-        userId: req.user.id,
-        brand,
-        model,
-        year,
-        licensePlate,
-        vin, engineType, horsepower, transmission, euroStandard, mileage, fuelType,
-        tireWidth, tireHeight, tireDiameter, tireSeason, tireBrand, tireDot
-      });
+      const { data: car, error } = await supabase
+        .from('cars')
+        .insert({
+          user_id: req.user.id,
+          brand,
+          model,
+          year,
+          license_plate: licensePlate,
+          vin,
+          engine_type: engineType,
+          horsepower,
+          transmission,
+          euro_standard: euroStandard,
+          mileage,
+          fuel_type: fuelType,
+          tire_width: tireWidth,
+          tire_height: tireHeight,
+          tire_diameter: tireDiameter,
+          tire_season: tireSeason,
+          tire_brand: tireBrand,
+          tire_dot: tireDot
+        })
+        .select()
+        .single();
 
-      res.json(car);
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).send('Server error');
+      }
+
+      // Transform to camelCase
+      const transformedCar = {
+        id: car.id,
+        userId: car.user_id,
+        brand: car.brand,
+        model: car.model,
+        year: car.year,
+        licensePlate: car.license_plate,
+        vin: car.vin,
+        engineType: car.engine_type,
+        horsepower: car.horsepower,
+        transmission: car.transmission,
+        euroStandard: car.euro_standard,
+        mileage: car.mileage,
+        fuelType: car.fuel_type,
+        tireWidth: car.tire_width,
+        tireHeight: car.tire_height,
+        tireDiameter: car.tire_diameter,
+        tireSeason: car.tire_season,
+        tireBrand: car.tire_brand,
+        tireDot: car.tire_dot,
+        createdAt: car.created_at,
+        updatedAt: car.updated_at
+      };
+
+      res.json(transformedCar);
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server error');
@@ -157,14 +238,20 @@ router.post('/',
 // Update car
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { Car } = getModels(req);
-    let car = await Car.findByPk(req.params.id);
+    const supabase = getSupabase(req);
+    
+    // Check if car exists and belongs to user
+    const { data: existingCar, error: fetchError } = await supabase
+      .from('cars')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
 
-    if (!car) {
+    if (fetchError || !existingCar) {
       return res.status(404).json({ msg: 'Car not found' });
     }
 
-    if (car.userId !== req.user.id) {
+    if (existingCar.user_id !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
@@ -174,29 +261,64 @@ router.put('/:id', auth, async (req, res) => {
       tireWidth, tireHeight, tireDiameter, tireSeason, tireBrand, tireDot 
     } = req.body;
 
-    if (brand) car.brand = brand;
-    if (model) car.model = model;
-    if (year) car.year = year;
-    if (licensePlate) car.licensePlate = licensePlate;
-    
-    // Update optional fields regardless if they are present strings or null (to allow clearing)
-    // Checking undefined to only update if sent in body
-    if (vin !== undefined) car.vin = vin;
-    if (engineType !== undefined) car.engineType = engineType;
-    if (horsepower !== undefined) car.horsepower = horsepower;
-    if (transmission !== undefined) car.transmission = transmission;
-    if (euroStandard !== undefined) car.euroStandard = euroStandard;
-    if (mileage !== undefined) car.mileage = mileage;
-    if (fuelType !== undefined) car.fuelType = fuelType;
-    if (tireWidth !== undefined) car.tireWidth = tireWidth;
-    if (tireHeight !== undefined) car.tireHeight = tireHeight;
-    if (tireDiameter !== undefined) car.tireDiameter = tireDiameter;
-    if (tireSeason !== undefined) car.tireSeason = tireSeason;
-    if (tireBrand !== undefined) car.tireBrand = tireBrand;
-    if (tireDot !== undefined) car.tireDot = tireDot;
+    // Build update object with snake_case keys
+    const updateData = {};
+    if (brand !== undefined) updateData.brand = brand;
+    if (model !== undefined) updateData.model = model;
+    if (year !== undefined) updateData.year = year;
+    if (licensePlate !== undefined) updateData.license_plate = licensePlate;
+    if (vin !== undefined) updateData.vin = vin;
+    if (engineType !== undefined) updateData.engine_type = engineType;
+    if (horsepower !== undefined) updateData.horsepower = horsepower;
+    if (transmission !== undefined) updateData.transmission = transmission;
+    if (euroStandard !== undefined) updateData.euro_standard = euroStandard;
+    if (mileage !== undefined) updateData.mileage = mileage;
+    if (fuelType !== undefined) updateData.fuel_type = fuelType;
+    if (tireWidth !== undefined) updateData.tire_width = tireWidth;
+    if (tireHeight !== undefined) updateData.tire_height = tireHeight;
+    if (tireDiameter !== undefined) updateData.tire_diameter = tireDiameter;
+    if (tireSeason !== undefined) updateData.tire_season = tireSeason;
+    if (tireBrand !== undefined) updateData.tire_brand = tireBrand;
+    if (tireDot !== undefined) updateData.tire_dot = tireDot;
 
-    await car.save();
-    res.json(car);
+    const { data: car, error } = await supabase
+      .from('cars')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    // Transform to camelCase
+    const transformedCar = {
+      id: car.id,
+      userId: car.user_id,
+      brand: car.brand,
+      model: car.model,
+      year: car.year,
+      licensePlate: car.license_plate,
+      vin: car.vin,
+      engineType: car.engine_type,
+      horsepower: car.horsepower,
+      transmission: car.transmission,
+      euroStandard: car.euro_standard,
+      mileage: car.mileage,
+      fuelType: car.fuel_type,
+      tireWidth: car.tire_width,
+      tireHeight: car.tire_height,
+      tireDiameter: car.tire_diameter,
+      tireSeason: car.tire_season,
+      tireBrand: car.tire_brand,
+      tireDot: car.tire_dot,
+      createdAt: car.created_at,
+      updatedAt: car.updated_at
+    };
+
+    res.json(transformedCar);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -206,18 +328,33 @@ router.put('/:id', auth, async (req, res) => {
 // Delete car
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const { Car } = getModels(req);
-    const car = await Car.findByPk(req.params.id);
+    const supabase = getSupabase(req);
+    
+    // Check if car exists and belongs to user
+    const { data: car, error: fetchError } = await supabase
+      .from('cars')
+      .select('user_id')
+      .eq('id', req.params.id)
+      .single();
 
-    if (!car) {
+    if (fetchError || !car) {
       return res.status(404).json({ msg: 'Car not found' });
     }
 
-    if (car.userId !== req.user.id) {
+    if (car.user_id !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    await car.destroy();
+    const { error } = await supabase
+      .from('cars')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
     res.json({ msg: 'Car removed' });
   } catch (err) {
     console.error(err.message);

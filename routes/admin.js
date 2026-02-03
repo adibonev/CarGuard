@@ -2,12 +2,11 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { Op, fn, col, literal } = require('sequelize');
 
 const router = express.Router();
 
-// Get models from request context
-const getModels = (req) => req.app.locals.models;
+// Get supabase client from request context
+const getSupabase = (req) => req.app.locals.supabase;
 
 // Admin auth middleware
 const adminAuth = (req, res, next) => {
@@ -36,11 +35,16 @@ router.post('/login',
     }
 
     try {
-      const { Admin } = getModels(req);
+      const supabase = getSupabase(req);
       const { username, password } = req.body;
 
-      const admin = await Admin.findOne({ where: { username } });
-      if (!admin) {
+      const { data: admin, error } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+      if (error || !admin) {
         return res.status(400).json({ msg: 'Invalid credentials' });
       }
 
@@ -50,7 +54,10 @@ router.post('/login',
       }
 
       // Update last login
-      await admin.update({ lastLogin: new Date() });
+      await supabase
+        .from('admins')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', admin.id);
 
       const payload = {
         admin: {
@@ -85,10 +92,18 @@ router.post('/login',
 // Verify admin token
 router.get('/verify', adminAuth, async (req, res) => {
   try {
-    const { Admin } = getModels(req);
-    const admin = await Admin.findByPk(req.admin.id, {
-      attributes: ['id', 'username', 'name']
-    });
+    const supabase = getSupabase(req);
+    
+    const { data: admin, error } = await supabase
+      .from('admins')
+      .select('id, username, name')
+      .eq('id', req.admin.id)
+      .single();
+
+    if (error || !admin) {
+      return res.status(404).json({ msg: 'Admin not found' });
+    }
+
     res.json(admin);
   } catch (err) {
     res.status(500).send('Server error');
@@ -98,7 +113,7 @@ router.get('/verify', adminAuth, async (req, res) => {
 // Get dashboard stats
 router.get('/stats', adminAuth, async (req, res) => {
   try {
-    const { User, Car, Service } = getModels(req);
+    const supabase = getSupabase(req);
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -110,48 +125,58 @@ router.get('/stats', adminAuth, async (req, res) => {
     monthAgo.setMonth(monthAgo.getMonth() - 1);
 
     // Total counts
-    const totalUsers = await User.count();
-    const totalCars = await Car.count();
-    const totalServices = await Service.count();
+    const { count: totalUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: totalCars } = await supabase
+      .from('cars')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: totalServices } = await supabase
+      .from('services')
+      .select('*', { count: 'exact', head: true });
 
     // New registrations
-    const newUsersToday = await User.count({
-      where: { createdAt: { [Op.gte]: today } }
-    });
-    const newUsersWeek = await User.count({
-      where: { createdAt: { [Op.gte]: weekAgo } }
-    });
-    const newUsersMonth = await User.count({
-      where: { createdAt: { [Op.gte]: monthAgo } }
-    });
+    const { count: newUsersToday } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', today.toISOString());
+
+    const { count: newUsersWeek } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', weekAgo.toISOString());
+
+    const { count: newUsersMonth } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', monthAgo.toISOString());
 
     // Expiring services (within 30 days)
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
     
-    const expiringServices = await Service.count({
-      where: {
-        expiryDate: {
-          [Op.between]: [today, thirtyDaysFromNow]
-        }
-      }
-    });
+    const { count: expiringServices } = await supabase
+      .from('services')
+      .select('*', { count: 'exact', head: true })
+      .gte('expiry_date', today.toISOString())
+      .lte('expiry_date', thirtyDaysFromNow.toISOString());
 
-    const expiredServices = await Service.count({
-      where: {
-        expiryDate: { [Op.lt]: today }
-      }
-    });
+    const { count: expiredServices } = await supabase
+      .from('services')
+      .select('*', { count: 'exact', head: true })
+      .lt('expiry_date', today.toISOString());
 
     res.json({
-      totalUsers,
-      totalCars,
-      totalServices,
-      newUsersToday,
-      newUsersWeek,
-      newUsersMonth,
-      expiringServices,
-      expiredServices
+      totalUsers: totalUsers || 0,
+      totalCars: totalCars || 0,
+      totalServices: totalServices || 0,
+      newUsersToday: newUsersToday || 0,
+      newUsersWeek: newUsersWeek || 0,
+      newUsersMonth: newUsersMonth || 0,
+      expiringServices: expiringServices || 0,
+      expiredServices: expiredServices || 0
     });
   } catch (err) {
     console.error(err.message);
@@ -162,31 +187,37 @@ router.get('/stats', adminAuth, async (req, res) => {
 // Get all users with their cars and services count
 router.get('/users', adminAuth, async (req, res) => {
   try {
-    const { User, Car, Service } = getModels(req);
+    const supabase = getSupabase(req);
     
-    const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'createdAt'],
-      order: [['createdAt', 'DESC']]
-    });
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, name, email, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
 
     // Get car and service counts for each user
     const usersWithStats = await Promise.all(users.map(async (user) => {
-      const carCount = await Car.count({ where: { userId: user.id } });
-      const cars = await Car.findAll({ where: { userId: user.id } });
-      const carIds = cars.map(c => c.id);
-      
-      let serviceCount = 0;
-      if (carIds.length > 0) {
-        serviceCount = await Service.count({ where: { carId: carIds } });
-      }
+      const { count: carCount } = await supabase
+        .from('cars')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      const { count: serviceCount } = await supabase
+        .from('services')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
       return {
         id: user.id,
         name: user.name,
         email: user.email,
-        createdAt: user.createdAt,
-        carCount,
-        serviceCount
+        createdAt: user.created_at,
+        carCount: carCount || 0,
+        serviceCount: serviceCount || 0
       };
     }));
 
@@ -200,27 +231,34 @@ router.get('/users', adminAuth, async (req, res) => {
 // Get registration chart data (last 30 days)
 router.get('/chart/registrations', adminAuth, async (req, res) => {
   try {
-    const { User } = getModels(req);
-    const sequelize = User.sequelize;
+    const supabase = getSupabase(req);
     
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    // For SQLite, we need to use date function
-    const registrations = await User.findAll({
-      attributes: [
-        [fn('date', col('createdAt')), 'date'],
-        [fn('count', col('id')), 'count']
-      ],
-      where: {
-        createdAt: { [Op.gte]: thirtyDaysAgo }
-      },
-      group: [fn('date', col('createdAt'))],
-      order: [[fn('date', col('createdAt')), 'ASC']],
-      raw: true
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('created_at')
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    // Group by date
+    const registrations = {};
+    users.forEach(user => {
+      const date = user.created_at.split('T')[0];
+      registrations[date] = (registrations[date] || 0) + 1;
     });
 
-    res.json(registrations);
+    // Convert to array format
+    const result = Object.entries(registrations)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json(result);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -230,20 +268,30 @@ router.get('/chart/registrations', adminAuth, async (req, res) => {
 // Get popular car brands
 router.get('/chart/brands', adminAuth, async (req, res) => {
   try {
-    const { Car } = getModels(req);
+    const supabase = getSupabase(req);
     
-    const brands = await Car.findAll({
-      attributes: [
-        'brand',
-        [fn('count', col('id')), 'count']
-      ],
-      group: ['brand'],
-      order: [[fn('count', col('id')), 'DESC']],
-      limit: 10,
-      raw: true
+    const { data: cars, error } = await supabase
+      .from('cars')
+      .select('brand');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    // Group by brand
+    const brandCounts = {};
+    cars.forEach(car => {
+      brandCounts[car.brand] = (brandCounts[car.brand] || 0) + 1;
     });
 
-    res.json(brands);
+    // Convert to array and sort
+    const result = Object.entries(brandCounts)
+      .map(([brand, count]) => ({ brand, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    res.json(result);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -253,19 +301,29 @@ router.get('/chart/brands', adminAuth, async (req, res) => {
 // Get service types distribution
 router.get('/chart/services', adminAuth, async (req, res) => {
   try {
-    const { Service } = getModels(req);
+    const supabase = getSupabase(req);
     
-    const services = await Service.findAll({
-      attributes: [
-        'serviceType',
-        [fn('count', col('id')), 'count']
-      ],
-      group: ['serviceType'],
-      order: [[fn('count', col('id')), 'DESC']],
-      raw: true
+    const { data: services, error } = await supabase
+      .from('services')
+      .select('service_type');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    // Group by service type
+    const serviceCounts = {};
+    services.forEach(service => {
+      serviceCounts[service.service_type] = (serviceCounts[service.service_type] || 0) + 1;
     });
 
-    res.json(services);
+    // Convert to array and sort
+    const result = Object.entries(serviceCounts)
+      .map(([serviceType, count]) => ({ serviceType, count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json(result);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

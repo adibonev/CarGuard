@@ -1,36 +1,40 @@
-const { Op } = require('sequelize');
+let supabaseClient = null;
 
-const startReminderCheck = (models) => {
+const startReminderCheck = (supabase) => {
   console.log('🔔 Reminder service starting...');
+  supabaseClient = supabase;
   
   // Check reminders every hour
   setInterval(() => {
     console.log('⏰ Running scheduled reminder check...');
-    checkAndSendReminders(models);
+    checkAndSendReminders();
   }, 60 * 60 * 1000);
   
   // Also check on startup
   setTimeout(() => {
     console.log('🚀 Running startup reminder check...');
-    checkAndSendReminders(models);
+    checkAndSendReminders();
   }, 3000);
   
   console.log('✅ Reminder service started successfully');
 };
 
-const checkAndSendReminders = async (models) => {
-  if (!models) return;
+const checkAndSendReminders = async () => {
+  if (!supabaseClient) return;
 
   try {
-    const { Service, Car, User } = models;
     const { sendReminderEmail } = require('./emailService');
 
     // Get all services that haven't sent reminder yet
-    const services = await Service.findAll({
-      where: {
-        reminderSent: false
-      }
-    });
+    const { data: services, error } = await supabaseClient
+      .from('services')
+      .select('*')
+      .eq('reminder_sent', false);
+
+    if (error) {
+      console.error('Error fetching services:', error);
+      return;
+    }
 
     console.log(`Found ${services.length} services without reminder sent`);
 
@@ -44,16 +48,26 @@ const checkAndSendReminders = async (models) => {
 
     for (const service of services) {
       // Skip service types that don't need reminders
-      if (!reminderTypes.includes(service.serviceType)) {
-        console.log(`Skipping ${service.serviceType} - not a reminder type`);
+      if (!reminderTypes.includes(service.service_type)) {
+        console.log(`Skipping ${service.service_type} - not a reminder type`);
         continue;
       }
       
-      // Load car separately since include might not work
-      const car = await Car.findByPk(service.carId);
-      const user = await User.findByPk(service.userId);
+      // Load car
+      const { data: car } = await supabaseClient
+        .from('cars')
+        .select('*')
+        .eq('id', service.car_id)
+        .single();
 
-      console.log(`Checking service: ${service.serviceType}, Car: ${car?.brand}, User: ${user?.email}`);
+      // Load user
+      const { data: user } = await supabaseClient
+        .from('users')
+        .select('*')
+        .eq('id', service.user_id)
+        .single();
+
+      console.log(`Checking service: ${service.service_type}, Car: ${car?.brand}, User: ${user?.email}`);
 
       if (!car || !user) {
         console.log(`Skipping - car or user not found`);
@@ -61,9 +75,9 @@ const checkAndSendReminders = async (models) => {
       }
 
       // Get user's reminder days setting (default 30)
-      const reminderDays = user.reminderDays || 30;
+      const reminderDays = user.reminder_days || 30;
       const reminderDate = new Date(today.getTime() + reminderDays * 24 * 60 * 60 * 1000);
-      const expiryDate = new Date(service.expiryDate);
+      const expiryDate = new Date(service.expiry_date);
       
       // Normalize email to lowercase
       const userEmail = user.email.toLowerCase();
@@ -82,14 +96,18 @@ const checkAndSendReminders = async (models) => {
             model: car.model,
             year: car.year
           },
-          service.serviceType,
-          service.expiryDate
+          service.service_type,
+          service.expiry_date
         );
 
         if (emailSent) {
-          service.reminderSent = true;
-          await service.save();
-          console.log(`✅ Reminder sent to ${user.email} for ${service.serviceType}`);
+          // Update reminder_sent in Supabase
+          await supabaseClient
+            .from('services')
+            .update({ reminder_sent: true })
+            .eq('id', service.id);
+            
+          console.log(`✅ Reminder sent to ${user.email} for ${service.service_type}`);
           // Add delay to avoid rate limiting (Resend allows 2 requests/second)
           await delay(600);
         } else {

@@ -2,12 +2,11 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { Sequelize } = require('sequelize');
 
 const router = express.Router();
 
-// Get models from request context (will be set in server.js)
-const getModels = (req) => req.app.locals.models;
+// Get supabase client from request context
+const getSupabase = (req) => req.app.locals.supabase;
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
@@ -37,23 +36,39 @@ router.post('/register',
     }
 
     try {
-      const { User } = getModels(req);
+      const supabase = getSupabase(req);
       const { name, email, password } = req.body;
 
-      let user = await User.findOne({ where: { email } });
-      if (user) {
+      // Check if user exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (existingUser) {
         return res.status(400).json({ msg: 'User already exists' });
       }
 
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        reminderDays: 30
-      });
+      // Create user
+      const { data: user, error } = await supabase
+        .from('users')
+        .insert({
+          name,
+          email: email.toLowerCase(),
+          password: hashedPassword,
+          reminder_days: 30
+        })
+        .select('id, name, email, reminder_days')
+        .single();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).json({ msg: 'Error creating user' });
+      }
 
       const payload = {
         user: {
@@ -67,7 +82,15 @@ router.post('/register',
         { expiresIn: '7d' },
         (err, token) => {
           if (err) throw err;
-          res.json({ token, user: { id: user.id, name: user.name, email: user.email, reminderDays: user.reminderDays } });
+          res.json({ 
+            token, 
+            user: { 
+              id: user.id, 
+              name: user.name, 
+              email: user.email, 
+              reminderDays: user.reminder_days 
+            } 
+          });
         }
       );
     } catch (err) {
@@ -88,11 +111,16 @@ router.post('/login',
     }
 
     try {
-      const { User } = getModels(req);
+      const supabase = getSupabase(req);
       const { email, password } = req.body;
 
-      let user = await User.findOne({ where: { email } });
-      if (!user) {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (error || !user) {
         return res.status(400).json({ msg: 'Invalid credentials' });
       }
 
@@ -113,7 +141,15 @@ router.post('/login',
         { expiresIn: '7d' },
         (err, token) => {
           if (err) throw err;
-          res.json({ token, user: { id: user.id, name: user.name, email: user.email, reminderDays: user.reminderDays } });
+          res.json({ 
+            token, 
+            user: { 
+              id: user.id, 
+              name: user.name, 
+              email: user.email, 
+              reminderDays: user.reminder_days 
+            } 
+          });
         }
       );
     } catch (err) {
@@ -126,16 +162,24 @@ router.post('/login',
 // Get user profile
 router.get('/me', verifyToken, async (req, res) => {
   try {
-    const { User } = getModels(req);
-    const user = await User.findByPk(req.userId, {
-      attributes: ['id', 'name', 'email', 'reminderDays']
-    });
+    const supabase = getSupabase(req);
     
-    if (!user) {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, reminder_days')
+      .eq('id', req.userId)
+      .single();
+
+    if (error || !user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-    
-    res.json(user);
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      reminderDays: user.reminder_days
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -145,22 +189,25 @@ router.get('/me', verifyToken, async (req, res) => {
 // Update reminder days
 router.put('/reminder-days', verifyToken, async (req, res) => {
   try {
-    const { User } = getModels(req);
+    const supabase = getSupabase(req);
     const { reminderDays } = req.body;
 
     if (!reminderDays || reminderDays < 1 || reminderDays > 365) {
       return res.status(400).json({ msg: 'Reminder days must be between 1 and 365' });
     }
 
-    const user = await User.findByPk(req.userId);
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+    const { data: user, error } = await supabase
+      .from('users')
+      .update({ reminder_days: reminderDays })
+      .eq('id', req.userId)
+      .select('reminder_days')
+      .single();
+
+    if (error) {
+      return res.status(500).json({ msg: 'Error updating reminder days' });
     }
 
-    user.reminderDays = reminderDays;
-    await user.save();
-
-    res.json({ msg: 'Reminder days updated successfully', reminderDays: user.reminderDays });
+    res.json({ msg: 'Reminder days updated successfully', reminderDays: user.reminder_days });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

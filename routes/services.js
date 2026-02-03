@@ -4,25 +4,65 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get models from request context
-const getModels = (req) => req.app.locals.models;
+// Get supabase client from request context
+const getSupabase = (req) => req.app.locals.supabase;
+
+// Helper function to transform service from snake_case to camelCase
+const transformService = (service) => ({
+  id: service.id,
+  carId: service.car_id,
+  userId: service.user_id,
+  serviceType: service.service_type,
+  expiryDate: service.expiry_date,
+  cost: service.cost,
+  notes: service.notes,
+  liters: service.liters,
+  pricePerLiter: service.price_per_liter,
+  fuelType: service.fuel_type,
+  reminderSent: service.reminder_sent,
+  createdAt: service.created_at,
+  updatedAt: service.updated_at,
+  car: service.cars ? {
+    id: service.cars.id,
+    brand: service.cars.brand,
+    model: service.cars.model,
+    year: service.cars.year,
+    licensePlate: service.cars.license_plate
+  } : undefined
+});
 
 // Get all services for a car
 router.get('/car/:carId', auth, async (req, res) => {
   try {
-    const { Car, Service } = getModels(req);
-    const car = await Car.findByPk(req.params.carId);
+    const supabase = getSupabase(req);
+    
+    // Check if car exists and belongs to user
+    const { data: car, error: carError } = await supabase
+      .from('cars')
+      .select('user_id')
+      .eq('id', req.params.carId)
+      .single();
 
-    if (!car) {
+    if (carError || !car) {
       return res.status(404).json({ msg: 'Car not found' });
     }
 
-    if (car.userId !== req.user.id) {
+    if (car.user_id !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    const services = await Service.findAll({ where: { carId: req.params.carId } });
-    res.json(services);
+    const { data: services, error } = await supabase
+      .from('services')
+      .select('*')
+      .eq('car_id', req.params.carId)
+      .order('expiry_date', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    res.json(services.map(transformService));
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -32,13 +72,23 @@ router.get('/car/:carId', auth, async (req, res) => {
 // Get all services for the user (all cars)
 router.get('/all', auth, async (req, res) => {
   try {
-    const { Service, Car } = getModels(req);
-    const services = await Service.findAll({
-      where: { userId: req.user.id },
-      include: [{ model: Car, as: 'car' }],
-      order: [['expiryDate', 'ASC']]
-    });
-    res.json(services);
+    const supabase = getSupabase(req);
+    
+    const { data: services, error } = await supabase
+      .from('services')
+      .select(`
+        *,
+        cars (id, brand, model, year, license_plate)
+      `)
+      .eq('user_id', req.user.id)
+      .order('expiry_date', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    res.json(services.map(transformService));
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -58,32 +108,46 @@ router.post('/',
     }
 
     try {
-      const { Car, Service } = getModels(req);
+      const supabase = getSupabase(req);
       const { carId, serviceType, expiryDate, cost, notes, liters, pricePerLiter, fuelType } = req.body;
 
-      const car = await Car.findByPk(carId);
+      // Check if car exists and belongs to user
+      const { data: car, error: carError } = await supabase
+        .from('cars')
+        .select('user_id')
+        .eq('id', carId)
+        .single();
 
-      if (!car) {
+      if (carError || !car) {
         return res.status(404).json({ msg: 'Car not found' });
       }
 
-      if (car.userId !== req.user.id) {
+      if (car.user_id !== req.user.id) {
         return res.status(401).json({ msg: 'Not authorized' });
       }
 
-      const service = await Service.create({
-        carId,
-        userId: req.user.id,
-        serviceType,
-        expiryDate,
-        cost: cost || 0,
-        notes,
-        liters,
-        pricePerLiter,
-        fuelType
-      });
+      const { data: service, error } = await supabase
+        .from('services')
+        .insert({
+          car_id: carId,
+          user_id: req.user.id,
+          service_type: serviceType,
+          expiry_date: expiryDate,
+          cost: cost || 0,
+          notes,
+          liters,
+          price_per_liter: pricePerLiter,
+          fuel_type: fuelType
+        })
+        .select()
+        .single();
 
-      res.json(service);
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).send('Server error');
+      }
+
+      res.json(transformService(service));
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server error');
@@ -94,32 +158,51 @@ router.post('/',
 // Update service
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { Service } = getModels(req);
-    let service = await Service.findByPk(req.params.id);
+    const supabase = getSupabase(req);
+    
+    // Check if service exists and belongs to user
+    const { data: existingService, error: fetchError } = await supabase
+      .from('services')
+      .select('user_id, reminder_sent')
+      .eq('id', req.params.id)
+      .single();
 
-    if (!service) {
+    if (fetchError || !existingService) {
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-    if (service.userId !== req.user.id) {
+    if (existingService.user_id !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
     const { serviceType, expiryDate, cost, notes, liters, pricePerLiter, fuelType } = req.body;
 
-    if (serviceType) service.serviceType = serviceType;
-    if (expiryDate) {
-      service.expiryDate = expiryDate;
-      service.reminderSent = false;
+    // Build update object
+    const updateData = {};
+    if (serviceType !== undefined) updateData.service_type = serviceType;
+    if (expiryDate !== undefined) {
+      updateData.expiry_date = expiryDate;
+      updateData.reminder_sent = false; // Reset reminder when date changes
     }
-    if (cost !== undefined) service.cost = cost;
-    if (notes !== undefined) service.notes = notes;
-    if (liters !== undefined) service.liters = liters;
-    if (pricePerLiter !== undefined) service.pricePerLiter = pricePerLiter;
-    if (fuelType !== undefined) service.fuelType = fuelType;
+    if (cost !== undefined) updateData.cost = cost;
+    if (notes !== undefined) updateData.notes = notes;
+    if (liters !== undefined) updateData.liters = liters;
+    if (pricePerLiter !== undefined) updateData.price_per_liter = pricePerLiter;
+    if (fuelType !== undefined) updateData.fuel_type = fuelType;
 
-    await service.save();
-    res.json(service);
+    const { data: service, error } = await supabase
+      .from('services')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
+    res.json(transformService(service));
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -129,18 +212,33 @@ router.put('/:id', auth, async (req, res) => {
 // Delete service
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const { Service } = getModels(req);
-    const service = await Service.findByPk(req.params.id);
+    const supabase = getSupabase(req);
+    
+    // Check if service exists and belongs to user
+    const { data: service, error: fetchError } = await supabase
+      .from('services')
+      .select('user_id')
+      .eq('id', req.params.id)
+      .single();
 
-    if (!service) {
+    if (fetchError || !service) {
       return res.status(404).json({ msg: 'Service not found' });
     }
 
-    if (service.userId !== req.user.id) {
+    if (service.user_id !== req.user.id) {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
-    await service.destroy();
+    const { error } = await supabase
+      .from('services')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).send('Server error');
+    }
+
     res.json({ msg: 'Service removed' });
   } catch (err) {
     console.error(err.message);

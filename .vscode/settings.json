@@ -3,6 +3,10 @@
         "/^cd \"c:\\\\Users\\\\bonev\\\\Нова папка\\\\Car Checker\"; node fix-db\\.js$/": {
             "approve": true,
             "matchCommandLine": true
+        },
+        "/^cd \"c:\\\\Users\\\\bonev\\\\Нова папка\\\\Car Checker\" ; node server\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
         }
     }
 }
