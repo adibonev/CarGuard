@@ -147,6 +147,25 @@ router.post('/',
         return res.status(500).send('Server error');
       }
 
+      // Записване в service_logs таблица
+      const { data: userInfo } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', req.user.id)
+        .single();
+
+      if (userInfo) {
+        await supabase
+          .from('service_logs')
+          .insert({
+            user_id: req.user.id,
+            email: userInfo.email,
+            service_type: serviceType,
+            car_id: carId,
+            description: notes || ''
+          });
+      }
+
       res.json(transformService(service));
     } catch (err) {
       console.error(err.message);

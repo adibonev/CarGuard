@@ -106,7 +106,28 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
 
 -- =====================================================
--- 6. ФУНКЦИЯ ЗА АВТОМАТИЧНО ОБНОВЯВАНЕ НА updated_at
+-- 6. ТАБЛИЦА SERVICE_LOGS (Лог на въведени услуги по потребител)
+-- Следи кой потребител какви услуги е въвел
+-- =====================================================
+CREATE TABLE IF NOT EXISTS service_logs (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email VARCHAR(255) NOT NULL,
+  service_type VARCHAR(100) NOT NULL,
+  car_id INTEGER REFERENCES cars(id) ON DELETE SET NULL,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Индекси за бързо търсене
+CREATE INDEX IF NOT EXISTS idx_service_logs_user_id ON service_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_service_logs_email ON service_logs(email);
+CREATE INDEX IF NOT EXISTS idx_service_logs_service_type ON service_logs(service_type);
+CREATE INDEX IF NOT EXISTS idx_service_logs_created_at ON service_logs(created_at);
+
+-- =====================================================
+-- 7. ФУНКЦИЯ ЗА АВТОМАТИЧНО ОБНОВЯВАНЕ НА updated_at
 -- =====================================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -137,8 +158,12 @@ DROP TRIGGER IF EXISTS update_accounts_updated_at ON accounts;
 CREATE TRIGGER update_accounts_updated_at BEFORE UPDATE ON accounts
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_service_logs_updated_at ON service_logs;
+CREATE TRIGGER update_service_logs_updated_at BEFORE UPDATE ON service_logs
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- =====================================================
--- 7. ROW LEVEL SECURITY (RLS) POLICIES
+-- 8. ROW LEVEL SECURITY (RLS) POLICIES
 -- Защита на ниво ред - всеки потребител вижда само своите данни
 -- =====================================================
 
@@ -147,6 +172,7 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cars ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE service_logs ENABLE ROW LEVEL SECURITY;
 
 -- Политики за users (само четене на собствения профил)
 -- ЗАБЕЛЕЖКА: Тъй като използваме собствена JWT автентикация през backend,
@@ -154,7 +180,7 @@ ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 -- За по-голяма сигурност, може да използваш Supabase Auth.
 
 -- =====================================================
--- 8. ВМЪКВАНЕ НА ADMIN ПО ПОДРАЗБИРАНЕ
+-- 9. ВМЪКВАНЕ НА ADMIN ПО ПОДРАЗБИРАНЕ
 -- Паролата е 'admin123' (bcrypt hash)
 -- =====================================================
 INSERT INTO admins (username, password, name)

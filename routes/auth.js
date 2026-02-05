@@ -70,6 +70,16 @@ router.post('/register',
         return res.status(500).json({ msg: 'Error creating user' });
       }
 
+      // Записване в accounts таблица
+      await supabase
+        .from('accounts')
+        .insert({
+          user_id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: '' // Телефонът може да се добави по-късно
+        });
+
       const payload = {
         user: {
           id: user.id
