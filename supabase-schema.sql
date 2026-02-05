@@ -90,7 +90,23 @@ CREATE INDEX IF NOT EXISTS idx_services_user_id ON services(user_id);
 CREATE INDEX IF NOT EXISTS idx_services_expiry_date ON services(expiry_date);
 
 -- =====================================================
--- 5. ФУНКЦИЯ ЗА АВТОМАТИЧНО ОБНОВЯВАНЕ НА updated_at
+-- 5. ТАБЛИЦА ACCOUNTS (Акаунти на новорегистрираните потребители)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS accounts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Индекс за бързо търсене на акаунти по user_id
+CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
+
+-- =====================================================
+-- 6. ФУНКЦИЯ ЗА АВТОМАТИЧНО ОБНОВЯВАНЕ НА updated_at
 -- =====================================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -117,8 +133,12 @@ DROP TRIGGER IF EXISTS update_services_updated_at ON services;
 CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_accounts_updated_at ON accounts;
+CREATE TRIGGER update_accounts_updated_at BEFORE UPDATE ON accounts
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- =====================================================
--- 6. ROW LEVEL SECURITY (RLS) POLICIES
+-- 7. ROW LEVEL SECURITY (RLS) POLICIES
 -- Защита на ниво ред - всеки потребител вижда само своите данни
 -- =====================================================
 
@@ -126,6 +146,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cars ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
 
 -- Политики за users (само четене на собствения профил)
 -- ЗАБЕЛЕЖКА: Тъй като използваме собствена JWT автентикация през backend,
@@ -133,7 +154,7 @@ ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 -- За по-голяма сигурност, може да използваш Supabase Auth.
 
 -- =====================================================
--- 7. ВМЪКВАНЕ НА ADMIN ПО ПОДРАЗБИРАНЕ
+-- 8. ВМЪКВАНЕ НА ADMIN ПО ПОДРАЗБИРАНЕ
 -- Паролата е 'admin123' (bcrypt hash)
 -- =====================================================
 INSERT INTO admins (username, password, name)
