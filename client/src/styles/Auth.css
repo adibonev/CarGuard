@@ -125,3 +125,58 @@ body {
   color: #c82333;
   text-decoration: underline;
 }
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  margin: 25px 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+.oauth-divider span {
+  padding: 0 15px;
+  color: #666;
+}
+
+.google-btn {
+  width: 100%;
+  padding: 14px;
+  background: #ffffff;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: none;
+  letter-spacing: normal;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.google-btn:hover {
+  background: #f8f8f8;
+  border-color: #dc3545;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+  transform: translateY(-2px);
+}
+
+.google-btn:disabled {
+  background: #f0f0f0;
+  color: #999;
+  border-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}

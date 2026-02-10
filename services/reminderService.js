@@ -74,6 +74,11 @@ const checkAndSendReminders = async () => {
         continue;
       }
 
+      if (user.reminder_enabled === false) {
+        console.log(`Skipping - reminders disabled for ${user.email}`);
+        continue;
+      }
+
       // Get user's reminder days setting (default 30)
       const reminderDays = user.reminder_days || 30;
       const reminderDate = new Date(today.getTime() + reminderDays * 24 * 60 * 60 * 1000);

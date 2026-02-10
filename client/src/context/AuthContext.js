@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
     setToken(userToken);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', userToken);
+    setIsInitialized(true); // Маркирай като инициализирана след успешен логин
   };
 
   const logout = () => {
@@ -50,8 +51,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateReminderEnabled = async (reminderEnabled) => {
+    try {
+      const response = await authAPI.updateReminderEnabled(reminderEnabled);
+      const updatedUser = { ...user, reminderEnabled: response.data.reminderEnabled };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return response.data;
+    } catch (err) {
+      console.error('Error updating reminder enabled:', err);
+      throw err;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateReminderDays, isInitialized }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateReminderDays, updateReminderEnabled, isInitialized }}>
       {children}
     </AuthContext.Provider>
   );

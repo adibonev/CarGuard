@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [reminderDays, setReminderDays] = useState(30);
+  const [reminderEnabled, setReminderEnabled] = useState(true);
   
   // States for Events Filter
   const [eventFilterType, setEventFilterType] = useState('all');
@@ -35,7 +36,7 @@ const Dashboard = () => {
   // Mobile menu state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { user, logout, updateReminderDays: updateReminderDaysContext, isInitialized } = useAuth();
+  const { user, logout, updateReminderDays: updateReminderDaysContext, updateReminderEnabled: updateReminderEnabledContext, isInitialized } = useAuth();
 
   // Handle logout and redirect to home page
   const handleLogout = () => {
@@ -54,6 +55,16 @@ const Dashboard = () => {
     }
   };
 
+  const handleReminderEnabledChange = async (enabled) => {
+    try {
+      await updateReminderEnabledContext(enabled);
+      setReminderEnabled(enabled);
+    } catch (err) {
+      console.error('Error updating reminder enabled:', err);
+      alert('Грешка при актуализиране на напомянията');
+    }
+  };
+
   useEffect(() => {
     // Чакай приложението да се инициализира преди да зареди данните
     if (!isInitialized) return;
@@ -64,10 +75,16 @@ const Dashboard = () => {
     } else {
       setReminderDays(30);
     }
+
+    if (typeof user?.reminderEnabled === 'boolean') {
+      setReminderEnabled(user.reminderEnabled);
+    } else {
+      setReminderEnabled(true);
+    }
     loadCars();
     loadAllServices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInitialized, user?.reminderDays]);
+  }, [isInitialized, user?.reminderDays, user?.reminderEnabled]);
 
   useEffect(() => {
     if (selectedCar) {
@@ -1106,7 +1123,19 @@ const Dashboard = () => {
         <h3>🔔 Напомняния</h3>
         <div className="setting-item">
           <label>Email напомняния:</label>
-          <span className="badge-active">Активни</span>
+          <div className="reminder-toggle">
+            <span className={`badge-status ${reminderEnabled ? 'active' : 'inactive'}`}>
+              {reminderEnabled ? 'Активни' : 'Неактивни'}
+            </span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={reminderEnabled}
+                onChange={(e) => handleReminderEnabledChange(e.target.checked)}
+              />
+              <span className="slider"></span>
+            </label>
+          </div>
         </div>
         <div className="setting-item">
           <label>Дни преди изтичане:</label>
@@ -1115,6 +1144,7 @@ const Dashboard = () => {
               value={reminderDays} 
               onChange={(e) => handleReminderDaysChange(e.target.value)}
               className="reminder-select"
+              disabled={!reminderEnabled}
             >
               <option value="7">7 дни</option>
               <option value="14">14 дни</option>

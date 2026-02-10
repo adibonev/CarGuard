@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { signInWithGoogle, supabaseConfigured } from '../lib/supabaseAuth';
 import '../styles/Auth.css';
 
 const Login = () => {
@@ -11,6 +12,7 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -38,6 +40,18 @@ const Login = () => {
       setError(err.response?.data?.msg || 'Login failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError('');
+    try {
+      await signInWithGoogle();
+      // Supabase redirect ще попълни сессията
+    } catch (err) {
+      setError('Google sign-in failed. Please try again.');
+      setGoogleLoading(false);
     }
   };
 
@@ -71,6 +85,24 @@ const Login = () => {
             {loading ? 'Влизане...' : 'Влез'}
           </button>
         </form>
+        
+        {supabaseConfigured && (
+          <>
+            <div className="oauth-divider">
+              <span>или</span>
+            </div>
+            
+            <button 
+              type="button" 
+              className="google-btn"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
+              {googleLoading ? 'Вход с Google...' : '🔐 Влез с Google'}
+            </button>
+          </>
+        )}
+
         <p>
           Нямаш акаунт? <a href="/register">Регистрирай се</a>
         </p>

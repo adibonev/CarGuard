@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-// Използвай локалния сървър при development, production URL в production
-const API_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5000/api'
-  : 'https://web-production-2e60.up.railway.app/api';
+// Използвай REACT_APP_API_URL от .env файла
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-console.log('API URL:', API_URL, 'ENV:', process.env.NODE_ENV);
+console.log('API URL:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL
@@ -43,7 +41,9 @@ export const authAPI = {
     api.post('/auth/login', { email, password }),
   getProfile: () => api.get('/auth/me'),
   updateReminderDays: (reminderDays) =>
-    api.put('/auth/reminder-days', { reminderDays })
+    api.put('/auth/reminder-days', { reminderDays }),
+  updateReminderEnabled: (reminderEnabled) =>
+    api.put('/auth/reminder-enabled', { reminderEnabled })
 };
 
 export const carsAPI = {
