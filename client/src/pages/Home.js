@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseAuth';
+import { supabase, signInWithGoogle } from '../lib/supabaseAuth';
 import '../styles/Home.css';
 
 const Home = () => {
@@ -193,6 +193,22 @@ const Home = () => {
                 {loading ? 'Зареждане...' : 'Влез'}
               </button>
             </form>
+            <div className="oauth-divider">
+              <span>или</span>
+            </div>
+            <button 
+              type="button" 
+              className="google-btn"
+              onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                } catch (err) {
+                  setError('Google sign-in failed. Please try again.');
+                }
+              }}
+            >
+              🔐 Влез с Google
+            </button>
             <p className="auth-switch">
               Нямаш акаунт? <span onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); setError(''); }}>Регистрирай се</span>
             </p>
@@ -252,6 +268,22 @@ const Home = () => {
                 {loading ? 'Зареждане...' : 'Регистрирай се'}
               </button>
             </form>
+            <div className="oauth-divider">
+              <span>или</span>
+            </div>
+            <button 
+              type="button" 
+              className="google-btn"
+              onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                } catch (err) {
+                  setError('Google sign-up failed. Please try again.');
+                }
+              }}
+            >
+              🔐 Регистрирай се с Google
+            </button>
             <p className="auth-switch">
               Вече имаш акаунт? <span onClick={() => { setShowRegisterModal(false); setShowLoginModal(true); setError(''); }}>Влез</span>
             </p>
