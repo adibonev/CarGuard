@@ -41,6 +41,7 @@ const Dashboard = () => {
   // States for Document Upload Form
   const [showDocumentForm, setShowDocumentForm] = useState(false);
   const [docFormData, setDocFormData] = useState({
+    carId: '',
     category: 'друго',
     file: null,
     notes: ''
@@ -252,7 +253,7 @@ const Dashboard = () => {
   const handleDocumentUpload = async (e) => {
     e.preventDefault();
     
-    if (!selectedCar) {
+    if (!docFormData.carId) {
       alert('Моля изберете автомобил');
       return;
     }
@@ -265,7 +266,7 @@ const Dashboard = () => {
     try {
       // Create a service entry with just the document
       const serviceData = {
-        carId: selectedCar.id,
+        carId: parseInt(docFormData.carId),
         userId: user.id,
         serviceType: docFormData.category,
         expiryDate: new Date().toISOString(),
@@ -284,11 +285,13 @@ const Dashboard = () => {
       await servicesService.updateService(service.id, { fileUrl });
       
       // Reset form
-      setDocFormData({ category: 'друго', file: null, notes: '' });
+      setDocFormData({ carId: '', category: 'друго', file: null, notes: '' });
       setShowDocumentForm(false);
       
       // Reload services
-      loadServices(selectedCar.id);
+      if (selectedCar) {
+        loadServices(selectedCar.id);
+      }
       loadAllServices();
       
       alert('Документът е качен успешно! ✅');
@@ -309,6 +312,33 @@ const Dashboard = () => {
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Грешка при генериране на PDF: ' + err.message);
+    }
+  };
+
+  const handleDeleteDocument = async (serviceId, fileUrl) => {
+    if (!window.confirm('Сигурен ли си, че искаш да изтриеш този документ?')) {
+      return;
+    }
+    
+    try {
+      // Delete the file from storage
+      if (fileUrl) {
+        await servicesService.deleteFile(fileUrl);
+      }
+      
+      // Delete the service record
+      await servicesService.deleteService(serviceId);
+      
+      // Reload services
+      if (selectedCar) {
+        loadServices(selectedCar.id);
+      }
+      loadAllServices();
+      
+      alert('Документът е изтрит успешно! ✅');
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      alert('Грешка при изтриване на документ: ' + err.message);
     }
   };
 
@@ -1377,13 +1407,7 @@ const Dashboard = () => {
           
           <button 
             className="doc-add-btn"
-            onClick={() => {
-              if (!selectedCar) {
-                alert('Моля първо избери автомобил');
-                return;
-              }
-              setShowDocumentForm(!showDocumentForm);
-            }}
+            onClick={() => setShowDocumentForm(!showDocumentForm)}
           >
             {showDocumentForm ? '✖️ Затвори' : '➕ Добави документ'}
           </button>
@@ -1392,6 +1416,22 @@ const Dashboard = () => {
         {showDocumentForm && (
           <div className="document-upload-form">
             <form onSubmit={handleDocumentUpload}>
+              <div className="form-group">
+                <label>Избери автомобил</label>
+                <select 
+                  value={docFormData.carId || ''}
+                  onChange={(e) => setDocFormData({ ...docFormData, carId: e.target.value })}
+                  required
+                >
+                  <option value="">-- Избери автомобил --</option>
+                  {cars.map(car => (
+                    <option key={car.id} value={car.id}>
+                      {car.brand} {car.model} {car.year && `(${car.year})`} {car.licensePlate && `- ${car.licensePlate}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="form-group">
                 <label>Категория документ</label>
                 <select 
@@ -1449,7 +1489,7 @@ const Dashboard = () => {
                   className="cancel-btn"
                   onClick={() => {
                     setShowDocumentForm(false);
-                    setDocFormData({ category: 'друго', file: null, notes: '' });
+                    setDocFormData({ carId: '', category: 'друго', file: null, notes: '' });
                   }}
                 >
                   Откажи
@@ -1521,6 +1561,13 @@ const Dashboard = () => {
                     >
                       ⬇️ Изтегли
                     </a>
+                    <button
+                      onClick={() => handleDeleteDocument(doc.id, doc.fileUrl)}
+                      className="doc-delete-btn"
+                      title="Изтрий документ"
+                    >
+                      🗑️ Изтрий
+                    </button>
                   </div>
                 </div>
               );

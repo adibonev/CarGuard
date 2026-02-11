@@ -20,29 +20,51 @@ export const generateCarReport = async (car, services) => {
   // Set font
   doc.setFont('helvetica');
   
+  // Header with logo and branding
+  doc.setFillColor(41, 128, 185);
+  doc.rect(0, 0, 210, 35, 'F');
+  
+  // Logo/Icon
+  doc.setFontSize(32);
+  doc.setTextColor(255, 255, 255);
+  doc.text('🚗', 15, 22);
+  
+  // Brand name
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CarGuard', 30, 17);
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Вашият дигитален автомобилен асистент', 30, 25);
+  
   // Title
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setTextColor(52, 73, 94);
-  doc.text('🚗 СЕРВИЗЕН ДОКЛАД НА АВТОМОБИЛА', 105, 20, { align: 'center' });
+  doc.setFont('helvetica', 'bold');
+  doc.text('СЕРВИЗЕН ДОКЛАД', 105, 48, { align: 'center' });
   
   // Subtitle with car info
   doc.setFontSize(16);
   doc.setTextColor(44, 62, 80);
-  doc.text(`${car.brand} ${car.model}`, 105, 30, { align: 'center' });
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${car.brand} ${car.model}`, 105, 58, { align: 'center' });
   
   doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
   doc.setTextColor(127, 140, 141);
-  doc.text(`Генериран на: ${formatDate(new Date().toISOString())}`, 105, 36, { align: 'center' });
+  doc.text(`Генериран на: ${formatDate(new Date().toISOString())}`, 105, 64, { align: 'center' });
   
   // Divider line
   doc.setDrawColor(52, 152, 219);
-  doc.setLineWidth(0.5);
-  doc.line(20, 40, 190, 40);
+  doc.setLineWidth(0.8);
+  doc.line(20, 70, 190, 70);
   
-  let yPos = 50;
+  let yPos = 78;
   
   // Section 1: Technical Data
   doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
   doc.setTextColor(41, 128, 185);
   doc.text('📋 ТЕХНИЧЕСКИ ДАННИ', 20, yPos);
   

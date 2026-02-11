@@ -4446,9 +4446,10 @@
   border-top: 1px solid #e0e0e0;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-.doc-view-btn, .doc-download-btn {
+.doc-view-btn, .doc-download-btn, .doc-delete-btn {
   flex: 1;
   padding: 10px;
   text-align: center;
@@ -4458,6 +4459,8 @@
   font-weight: 600;
   transition: all 0.2s;
   cursor: pointer;
+  border: none;
+  min-width: 80px;
 }
 
 .doc-view-btn {
@@ -4478,6 +4481,17 @@
 .doc-download-btn:hover {
   background: #388e3c;
   color: white;
+}
+
+.doc-delete-btn {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.doc-delete-btn:hover {
+  background: #d32f2f;
+  color: white;
+  transform: translateY(-1px);
 }
 
 /* Document Upload Form */
