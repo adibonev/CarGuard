@@ -111,7 +111,7 @@ export const servicesService = {
     const fileName = `${userId}/${serviceId}_${Date.now()}.${fileExt}`;
     const filePath = `service-documents/${fileName}`;
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('documents')
       .upload(filePath, file, {
         cacheControl: '3600',
