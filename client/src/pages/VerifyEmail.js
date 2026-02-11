@@ -49,27 +49,27 @@ const VerifyEmail = () => {
       <div className="auth-box">
         {loading ? (
           <>
-            <h2>Верификация на имейл</h2>
+            <h2>Email Verification</h2>
             <p style={{ textAlign: 'center', color: '#666' }}>
-              Вашият имейл се верифицира... Моля, изчакайте.
+              Your email is being verified... Please wait.
             </p>
           </>
         ) : success ? (
           <>
-            <h2>✅ Успех!</h2>
+            <h2>✅ Success!</h2>
             <p style={{ textAlign: 'center', color: '#28a745', marginTop: '20px' }}>
-              Вашият имейл е успешно верифициран.
+              Your email has been verified successfully.
             </p>
             <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>
-              Редиректиране към логване... ако не се редиректира, <a href="/login">кликнете тук</a>
+              Redirecting to login... if it doesn’t redirect, <a href="/login">click here</a>
             </p>
           </>
         ) : (
           <>
-            <h2>❌ Грешка</h2>
+            <h2>❌ Error</h2>
             <div className="error-message">{error}</div>
             <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>
-              <a href="/login">Върнете се към логване</a>
+              <a href="/login">Back to login</a>
             </p>
           </>
         )}

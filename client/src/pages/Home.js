@@ -65,7 +65,7 @@ const Home = () => {
       setShowLoginModal(false);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Грешка при вход');
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ const Home = () => {
     e.preventDefault();
     setError('');
     if (registerData.password !== registerData.confirmPassword) {
-      setError('Паролите не съвпадат');
+      setError('Passwords do not match');
       return;
     }
     setLoading(true);
@@ -102,14 +102,14 @@ const Home = () => {
       // Check if email confirmation is required
       if (authData.user && !authData.user.confirmed_at) {
         setShowRegisterModal(false);
-        alert('✅ Регистрацията е успешна!\n\nМоля проверете имейла си (' + registerData.email + ') за потвърждение.');
+        alert('✅ Registration successful!\n\nPlease check your email (' + registerData.email + ') to confirm.');
       } else {
         // Auto login if no confirmation needed
         setShowRegisterModal(false);
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Грешка при регистрация');
+      setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -128,34 +128,34 @@ const Home = () => {
               className={`nav-tab ${activeSection === 'why' ? 'active' : ''}`}
               onClick={() => scrollToSection('why')}
             >
-              Защо CarGuard
+              Why CarGuard
             </button>
             <button 
               className={`nav-tab ${activeSection === 'how' ? 'active' : ''}`}
               onClick={() => scrollToSection('how')}
             >
-              Как работи
+              How it works
             </button>
             <button 
               className={`nav-tab ${activeSection === 'services' ? 'active' : ''}`}
               onClick={() => scrollToSection('services')}
             >
-              Услуги
+              Services
             </button>
             <button 
               className={`nav-tab ${activeSection === 'demo' ? 'active' : ''}`}
               onClick={() => scrollToSection('demo')}
             >
-              Демо
+              Demo
             </button>
           </nav>
 
           <nav className="nav-links">
             <button className="nav-btn login-btn" onClick={() => { setShowLoginModal(true); setError(''); }}>
-              Вход
+              Log in
             </button>
             <button className="nav-btn register-btn" onClick={() => { setShowRegisterModal(true); setError(''); }}>
-              Регистрирай се
+              Sign up
             </button>
           </nav>
         </div>
@@ -166,7 +166,7 @@ const Home = () => {
         <div className="auth-modal-overlay" onClick={() => setShowLoginModal(false)}>
           <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
-            <h2>🚗 Вход в CarGuard</h2>
+            <h2>🚗 Log in to CarGuard</h2>
             {error && <div className="auth-error">{error}</div>}
             <form onSubmit={handleLogin}>
               <div className="auth-field">
@@ -175,26 +175,26 @@ const Home = () => {
                   type="email" 
                   value={loginData.email}
                   onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                  placeholder="Въведи email"
+                  placeholder="Enter email"
                   required
                 />
               </div>
               <div className="auth-field">
-                <label>Парола</label>
+                <label>Password</label>
                 <input 
                   type="password" 
                   value={loginData.password}
                   onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                  placeholder="Въведи парола"
+                  placeholder="Enter password"
                   required
                 />
               </div>
               <button type="submit" className="auth-submit" disabled={loading}>
-                {loading ? 'Зареждане...' : 'Влез'}
+                {loading ? 'Loading...' : 'Log in'}
               </button>
             </form>
             <div className="oauth-divider">
-              <span>или</span>
+              <span>or</span>
             </div>
             <button 
               type="button" 
@@ -207,10 +207,10 @@ const Home = () => {
                 }
               }}
             >
-              Влез с Google
+              Sign in with Google
             </button>
             <p className="auth-switch">
-              Нямаш акаунт? <span onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); setError(''); }}>Регистрирай се</span>
+              Don't have an account? <span onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); setError(''); }}>Sign up</span>
             </p>
           </div>
         </div>
@@ -221,16 +221,16 @@ const Home = () => {
         <div className="auth-modal-overlay" onClick={() => setShowRegisterModal(false)}>
           <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowRegisterModal(false)}>✕</button>
-            <h2>🚗 Регистрация в CarGuard</h2>
+            <h2>🚗 Create your CarGuard account</h2>
             {error && <div className="auth-error">{error}</div>}
             <form onSubmit={handleRegister}>
               <div className="auth-field">
-                <label>Име</label>
+                <label>Name</label>
                 <input 
                   type="text" 
                   value={registerData.name}
                   onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
-                  placeholder="Въведи име"
+                  placeholder="Enter name"
                   required
                 />
               </div>
@@ -240,36 +240,36 @@ const Home = () => {
                   type="email" 
                   value={registerData.email}
                   onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
-                  placeholder="Въведи email"
+                  placeholder="Enter email"
                   required
                 />
               </div>
               <div className="auth-field">
-                <label>Парола</label>
+                <label>Password</label>
                 <input 
                   type="password" 
                   value={registerData.password}
                   onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                  placeholder="Въведи парола"
+                  placeholder="Enter password"
                   required
                 />
               </div>
               <div className="auth-field">
-                <label>Потвърди парола</label>
+                <label>Confirm password</label>
                 <input 
                   type="password" 
                   value={registerData.confirmPassword}
                   onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
-                  placeholder="Потвърди парола"
+                  placeholder="Confirm password"
                   required
                 />
               </div>
               <button type="submit" className="auth-submit" disabled={loading}>
-                {loading ? 'Зареждане...' : 'Регистрирай се'}
+                {loading ? 'Loading...' : 'Sign up'}
               </button>
             </form>
             <div className="oauth-divider">
-              <span>или</span>
+              <span>or</span>
             </div>
             <button 
               type="button" 
@@ -282,10 +282,10 @@ const Home = () => {
                 }
               }}
             >
-              Регистрирай се с Google
+              Sign up with Google
             </button>
             <p className="auth-switch">
-              Вече имаш акаунт? <span onClick={() => { setShowRegisterModal(false); setShowLoginModal(true); setError(''); }}>Влез</span>
+              Already have an account? <span onClick={() => { setShowRegisterModal(false); setShowLoginModal(true); setError(''); }}>Log in</span>
             </p>
           </div>
         </div>
@@ -294,19 +294,19 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero fade-in-section">
         <div className="hero-content">
-          <div className="badge">🚀 Най-лесният начин да следиш сроковете</div>
-          <h2>Спри да се тревожиш за глоби и пропуснати срокове</h2>
+          <div className="badge">🚀 The easiest way to track deadlines</div>
+          <h2>Stop worrying about fines and missed deadlines</h2>
           <p>
-            CarGuard ти изпраща напомняне <strong>1 месец преди</strong> да изтече гражданската, винетката, прегледът или данъкът.
-            Всички твои коли и услуги на едно място.
+            CarGuard sends you a reminder <strong>1 month before</strong> your insurance, vignette, inspection, or tax expires.
+            All your vehicles and services in one place.
           </p>
           <button className="cta-btn" onClick={() => setShowRegisterModal(true)}>
-            Започни безплатно сега →
+            Start free now →
           </button>
           <div className="hero-features">
-            <span>✓ 100% Безплатно</span>
-            <span>✓ Без кредитна карта</span>
-            <span>✓ Готово за 30 секунди</span>
+            <span>✓ 100% Free</span>
+            <span>✓ No credit card</span>
+            <span>✓ Ready in 30 seconds</span>
           </div>
         </div>
         <div className="hero-demo">
@@ -322,9 +322,9 @@ const Home = () => {
             <div className="demo-dashboard">
               <div className="demo-sidebar">
                 <div className="demo-logo">🚗 CarGuard</div>
-                <div className="demo-nav-item active">🏠 Табло</div>
-                <div className="demo-nav-item">🚘 Коли</div>
-                <div className="demo-nav-item">⚙️ Настройки</div>
+                <div className="demo-nav-item active">🏠 Dashboard</div>
+                <div className="demo-nav-item">🚘 Vehicles</div>
+                <div className="demo-nav-item">⚙️ Settings</div>
               </div>
               <div className="demo-main">
                 <div className="demo-car-header">
@@ -333,27 +333,27 @@ const Home = () => {
                 </div>
                 <div className="demo-services-list">
                   <div className="demo-service-item ok">
-                    <span>🛡️ Гражданска</span>
-                    <span className="demo-status">✅ OK - 245 дни</span>
+                    <span>🛡️ Civil Liability</span>
+                    <span className="demo-status">✅ OK - 245 days</span>
                   </div>
                   <div className="demo-service-item warning">
-                    <span>🛣️ Винетка</span>
-                    <span className="demo-status">⚠️ 28 дни</span>
+                    <span>🛣️ Vignette</span>
+                    <span className="demo-status">⚠️ 28 days</span>
                   </div>
                   <div className="demo-service-item expired">
-                    <span>🔧 Преглед</span>
-                    <span className="demo-status">❌ Изтекъл!</span>
+                    <span>🔧 Inspection</span>
+                    <span className="demo-status">❌ Expired!</span>
                   </div>
                   <div className="demo-service-item ok">
-                    <span>💰 Данък</span>
-                    <span className="demo-status">✅ OK - 180 дни</span>
+                    <span>💰 Tax</span>
+                    <span className="demo-status">✅ OK - 180 days</span>
                   </div>
                 </div>
                 <div className="demo-email-preview">
                   <div className="email-badge">📧</div>
                   <div>
-                    <strong>Ново напомняне</strong>
-                    <small>Винетката Ви изтича</small>
+                    <strong>New reminder</strong>
+                    <small>Your vignette is expiring</small>
                   </div>
                 </div>
               </div>
@@ -365,66 +365,66 @@ const Home = () => {
       {/* Why Section */}
       <section id="why" className="why-section fade-in-section">
         <div className="section-header">
-          <h2>Защо хиляди водачи вече избраха CarGuard?</h2>
-          <p>Всичко, което ти трябва, на едно място</p>
+          <h2>Why thousands of drivers already chose CarGuard</h2>
+          <p>Everything you need in one place</p>
         </div>
         <div className="why-grid">
           <div className="why-card fade-in-section">
             <div className="why-icon">⏰</div>
-            <h3>Никога повече закъснения</h3>
+            <h3>No more missed deadlines</h3>
             <p>
-              Получаваш email точно 30 дни преди изтичане.
-              Достатъчно време да подновиш без стрес.
+              Get an email exactly 30 days before expiration.
+              Plenty of time to renew without stress.
             </p>
             <div className="card-accent"></div>
           </div>
 
           <div className="why-card fade-in-section">
             <div className="why-icon">📋</div>
-            <h3>Всички коли, един профил</h3>
+            <h3>All cars, one profile</h3>
             <p>
-              Имаш 2, 3 или 5 коли? Без проблем! Управлявай всички от един акаунт:
-              гражданска, винетка, преглед, каско, данък.
+              Have 2, 3, or 5 cars? No problem! Manage everything from one account:
+              insurance, vignette, inspection, casco, tax.
             </p>
             <div className="card-accent"></div>
           </div>
 
           <div className="why-card fade-in-section">
             <div className="why-icon">💸</div>
-            <h3>Спести пари от глоби</h3>
+            <h3>Save money on fines</h3>
             <p>
-              Глоба за изтекла гражданска? До 3000 лв. За винетка? 300 лв.
-              CarGuard те предпазва от тези разходи.
+              Fine for expired insurance? Up to 3000 BGN. For vignette? 300 BGN.
+              CarGuard protects you from these costs.
             </p>
             <div className="card-accent"></div>
           </div>
 
           <div className="why-card fade-in-section">
             <div className="why-icon">⚡</div>
-            <h3>Готово за 30 секунди</h3>
+            <h3>Ready in 30 seconds</h3>
             <p>
-              Регистрация, добавяне на кола, въвеждане на услуги.
-              Това е всичко - оттук нататък работим ние.
+              Sign up, add a car, enter services.
+              That’s it — from there we handle the rest.
             </p>
             <div className="card-accent"></div>
           </div>
 
           <div className="why-card fade-in-section">
             <div className="why-icon">🔒</div>
-            <h3>Твоите данни са защитени</h3>
+            <h3>Your data is protected</h3>
             <p>
-              Криптирана парола, защитена връзка.
-              Никой няма достъп до твоите данни без твоето разрешение.
+              Encrypted passwords, secure connection.
+              No one can access your data without your permission.
             </p>
             <div className="card-accent"></div>
           </div>
 
           <div className="why-card fade-in-section">
             <div className="why-icon">🌐</div>
-            <h3>Достъп отвсякъде</h3>
+            <h3>Access from anywhere</h3>
             <p>
-              Телефон, таблет, компютър - всичко е синхронизирано.
-              Провери сроковете дори от бензиностанцията.
+              Phone, tablet, computer — everything is synced.
+              Check deadlines even from the gas station.
             </p>
             <div className="card-accent"></div>
           </div>
@@ -434,14 +434,14 @@ const Home = () => {
       {/* How It Works */}
       <section id="how" className="how-section fade-in-section">
         <div className="section-header">
-          <h2>Как работи?</h2>
-          <p>4 прости стъпки и си готов!</p>
+          <h2>How it works</h2>
+          <p>4 simple steps and you’re ready</p>
         </div>
         <div className="steps">
           <div className="step fade-in-section">
             <div className="step-number">1</div>
-            <h3>Регистрирай се</h3>
-            <p>Само email и парола. Отнема 30 секунди.</p>
+            <h3>Sign up</h3>
+            <p>Just email and password. Takes 30 seconds.</p>
             <div className="step-icon">👤</div>
           </div>
 
@@ -453,8 +453,8 @@ const Home = () => {
 
           <div className="step fade-in-section">
             <div className="step-number">2</div>
-            <h3>Добави колата си</h3>
-            <p>Марка, модел, година. Можеш да добавиш колкото искаш.</p>
+            <h3>Add your car</h3>
+            <p>Brand, model, year. Add as many as you like.</p>
             <div className="step-icon">🚗</div>
           </div>
 
@@ -466,8 +466,8 @@ const Home = () => {
 
           <div className="step fade-in-section">
             <div className="step-number">3</div>
-            <h3>Въведи сроковете</h3>
-            <p>Кога изтича гражданската, винетката, прегледът...</p>
+            <h3>Enter deadlines</h3>
+            <p>When insurance, vignette, inspection, etc. expire.</p>
             <div className="step-icon">📅</div>
           </div>
 
@@ -479,8 +479,8 @@ const Home = () => {
 
           <div className="step fade-in-section">
             <div className="step-number">4</div>
-            <h3>Получаваш напомняне</h3>
-            <p>Email 1 месец преди. Никога повече глоби!</p>
+            <h3>Get reminders</h3>
+            <p>Email 1 month before. No more fines!</p>
             <div className="step-icon">📧</div>
           </div>
         </div>
@@ -489,63 +489,63 @@ const Home = () => {
       {/* Services Section */}
       <section id="services" className="services-section fade-in-section">
         <div className="section-header">
-          <h2>Какво можеш да следиш?</h2>
-          <p>Всички важни услуги за твоя автомобил на едно място</p>
+          <h2>What can you track?</h2>
+          <p>All important vehicle services in one place</p>
         </div>
         <div className="services-grid">
           <div className="service-card fade-in-section">
             <div className="service-icon">🔧</div>
-            <h3>Технически преглед</h3>
-            <p>Задължителен годишно. Без него колата не е легална на пътя!</p>
+            <h3>Technical Inspection</h3>
+            <p>Mandatory yearly. Without it, the car isn’t legal on the road.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">🛡️</div>
-            <h3>Гражданска отговорност</h3>
-            <p>Задължителна застраховка. Глоба при липса: до 3000 лв!</p>
+            <h3>Civil Liability Insurance</h3>
+            <p>Mandatory insurance. Fine if missing: up to 3000 BGN.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">💎</div>
-            <h3>КАСКО застраховка</h3>
-            <p>Пълна защита при кражба, катастрофа или природни бедствия</p>
+            <h3>CASCO Insurance</h3>
+            <p>Full protection for theft, accidents, or natural disasters.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">🛣️</div>
-            <h3>Винетка</h3>
-            <p>Електронна или хартиена. Глоба без нея: 300 лв!</p>
+            <h3>Vignette</h3>
+            <p>Electronic or paper. Fine without it: 300 BGN.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">💰</div>
-            <h3>Данък МПС</h3>
-            <p>Годишен данък - плати до 30 юни за 5% отстъпка!</p>
+            <h3>Vehicle Tax</h3>
+            <p>Annual tax — pay by June 30 for a 5% discount.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">🧯</div>
-            <h3>Заверка на пожарогасител</h3>
-            <p>Задължително на 1-2 години. Необходим за преглед!</p>
+            <h3>Fire Extinguisher Check</h3>
+            <p>Required every 1–2 years. Needed for inspection.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">�💨</div>
-            <h3>Смяна на гуми</h3>
-            <p>Зимни ↔ Летни. Следи DOT кода за износване!</p>
+            <h3>Tire Change</h3>
+            <p>Winter ↔ Summer. Track DOT wear and age.</p>
             <div className="service-dot"></div>
           </div>
 
           <div className="service-card fade-in-section">
             <div className="service-icon">🔧</div>
-            <h3>Сервизно обслужване</h3>
-            <p>Смяна на масло, филтри, ремъци - всичко на едно място</p>
+            <h3>Service Maintenance</h3>
+            <p>Oil, filters, belts — everything in one place.</p>
             <div className="service-dot"></div>
           </div>
         </div>
@@ -554,8 +554,8 @@ const Home = () => {
       {/* Features Section - What you get */}
       <section className="features-section fade-in-section">
         <div className="section-header">
-          <h2>Какво получаваш с CarGuard?</h2>
-          <p>Пълен контрол над автопарка ти</p>
+          <h2>What do you get with CarGuard?</h2>
+          <p>Full control over your vehicles</p>
         </div>
         <div className="features-showcase">
           <div className="feature-item fade-in-section">
@@ -578,14 +578,14 @@ const Home = () => {
                   </div>
                   <div className="mini-car-card add-new">
                     <span>➕</span>
-                    <span>Добави кола</span>
+                    <span>Add vehicle</span>
                   </div>
                 </div>
               </div>
             </div>
             <div className="feature-text">
-              <h3>📊 Управлявай неограничен брой коли</h3>
-              <p>Семейни коли, фирмен автопарк, лизингови автомобили - всички на едно място. Всяка кола с пълна информация: марка, модел, VIN, пробег, технически данни.</p>
+              <h3>📊 Manage unlimited vehicles</h3>
+              <p>Family cars, company fleet, leased vehicles — all in one place. Each car with full details: brand, model, VIN, mileage, technical data.</p>
             </div>
           </div>
 
@@ -593,24 +593,24 @@ const Home = () => {
             <div className="feature-visual">
               <div className="feature-screen">
                 <div className="mini-calendar">
-                  <div className="calendar-header">Януари 2026</div>
+                  <div className="calendar-header">January 2026</div>
                   <div className="calendar-events">
                     <div className="calendar-event warning">
-                      <span>⚠️</span> Гражданска - 28 дни
+                      <span>⚠️</span> Civil Liability - 28 days
                     </div>
                     <div className="calendar-event ok">
-                      <span>✅</span> Винетка - 180 дни
+                      <span>✅</span> Vignette - 180 days
                     </div>
                     <div className="calendar-event expired">
-                      <span>❌</span> Преглед - изтекъл!
+                      <span>❌</span> Inspection - expired!
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="feature-text">
-              <h3>📅 Календар с всички срокове</h3>
-              <p>Виж на един поглед кое изтича скоро, кое е наред и кое вече е просрочено. Цветова индикация за бърза ориентация - зелено, жълто, червено.</p>
+              <h3>📅 Calendar for all deadlines</h3>
+              <p>See at a glance what expires soon, what’s OK, and what’s overdue. Color cues for quick orientation — green, yellow, red.</p>
             </div>
           </div>
 
@@ -620,20 +620,20 @@ const Home = () => {
                 <div className="mini-email">
                   <div className="email-header-mini">
                     <span className="email-icon">📧</span>
-                    <strong>Ново напомняне от CarGuard</strong>
+                    <strong>New reminder from CarGuard</strong>
                   </div>
                   <div className="email-preview-content">
                     <p>🚗 <strong>BMW 320d</strong></p>
-                    <p>Гражданската ти изтича след <span className="highlight">30 дни</span></p>
-                    <p>Дата: 15.02.2026</p>
-                    <small>Настрой напомнянията: 7, 14, 30 или 60 дни</small>
+                    <p>Your insurance expires in <span className="highlight">30 days</span></p>
+                    <p>Date: 15.02.2026</p>
+                    <small>Set reminders: 7, 14, 30, or 60 days</small>
                   </div>
                 </div>
               </div>
             </div>
             <div className="feature-text">
-              <h3>📧 Автоматични email напомняния</h3>
-              <p>Избери колко дни преди изтичане да получиш напомняне - 7, 14, 30 или 60 дни. Никога повече пропуснати срокове и глоби!</p>
+              <h3>📧 Automatic email reminders</h3>
+              <p>Choose how many days before expiration to receive a reminder — 7, 14, 30, or 60 days. Never miss a deadline again.</p>
             </div>
           </div>
 
@@ -641,22 +641,22 @@ const Home = () => {
             <div className="feature-visual">
               <div className="feature-screen">
                 <div className="mini-tech-data">
-                  <div className="tech-header">⚙️ Технически данни</div>
+                  <div className="tech-header">⚙️ Technical data</div>
                   <div className="tech-grid">
-                    <div className="tech-item"><span>🔧</span> Дизел</div>
-                    <div className="tech-item"><span>💪</span> 190 к.с.</div>
-                    <div className="tech-item"><span>⚙️</span> Автоматик</div>
+                    <div className="tech-item"><span>🔧</span> Diesel</div>
+                    <div className="tech-item"><span>💪</span> 190 HP</div>
+                    <div className="tech-item"><span>⚙️</span> Automatic</div>
                     <div className="tech-item"><span>🌿</span> Euro 6</div>
                   </div>
                   <div className="tire-info">
-                    <span>🛞 Гуми: 225/45 R17 • Зимни • Michelin</span>
+                    <span>🛞 Tires: 225/45 R17 • Winter • Michelin</span>
                   </div>
                 </div>
               </div>
             </div>
             <div className="feature-text">
-              <h3>🔧 Пълни технически данни</h3>
-              <p>Запиши всичко за колата: тип двигател, конски сили, скоростна кутия, евро стандарт, размер на гумите, DOT код. Имай информацията винаги под ръка!</p>
+              <h3>🔧 Full technical details</h3>
+              <p>Record everything about your car: engine type, horsepower, transmission, euro standard, tire size, DOT code. Always have the info handy.</p>
             </div>
           </div>
         </div>
@@ -665,8 +665,8 @@ const Home = () => {
       {/* Demo Section */}
       <section id="demo" className="demo-section fade-in-section">
         <div className="section-header">
-          <h2>🎬 Виж как работи CarGuard</h2>
-          <p>Стъпка по стъпка демонстрация</p>
+          <h2>🎬 See how CarGuard works</h2>
+          <p>Step-by-step demonstration</p>
         </div>
         <div className="demo-container">
           <div className="demo-steps">
@@ -674,74 +674,74 @@ const Home = () => {
               <div className="demo-step-number">1</div>
               <div className="demo-animation">
                 <div className="demo-screen">
-                  <div className="demo-header">🚗 CarGuard - Регистрация</div>
+                  <div className="demo-header">🚗 CarGuard - Sign up</div>
                   <div className="demo-form">
-                    <div className="demo-input typing">👤 Име: Иван Петров</div>
+                    <div className="demo-input typing">👤 Name: Ivan Petrov</div>
                     <div className="demo-input typing" style={{animationDelay: '1s'}}>📧 Email: ivan@email.com</div>
-                    <div className="demo-input typing" style={{animationDelay: '2s'}}>🔒 Парола: ********</div>
-                    <div className="demo-button pulse-btn">Регистрирай се</div>
+                    <div className="demo-input typing" style={{animationDelay: '2s'}}>🔒 Password: ********</div>
+                    <div className="demo-button pulse-btn">Sign up</div>
                   </div>
                 </div>
               </div>
-              <h3>Създай акаунт</h3>
-              <p>Регистрацията е безплатна и отнема само 30 секунди</p>
+              <h3>Create an account</h3>
+              <p>Registration is free and takes only 30 seconds</p>
             </div>
 
             <div className="demo-step fade-in-section">
               <div className="demo-step-number">2</div>
               <div className="demo-animation">
                 <div className="demo-screen">
-                  <div className="demo-header">🚗 Добави кола</div>
+                  <div className="demo-header">🚗 Add vehicle</div>
                   <div className="demo-form">
-                    <div className="demo-input typing">🎨 Марка: BMW</div>
-                    <div className="demo-input typing" style={{animationDelay: '0.8s'}}>🚘 Модел: 320d</div>
-                    <div className="demo-input typing" style={{animationDelay: '1.6s'}}>📅 Година: 2020</div>
-                    <div className="demo-button pulse-btn">Добави кола</div>
+                    <div className="demo-input typing">🎨 Brand: BMW</div>
+                    <div className="demo-input typing" style={{animationDelay: '0.8s'}}>🚘 Model: 320d</div>
+                    <div className="demo-input typing" style={{animationDelay: '1.6s'}}>📅 Year: 2020</div>
+                    <div className="demo-button pulse-btn">Add vehicle</div>
                   </div>
                 </div>
               </div>
-              <h3>Добави своята кола</h3>
-              <p>Въведи информация за твоя автомобил</p>
+              <h3>Add your vehicle</h3>
+              <p>Enter your vehicle information</p>
             </div>
 
             <div className="demo-step fade-in-section">
               <div className="demo-step-number">3</div>
               <div className="demo-animation">
                 <div className="demo-screen">
-                  <div className="demo-header">📝 Добави услуга</div>
+                  <div className="demo-header">📝 Add service</div>
                   <div className="demo-form">
                     <div className="demo-select">
-                      <span>🛡️ Гражданска отговорност</span>
+                      <span>🛡️ Civil Liability Insurance</span>
                       <span className="dropdown-icon">▼</span>
                     </div>
-                    <div className="demo-input typing">📅 Изтича: 15.03.2026</div>
-                    <div className="demo-button pulse-btn">Съхрани услуга</div>
+                    <div className="demo-input typing">📅 Expires: 15.03.2026</div>
+                    <div className="demo-button pulse-btn">Save service</div>
                   </div>
                 </div>
               </div>
-              <h3>Добави услуги</h3>
-              <p>Избери тип и дата на изтичане</p>
+              <h3>Add services</h3>
+              <p>Choose type and expiration date</p>
             </div>
 
             <div className="demo-step fade-in-section">
               <div className="demo-step-number">4</div>
               <div className="demo-animation">
                 <div className="demo-screen email-screen">
-                  <div className="demo-header">📧 Нов Email</div>
+                  <div className="demo-header">📧 New Email</div>
                   <div className="email-content">
-                    <div className="email-from">От: CarGuard</div>
-                    <div className="email-subject">⚠️ Напомняне: Гражданска изтича!</div>
+                    <div className="email-from">From: CarGuard</div>
+                    <div className="email-subject">⚠️ Reminder: Insurance expiring!</div>
                     <div className="email-body">
                       <p>🚗 BMW 320d</p>
-                      <p>Изтича след <strong>30 дни</strong></p>
-                      <p>Поднови навреме!</p>
+                      <p>Expires in <strong>30 days</strong></p>
+                      <p>Renew on time!</p>
                     </div>
                   </div>
                   <div className="email-notification">🔔</div>
                 </div>
               </div>
-              <h3>Получаваш напомняне</h3>
-              <p>Email 1 месец преди изтичане</p>
+              <h3>Get a reminder</h3>
+              <p>Email 1 month before expiration</p>
             </div>
           </div>
         </div>
@@ -750,13 +750,13 @@ const Home = () => {
       {/* CTA Section */}
       <section className="cta-section fade-in-section">
         <div className="cta-content">
-          <h2>🚀 Готов ли си да забравиш за глобите?</h2>
-          <p>Регистрацията е <strong>100% безплатна</strong> и отнема само 30 секунди. Присъедини се към 10,000+ водачи!</p>
+          <h2>🚀 Ready to forget about fines?</h2>
+          <p>Registration is <strong>100% free</strong> and takes only 30 seconds. Join 10,000+ drivers!</p>
           <button className="cta-btn-large" onClick={() => { setShowRegisterModal(true); setError(''); }}>
-            Започни безплатно сега →
+            Start free now →
           </button>
           <div className="cta-secondary">
-            Вече имаш акаунт? <span className="cta-link" onClick={() => { setShowLoginModal(true); setError(''); }}>Влез тук</span>
+            Already have an account? <span className="cta-link" onClick={() => { setShowLoginModal(true); setError(''); }}>Log in here</span>
           </div>
         </div>
         <div className="cta-decoration">
@@ -768,13 +768,13 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="footer">
-        <p>&copy; 2026 CarGuard. Всички права запазени. | Управлявай своята кола разумно.</p>
+        <p>&copy; 2026 CarGuard. All rights reserved. | Manage your car wisely.</p>
         <div className="footer-links">
-          <a href="#privacy">Политика на поверителност</a>
+          <a href="#privacy">Privacy Policy</a>
           <span>•</span>
-          <a href="#terms">Условия на ползване</a>
+          <a href="#terms">Terms of Use</a>
           <span>•</span>
-          <a href="#contact">Свържи се с нас</a>
+          <a href="#contact">Contact Us</a>
         </div>
       </footer>
     </div>

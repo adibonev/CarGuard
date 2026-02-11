@@ -43,7 +43,7 @@ const Login = () => {
     setError('');
     try {
       await signInWithGoogle();
-      // Supabase redirect ще попълни сессията
+      // Supabase redirect will hydrate the session
     } catch (err) {
       setError('Google sign-in failed. Please try again.');
       setGoogleLoading(false);
@@ -53,7 +53,7 @@ const Login = () => {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h2>Влез в системата</h2>
+        <h2>Log in</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -67,7 +67,7 @@ const Login = () => {
             />
           </div>
           <div className="form-group">
-            <label>Пароля</label>
+            <label>Password</label>
             <input
               type="password"
               name="password"
@@ -77,12 +77,12 @@ const Login = () => {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Влизане...' : 'Влез'}
+            {loading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
         
         <div className="oauth-divider">
-          <span>или</span>
+          <span>or</span>
         </div>
         
         <button 
@@ -91,11 +91,11 @@ const Login = () => {
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
         >
-          {googleLoading ? 'Вход с Google...' : '🔐 Влез с Google'}
+          {googleLoading ? 'Signing in with Google...' : '🔐 Sign in with Google'}
         </button>
 
         <p>
-          Нямаш акаунт? <a href="/register">Регистрирай се</a>
+          Don't have an account? <a href="/register">Sign up</a>
         </p>
       </div>
     </div>

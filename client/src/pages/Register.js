@@ -34,7 +34,7 @@ const Register = () => {
       
       // Check if email confirmation is required
       if (result.emailConfirmationRequired) {
-        setError('✅ Регистрацията е успешна! Моля проверете имейла си за потвърждение.');
+        setError('✅ Registration successful! Please check your email to confirm.');
       } else {
         // Auto login and redirect if no confirmation needed
         navigate('/dashboard');
@@ -51,7 +51,7 @@ const Register = () => {
     setError('');
     try {
       await signInWithGoogle();
-      // Supabase redirect ще попълни сессията
+      // Supabase redirect will hydrate the session
     } catch (err) {
       setError('Google sign-up failed. Please try again.');
       setGoogleLoading(false);
@@ -61,11 +61,11 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h2>Регистрация</h2>
+        <h2>Sign up</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Име</label>
+            <label>Name</label>
             <input
               type="text"
               name="name"
@@ -85,7 +85,7 @@ const Register = () => {
             />
           </div>
           <div className="form-group">
-            <label>Пароля</label>
+            <label>Password</label>
             <input
               type="password"
               name="password"
@@ -95,12 +95,12 @@ const Register = () => {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Регистриране...' : 'Регистрирай се'}
+            {loading ? 'Signing up...' : 'Sign up'}
           </button>
         </form>
         
         <div className="oauth-divider">
-          <span>или</span>
+          <span>or</span>
         </div>
         
         <button 
@@ -109,11 +109,11 @@ const Register = () => {
           onClick={handleGoogleSignUp}
           disabled={googleLoading}
         >
-          {googleLoading ? 'Регистриране с Google...' : '🔐 Регистрирай се с Google'}
+          {googleLoading ? 'Signing up with Google...' : '🔐 Sign up with Google'}
         </button>
 
         <p>
-          Вече имаш акаунт? <a href="/login">Влез в системата</a>
+          Already have an account? <a href="/login">Log in</a>
         </p>
       </div>
     </div>
