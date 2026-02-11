@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) => {
   const [formData, setFormData] = useState({
-    serviceType: 'ремонт',
+    serviceType: 'repair',
     expiryDate: new Date().toISOString().split('T')[0],
     cost: '',
     notes: '',
@@ -14,30 +14,30 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
   });
 
   const serviceOptions = [
-    { value: 'ремонт', label: '🛠️ Ремонт' },
-    { value: 'обслужване', label: '🛢️ Обслужване (Масло/Филтри)' },
-    { value: 'преглед', label: '🔧 Технически преглед' },
-    { value: 'гражданска', label: '🛡️ Гражданска застраховка' },
-    { value: 'каско', label: '💎 КАСКО' },
-    { value: 'винетка', label: '🛣️ Винетка' },
-    { value: 'данък', label: '💰 Данък' },
-    { value: 'пожарогасител', label: '🔴 Заверка на пожарогасител' },
-    { value: 'гуми', label: '🛞 Добавяне на гуми' },
-    { value: 'зареждане', label: '⛽ Зареждане' },
-    { value: 'друго', label: '📝 Друго' }
+    { value: 'repair', label: '🛠️ Repair' },
+    { value: 'maintenance', label: '🛢️ Maintenance (Oil/Filters)' },
+    { value: 'inspection', label: '🔧 Technical Inspection' },
+    { value: 'civil_liability', label: '🛡️ Civil Liability Insurance' },
+    { value: 'casco', label: '💎 CASCO' },
+    { value: 'vignette', label: '🛣️ Vignette' },
+    { value: 'tax', label: '💰 Tax' },
+    { value: 'fire_extinguisher', label: '🔴 Fire Extinguisher Check' },
+    { value: 'tires', label: '🛞 Tire Change' },
+    { value: 'refuel', label: '⛽ Refuel' },
+    { value: 'other', label: '📝 Other' }
   ];
 
   const fuelOptions = [
-    { value: 'Benzin', label: 'Бензин' },
-    { value: 'Diesel', label: 'Дизел' },
-    { value: 'LPG', label: 'Газ (LPG)' },
-    { value: 'Electric', label: 'Електричество' },
-    { value: 'Methane', label: 'Метан' }
+    { value: 'Benzin', label: 'Gasoline' },
+    { value: 'Diesel', label: 'Diesel' },
+    { value: 'LPG', label: 'Gas (LPG)' },
+    { value: 'Electric', label: 'Electric' },
+    { value: 'Methane', label: 'Methane' }
   ];
 
   // Auto-calculate cost for refueling
   useEffect(() => {
-    if (formData.serviceType === 'зареждане') {
+    if (formData.serviceType === 'refuel') {
       const liters = parseFloat(formData.liters);
       const price = parseFloat(formData.pricePerLiter);
       if (!isNaN(liters) && !isNaN(price)) {
