@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseAuth';
-import adminService from '../lib/supabaseAdmin';
 import '../styles/AdminLogin.css';
 
 const AdminLogin = () => {
