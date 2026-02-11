@@ -12,6 +12,7 @@ const snakeToCamel = (service) => {
     reminderSent: service.reminder_sent,
     carId: service.car_id,
     userId: service.user_id,
+    mileage: service.mileage,
     createdAt: service.created_at,
     updatedAt: service.updated_at
   };
@@ -32,6 +33,7 @@ const camelToSnake = (service) => {
   if (service.pricePerLiter !== undefined) result.price_per_liter = service.pricePerLiter;
   if (service.fuelType !== undefined) result.fuel_type = service.fuelType;
   if (service.notes !== undefined) result.notes = service.notes;
+  if (service.mileage !== undefined) result.mileage = service.mileage;
   if (service.reminderSent !== undefined) result.reminder_sent = service.reminderSent;
   if (service.createdAt !== undefined) result.created_at = service.createdAt;
   if (service.updatedAt !== undefined) result.updated_at = service.updatedAt;

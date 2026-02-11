@@ -8,7 +8,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     notes: '',
     liters: '',
     pricePerLiter: '',
-    fuelType: 'Benzin'
+    fuelType: 'Benzin',
+    mileage: ''
   });
 
   const serviceOptions = [
@@ -77,7 +78,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       expiryDate: new Date(formData.expiryDate).toISOString(),
       cost: parseFloat(formData.cost) || 0,
       liters: parseFloat(formData.liters) || null,
-      pricePerLiter: parseFloat(formData.pricePerLiter) || null
+      pricePerLiter: parseFloat(formData.pricePerLiter) || null,
+      mileage: parseInt(formData.mileage) || null
     };
 
     onSubmit(submitData);
@@ -90,7 +92,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       notes: '',
       liters: '',
       pricePerLiter: '',
-      fuelType: 'Benzin'
+      fuelType: 'Benzin',
+      mileage: ''
     });
   };
 
@@ -136,6 +139,18 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
           value={formData.expiryDate}
           onChange={handleChange}
           required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Пробег (км) - незадължително</label>
+        <input
+          type="number"
+          name="mileage"
+          value={formData.mileage}
+          onChange={handleChange}
+          placeholder="Напр. 125000"
+          min="0"
         />
       </div>
 

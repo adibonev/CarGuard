@@ -189,7 +189,8 @@ const Dashboard = () => {
         liters: serviceData.liters,
         pricePerLiter: serviceData.pricePerLiter,
         fuelType: serviceData.fuelType,
-        notes: serviceData.notes
+        notes: serviceData.notes,
+        mileage: serviceData.mileage
       });
       loadServices(selectedCar.id);
       loadAllServices();
@@ -865,6 +866,7 @@ const Dashboard = () => {
                                 {isExpirable ? 'Изтича: ' : 'Дата: '}
                                 {new Date(service.expiryDate).toLocaleDateString('bg-BG')}
                               </p>
+                              {service.mileage && <span className="service-sub-info">🛣️ {service.mileage.toLocaleString()} км</span>}
                               {service.liters && <span className="service-sub-info">⛽ {service.liters}L</span>}
                               {service.cost > 0 && <span className="service-cost-badge">{service.cost.toFixed(2)} лв.</span>}
                             </div>
@@ -1049,6 +1051,11 @@ const Dashboard = () => {
                     </div>
                     
                     <div className="service-card-center">
+                        {service.mileage && (
+                            <div className="fuel-info">
+                              <span>🛣️ {service.mileage.toLocaleString()} км</span>
+                            </div>
+                        )}
                         {service.serviceType === 'зареждане' && service.liters && (
                             <div className="fuel-info">
                               <span>⛽ {service.liters} L</span>

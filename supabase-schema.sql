@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS services (
   liters DECIMAL(10, 2),
   price_per_liter DECIMAL(10, 2),
   fuel_type VARCHAR(50),
+  mileage INTEGER,
   reminder_sent BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
