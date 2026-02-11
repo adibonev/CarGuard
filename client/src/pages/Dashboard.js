@@ -182,10 +182,14 @@ const Dashboard = () => {
     try {
       console.log('Adding service:', serviceData);
       await servicesService.createService({
-        car_id: selectedCar.id,
-        service_type: serviceData.serviceType,
-        service_date: serviceData.expiryDate,
-        cost: serviceData.cost
+        carId: selectedCar.id,
+        serviceType: serviceData.serviceType,
+        expiryDate: serviceData.expiryDate,
+        cost: serviceData.cost,
+        liters: serviceData.liters,
+        pricePerLiter: serviceData.pricePerLiter,
+        fuelType: serviceData.fuelType,
+        notes: serviceData.notes
       });
       loadServices(selectedCar.id);
       loadAllServices();
