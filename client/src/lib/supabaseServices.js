@@ -20,18 +20,23 @@ const snakeToCamel = (service) => {
 // Helper function to convert camelCase to snake_case
 const camelToSnake = (service) => {
   if (!service) return null;
-  return {
-    ...service,
-    service_type: service.serviceType,
-    expiry_date: service.expiryDate,
-    price_per_liter: service.pricePerLiter,
-    fuel_type: service.fuelType,
-    reminder_sent: service.reminderSent,
-    car_id: service.carId,
-    user_id: service.userId,
-    created_at: service.createdAt,
-    updated_at: service.updatedAt
-  };
+  const result = {};
+  
+  // Map only the fields we know about, converting to snake_case
+  if (service.carId !== undefined) result.car_id = service.carId;
+  if (service.userId !== undefined) result.user_id = service.userId;
+  if (service.serviceType !== undefined) result.service_type = service.serviceType;
+  if (service.expiryDate !== undefined) result.expiry_date = service.expiryDate;
+  if (service.cost !== undefined) result.cost = service.cost;
+  if (service.liters !== undefined) result.liters = service.liters;
+  if (service.pricePerLiter !== undefined) result.price_per_liter = service.pricePerLiter;
+  if (service.fuelType !== undefined) result.fuel_type = service.fuelType;
+  if (service.notes !== undefined) result.notes = service.notes;
+  if (service.reminderSent !== undefined) result.reminder_sent = service.reminderSent;
+  if (service.createdAt !== undefined) result.created_at = service.createdAt;
+  if (service.updatedAt !== undefined) result.updated_at = service.updatedAt;
+  
+  return result;
 };
 
 export const servicesService = {
