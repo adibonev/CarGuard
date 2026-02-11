@@ -207,7 +207,7 @@ const Home = () => {
                 }
               }}
             >
-              🔐 Влез с Google
+              Влез с Google
             </button>
             <p className="auth-switch">
               Нямаш акаунт? <span onClick={() => { setShowLoginModal(false); setShowRegisterModal(true); setError(''); }}>Регистрирай се</span>
@@ -282,7 +282,7 @@ const Home = () => {
                 }
               }}
             >
-              🔐 Регистрирай се с Google
+              Регистрирай се с Google
             </button>
             <p className="auth-switch">
               Вече имаш акаунт? <span onClick={() => { setShowRegisterModal(false); setShowLoginModal(true); setError(''); }}>Влез</span>
