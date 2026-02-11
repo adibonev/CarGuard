@@ -118,7 +118,12 @@ export const servicesService = {
         upsert: false
       });
 
-    if (error) throw error;
+    if (error) {
+      if (error.message && error.message.includes('Bucket not found')) {
+        throw new Error('Storage bucket не е конфигуриран. Моля създай "documents" bucket в Supabase Dashboard > Storage. Виж STORAGE_SETUP.md за инструкции.');
+      }
+      throw error;
+    }
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage

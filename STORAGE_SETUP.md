@@ -1,28 +1,31 @@
 # Supabase Storage Setup
 
-## Създаване на Storage Bucket за документи
+## ⚠️ ВАЖНО: Трябва да създадеш Storage Bucket ръчно!
 
-За да работи функционалността за качване на файлове, трябва да създадеш Storage bucket в Supabase:
+За да работи функционалността за качване на файлове (документи към услуги), **ЗАДЪЛЖИТЕЛНО трябва** да създадеш Storage bucket в Supabase.
 
-### Стъпки:
+### 📋 Стъпки за създаване на bucket:
 
-1. Отвори **Supabase Dashboard**: https://app.supabase.com
-2. Избери проекта си: `lytoaknjphiirxxyzohd`
-3. От лявото меню избери **Storage**
-4. Кликни на **Create a new bucket**
-5. Въведи следните настройки:
-   - **Name**: `documents`
-   - **Public bucket**: ✅ (отметни)
-   - **File size limit**: 5242880 (5MB)
-   - **Allowed MIME types**: `application/pdf,image/jpeg,image/jpg,image/png,image/webp`
+1. **Отвори Supabase Dashboard**: https://app.supabase.com
+2. **Избери проекта си**: `lytoaknjphiirxxyzohd`
+3. **От лявото меню избери "Storage"**
+4. **Кликни на зелен бутон "New Bucket" или "Create a new bucket"**
+5. **Въведи следните настройки**:
+   - **Name**: `documents` (точно така, малки букви, без интервали!)
+   - **Public bucket**: ✅ **ДА, отметни това!** (иначе файловете няма да се виждат)
+   - **File size limit**: `52428800` (това е 50MB в bytes)
+   - **Allowed MIME types**: Остави празно или сложи:
+     ```
+     application/pdf,image/jpeg,image/jpg,image/png,image/webp
+     ```
 
-6. Кликни **Create bucket**
+6. **Кликни "Create bucket"** или "Save"
 
-### Настройка на Policies (RLS):
+### 🔒 Настройка на Security Policies (RLS):
 
-След създаването на bucket-а, трябва да добавиш правила за достъп:
+След създаването на bucket-а, трябва да добавиш правила за достъп. Отиди в **Storage > documents bucket > Policies**:
 
-#### 1. Upload Policy:
+#### 1. Upload Policy (Потребителите могат да качват файлове):
 ```sql
 CREATE POLICY "Users can upload their own files"
 ON storage.objects FOR INSERT
@@ -33,7 +36,7 @@ WITH CHECK (
 );
 ```
 
-#### 2. Read Policy (Public):
+#### 2. Read Policy (Файловете са публично достъпни):
 ```sql
 CREATE POLICY "Files are publicly readable"
 ON storage.objects FOR SELECT
@@ -41,7 +44,7 @@ TO public
 USING (bucket_id = 'documents');
 ```
 
-#### 3. Delete Policy:
+#### 3. Delete Policy (Потребителите могат да изтриват своите файлове):
 ```sql
 CREATE POLICY "Users can delete their own files"
 ON storage.objects FOR DELETE

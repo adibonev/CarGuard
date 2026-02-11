@@ -1353,8 +1353,30 @@ const Dashboard = () => {
       <div className="tab-content documents-content">
         <div className="content-header">
           <h2>📁 Документи</h2>
+        </div>
+
+        <div className="documents-filter-bar">
+          <select 
+            value={docFilterType} 
+            onChange={(e) => setDocFilterType(e.target.value)}
+            className="doc-filter-select"
+          >
+            <option value="all">📋 Всички документи ({documentsData.length})</option>
+            <option value="гражданска">🛡️ Гражданска застраховка</option>
+            <option value="винетка">🛣️ Винетка</option>
+            <option value="преглед">🔧 Технически преглед</option>
+            <option value="каско">💎 КАСКО</option>
+            <option value="данък">💰 Данък МПС</option>
+            <option value="пожарогасител">🔴 Пожарогасител</option>
+            <option value="ремонт">🛠️ Ремонт</option>
+            <option value="обслужване">🛢️ Обслужване</option>
+            <option value="гуми">🛞 Гуми</option>
+            <option value="зареждане">⛽ Зареждане</option>
+            <option value="друго">📝 Друго</option>
+          </select>
+          
           <button 
-            className="add-btn"
+            className="doc-add-btn"
             onClick={() => {
               if (!selectedCar) {
                 alert('Моля първо избери автомобил');
@@ -1391,14 +1413,14 @@ const Dashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Файл (PDF, JPG, PNG до 5MB)</label>
+                <label>Файл (PDF, JPG, PNG до 50MB)</label>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.webp"
                   onChange={(e) => {
                     const file = e.target.files[0];
-                    if (file && file.size > 5 * 1024 * 1024) {
-                      alert('Файлът е твърде голям. Максимален размер: 5MB');
+                    if (file && file.size > 50 * 1024 * 1024) {
+                      alert('Файлът е твърде голям. Максимален размер: 50MB');
                       e.target.value = '';
                       return;
                     }
@@ -1436,27 +1458,6 @@ const Dashboard = () => {
             </form>
           </div>
         )}
-
-        <div className="documents-filter-bar">
-          <select 
-            value={docFilterType} 
-            onChange={(e) => setDocFilterType(e.target.value)}
-            className="doc-filter-select"
-          >
-            <option value="all">📋 Всички документи ({documentsData.length})</option>
-            <option value="гражданска">🛡️ Гражданска застраховка</option>
-            <option value="винетка">🛣️ Винетка</option>
-            <option value="преглед">🔧 Технически преглед</option>
-            <option value="каско">💎 КАСКО</option>
-            <option value="данък">💰 Данък МПС</option>
-            <option value="пожарогасител">🔴 Пожарогасител</option>
-            <option value="ремонт">🛠️ Ремонт</option>
-            <option value="обслужване">🛢️ Обслужване</option>
-            <option value="гуми">🛞 Гуми</option>
-            <option value="зареждане">⛽ Зареждане</option>
-            <option value="друго">📝 Друго</option>
-          </select>
-        </div>
 
         {sortedDocs.length === 0 ? (
           <div className="empty-state">

@@ -60,9 +60,9 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Файлът е твърде голям. Максимален размер: 5MB');
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Файлът е твърде голям. Максимален размер: 50MB');
         e.target.value = '';
         return;
       }
@@ -285,7 +285,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
           </small>
         )}
         <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
-          Позволени формати: PDF, JPG, PNG, WEBP (макс. 5MB)
+          Позволени формати: PDF, JPG, PNG, WEBP (макс. 50MB)
         </small>
       </div>
 
