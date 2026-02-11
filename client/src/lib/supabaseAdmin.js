@@ -37,8 +37,8 @@ export const adminService = {
     const { count: expiringServices } = await supabase
       .from('services')
       .select('*', { count: 'exact', head: true })
-      .lte('service_date', thirtyDaysFromNow.toISOString())
-      .gte('service_date', new Date().toISOString());
+      .lte('expiry_date', thirtyDaysFromNow.toISOString())
+      .gte('expiry_date', new Date().toISOString());
 
     // New users today
     const today = new Date();
