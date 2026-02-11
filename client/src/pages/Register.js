@@ -30,8 +30,15 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register(formData.name, formData.email, formData.password);
-      navigate('/dashboard');
+      const result = await register(formData.name, formData.email, formData.password);
+      
+      // Check if email confirmation is required
+      if (result.emailConfirmationRequired) {
+        setError('✅ Регистрацията е успешна! Моля проверете имейла си за потвърждение.');
+      } else {
+        // Auto login and redirect if no confirmation needed
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {

@@ -96,7 +96,15 @@ export const AuthProvider = ({ children }) => {
       });
 
       setUser(userData);
-      return { success: true, user: userData };
+      
+      // Check if email confirmation is required
+      const emailConfirmationRequired = authData.user && !authData.user.confirmed_at;
+      
+      return { 
+        success: true, 
+        user: userData,
+        emailConfirmationRequired 
+      };
     } catch (error) {
       console.error('Registration error:', error);
       throw error;

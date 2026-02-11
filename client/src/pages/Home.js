@@ -99,9 +99,15 @@ const Home = () => {
 
       if (profileError) throw profileError;
 
-      setShowRegisterModal(false);
-      setError('Моля проверете имейла си за потвърждение!');
-      // Don't navigate yet - user needs to confirm email
+      // Check if email confirmation is required
+      if (authData.user && !authData.user.confirmed_at) {
+        setShowRegisterModal(false);
+        alert('✅ Регистрацията е успешна!\n\nМоля проверете имейла си (' + registerData.email + ') за потвърждение.');
+      } else {
+        // Auto login if no confirmation needed
+        setShowRegisterModal(false);
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message || 'Грешка при регистрация');
     } finally {
