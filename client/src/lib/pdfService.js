@@ -5,13 +5,33 @@ import autoTable from 'jspdf-autotable';
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   const date = new Date(dateString);
-  return date.toLocaleDateString('bg-BG');
+  return date.toLocaleDateString('en-GB');
 };
 
 // Helper to format currency
 const formatCurrency = (amount) => {
   if (!amount && amount !== 0) return 'N/A';
-  return `${parseFloat(amount).toFixed(2)} лв.`;
+  return `${parseFloat(amount).toFixed(2)} BGN`;
+};
+
+// Service type translations
+const serviceTypeMap = {
+  'застраховка': 'Insurance',
+  'винетка': 'Vignette',
+  'преглед': 'Technical Inspection',
+  'каско': 'Casco Insurance',
+  'данък': 'Tax',
+  'пожарогасител': 'Fire Extinguisher',
+  'ремонт': 'Repair',
+  'обслужване': 'Maintenance',
+  'гуми': 'Tires',
+  'зареждане': 'Refuel',
+  'друго': 'Other',
+  'гражданска': 'Civil Liability'
+};
+
+const translateServiceType = (type) => {
+  return serviceTypeMap[type?.toLowerCase()] || type || 'N/A';
 };
 
 export const generateCarReport = async (car, services) => {
@@ -20,9 +40,9 @@ export const generateCarReport = async (car, services) => {
   // Set font
   doc.setFont('helvetica');
   
-  // Header with logo and branding
-  doc.setFillColor(41, 128, 185);
-  doc.rect(0, 0, 210, 35, 'F');
+  // Header with dark background (site colors: #1a1a1a)
+  doc.setFillColor(26, 26, 26);
+  doc.rect(0, 0, 210, 40, 'F');
   
   // Logo/Icon
   doc.setFontSize(32);
@@ -30,56 +50,63 @@ export const generateCarReport = async (car, services) => {
   doc.text('🚗', 15, 22);
   
   // Brand name
-  doc.setFontSize(24);
+  doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
-  doc.text('CarGuard', 30, 17);
+  doc.text('CarGuard', 30, 20);
   
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Вашият дигитален автомобилен асистент', 30, 25);
-  
-  // Title
-  doc.setFontSize(20);
-  doc.setTextColor(52, 73, 94);
-  doc.setFont('helvetica', 'bold');
-  doc.text('СЕРВИЗЕН ДОКЛАД', 105, 48, { align: 'center' });
-  
-  // Subtitle with car info
-  doc.setFontSize(16);
-  doc.setTextColor(44, 62, 80);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${car.brand} ${car.model}`, 105, 58, { align: 'center' });
-  
+  // Tagline
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(127, 140, 141);
-  doc.text(`Генериран на: ${formatDate(new Date().toISOString())}`, 105, 64, { align: 'center' });
+  doc.text('Your Digital Car Assistant', 30, 28);
   
-  // Divider line
-  doc.setDrawColor(52, 152, 219);
+  // Report Title with red accent (#dc3545)
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(220, 53, 69);
+  const title = 'VEHICLE SERVICE REPORT';
+  const titleWidth = doc.getTextWidth(title);
+  doc.text(title, (210 - titleWidth) / 2, 36);
+  
+  // Reset colors to dark gray (#2d2d2d)
+  doc.setTextColor(45, 45, 45);
+  
+  // Add date
+  let yPos = 50;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generated: ${formatDate(new Date())}`, 20, yPos);
+  
+  // Car Title
+  yPos = 62;
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 26, 26);
+  doc.text(`${car.brand} ${car.model}`, 20, yPos);
+  
+  // Divider line with red color (#dc3545)
+  yPos = 68;
+  doc.setDrawColor(220, 53, 69);
   doc.setLineWidth(0.8);
-  doc.line(20, 70, 190, 70);
-  
-  let yPos = 78;
+  doc.line(20, yPos, 190, yPos);
   
   // Section 1: Technical Data
+  yPos = 76;
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(41, 128, 185);
-  doc.text('📋 ТЕХНИЧЕСКИ ДАННИ', 20, yPos);
+  doc.setTextColor(26, 26, 26);
+  doc.text('Technical Specifications', 20, yPos);
   
-  yPos += 8;
-  
+  yPos += 5;
   const techData = [
-    ['Марка', car.brand || 'N/A'],
-    ['Модел', car.model || 'N/A'],
-    ['Година', car.year || 'N/A'],
-    ['Рег. номер', car.registrationNumber || 'N/A'],
-    ['VIN номер', car.vin || 'N/A'],
-    ['Тип гориво', car.fuelType || 'N/A'],
-    ['Обем двигател', car.engineSize ? `${car.engineSize} л` : 'N/A'],
-    ['Мощност', car.horsePower ? `${car.horsePower} к.с.` : 'N/A'],
-    ['Километраж', car.mileage ? `${car.mileage} км` : 'N/A'],
+    ['Brand', car.brand || 'N/A'],
+    ['Model', car.model || 'N/A'],
+    ['Year', car.year || 'N/A'],
+    ['Registration Number', car.registrationNumber || 'N/A'],
+    ['VIN', car.vin || 'N/A'],
+    ['Fuel Type', car.fuelType || 'N/A'],
+    ['Engine Size', car.engineSize ? `${car.engineSize} L` : 'N/A'],
+    ['Horse Power', car.horsePower ? `${car.horsePower} HP` : 'N/A'],
+    ['Mileage', car.mileage ? `${car.mileage} km` : 'N/A'],
   ];
   
   autoTable(doc, {
@@ -90,11 +117,11 @@ export const generateCarReport = async (car, services) => {
     styles: {
       fontSize: 10,
       cellPadding: 3,
-      textColor: [44, 62, 80],
+      textColor: [45, 45, 45],
     },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 50 },
-      1: { cellWidth: 120 },
+      0: { fontStyle: 'bold', cellWidth: 60, textColor: [26, 26, 26] },
+      1: { cellWidth: 110 },
     },
     margin: { left: 20 },
   });
@@ -108,26 +135,27 @@ export const generateCarReport = async (car, services) => {
   });
   
   doc.setFontSize(14);
-  doc.setTextColor(41, 128, 185);
-  doc.text('✅ АКТИВНИ УСЛУГИ', 20, yPos);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 26, 26);
+  doc.text('Active Services', 20, yPos);
   
   yPos += 5;
   
   if (activeServices.length > 0) {
     const activeServicesData = activeServices.map(s => [
-      s.serviceType || 'N/A',
+      translateServiceType(s.serviceType),
       formatDate(s.expiryDate),
       formatCurrency(s.cost),
-      s.mileage ? `${s.mileage} км` : 'N/A',
+      s.mileage ? `${s.mileage} km` : 'N/A',
     ]);
     
     autoTable(doc, {
       startY: yPos,
-      head: [['Услуга', 'Валидна до', 'Цена', 'Километраж']],
+      head: [['Service', 'Valid Until', 'Cost', 'Mileage']],
       body: activeServicesData,
       theme: 'striped',
       headStyles: {
-        fillColor: [41, 128, 185],
+        fillColor: [220, 53, 69], // #dc3545
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 10,
@@ -135,6 +163,10 @@ export const generateCarReport = async (car, services) => {
       styles: {
         fontSize: 9,
         cellPadding: 4,
+        textColor: [45, 45, 45],
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250], // Light gray
       },
       margin: { left: 20, right: 20 },
     });
@@ -143,7 +175,7 @@ export const generateCarReport = async (car, services) => {
   } else {
     doc.setFontSize(10);
     doc.setTextColor(127, 140, 141);
-    doc.text('Няма активни услуги', 25, yPos + 5);
+    doc.text('No active services', 25, yPos + 5);
     yPos += 20;
   }
   
@@ -155,13 +187,14 @@ export const generateCarReport = async (car, services) => {
   
   // Section 3: Service History
   doc.setFontSize(14);
-  doc.setTextColor(41, 128, 185);
-  doc.text('🔧 СЕРВИЗНА ИСТОРИЯ', 20, yPos);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 26, 26);
+  doc.text('Service History', 20, yPos);
   
   yPos += 5;
   
   if (services.length > 0) {
-    // Sort services by date (newest first)
+    // Sort by date descending
     const sortedServices = [...services].sort((a, b) => 
       new Date(b.expiryDate) - new Date(a.expiryDate)
     );
@@ -169,32 +202,32 @@ export const generateCarReport = async (car, services) => {
     const historyData = sortedServices.map(s => {
       const row = [
         formatDate(s.expiryDate),
-        s.serviceType || 'N/A',
+        translateServiceType(s.serviceType),
         formatCurrency(s.cost),
       ];
       
-      // Add fuel data if available
-      if (s.fuelType && s.liters) {
-        row.push(`${s.liters} л ${s.fuelType}`);
-        row.push(formatCurrency(s.pricePerLiter) + '/л');
+      // Add fuel info if it's a refuel
+      if (s.serviceType?.toLowerCase() === 'зареждане' && s.liters) {
+        row.push(`${s.liters} L`);
+        row.push(s.pricePerLiter ? formatCurrency(s.pricePerLiter) : 'N/A');
       } else {
         row.push('N/A');
         row.push('N/A');
       }
       
       // Add mileage if available
-      row.push(s.mileage ? `${s.mileage} км` : 'N/A');
+      row.push(s.mileage ? `${s.mileage} km` : 'N/A');
       
       return row;
     });
     
     autoTable(doc, {
       startY: yPos,
-      head: [['Дата', 'Услуга', 'Цена', 'Гориво', 'Цена/литър', 'Километраж']],
+      head: [['Date', 'Service', 'Cost', 'Fuel', 'Price/L', 'Mileage']],
       body: historyData,
       theme: 'grid',
       headStyles: {
-        fillColor: [52, 73, 94],
+        fillColor: [45, 45, 45], // #2d2d2d
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         fontSize: 9,
@@ -202,6 +235,7 @@ export const generateCarReport = async (car, services) => {
       styles: {
         fontSize: 8,
         cellPadding: 3,
+        textColor: [45, 45, 45],
       },
       columnStyles: {
         0: { cellWidth: 25 },
@@ -217,9 +251,9 @@ export const generateCarReport = async (car, services) => {
         doc.setFontSize(8);
         doc.setTextColor(127, 140, 141);
         doc.text(
-          `Страница ${doc.internal.getCurrentPageInfo().pageNumber}`,
+          `Page ${doc.internal.getCurrentPageInfo().pageNumber}`,
           105,
-          287,
+          285,
           { align: 'center' }
         );
       },
@@ -229,41 +263,36 @@ export const generateCarReport = async (car, services) => {
   } else {
     doc.setFontSize(10);
     doc.setTextColor(127, 140, 141);
-    doc.text('Няма записана сервизна история', 25, yPos + 5);
+    doc.text('No service history recorded', 25, yPos + 5);
     yPos += 15;
   }
   
-  // Summary section at the end
-  if (yPos > 250) {
+  // Check if we need a new page for summary
+  if (yPos > 240) {
     doc.addPage();
     yPos = 20;
   }
   
-  yPos += 10;
-  doc.setDrawColor(52, 152, 219);
-  doc.setLineWidth(0.5);
-  doc.line(20, yPos, 190, yPos);
+  // Section 4: Summary
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(26, 26, 26);
+  doc.text('Financial Summary', 20, yPos);
   
-  yPos += 8;
+  yPos += 5;
   
-  // Calculate total costs
+  // Calculate totals
+  const totalServices = services.length;
   const totalCost = services.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
-  const totalFuelLiters = services.reduce((sum, s) => sum + (parseFloat(s.liters) || 0), 0);
-  const totalFuelCost = services
-    .filter(s => s.liters && s.pricePerLiter)
-    .reduce((sum, s) => sum + (parseFloat(s.liters) * parseFloat(s.pricePerLiter)), 0);
-  
-  doc.setFontSize(12);
-  doc.setTextColor(44, 62, 80);
-  doc.text('📊 ОБОБЩЕНИЕ', 20, yPos);
-  
-  yPos += 8;
+  const fuelServices = services.filter(s => s.serviceType?.toLowerCase() === 'зареждане');
+  const totalFuelLiters = fuelServices.reduce((sum, s) => sum + (parseFloat(s.liters) || 0), 0);
+  const totalFuelCost = fuelServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
   
   const summaryData = [
-    ['Общо услуги', services.length.toString()],
-    ['Обща стойност на услуги', formatCurrency(totalCost)],
-    ['Общо изразходвано гориво', totalFuelLiters > 0 ? `${totalFuelLiters.toFixed(2)} л` : 'N/A'],
-    ['Обща стойност на гориво', totalFuelCost > 0 ? formatCurrency(totalFuelCost) : 'N/A'],
+    ['Total Services', `${totalServices}`],
+    ['Total Cost', formatCurrency(totalCost)],
+    ['Total Fuel Consumed', totalFuelLiters > 0 ? `${totalFuelLiters.toFixed(2)} L` : 'N/A'],
+    ['Total Fuel Cost', totalFuelCost > 0 ? formatCurrency(totalFuelCost) : 'N/A'],
   ];
   
   autoTable(doc, {
@@ -274,11 +303,11 @@ export const generateCarReport = async (car, services) => {
     styles: {
       fontSize: 10,
       cellPadding: 3,
-      textColor: [44, 62, 80],
+      textColor: [45, 45, 45],
     },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 80 },
-      1: { cellWidth: 90, fontStyle: 'bold', textColor: [41, 128, 185] },
+      0: { fontStyle: 'bold', cellWidth: 80, textColor: [26, 26, 26] },
+      1: { cellWidth: 90, fontStyle: 'bold', textColor: [220, 53, 69] }, // Red accent
     },
     margin: { left: 20 },
   });
@@ -288,7 +317,7 @@ export const generateCarReport = async (car, services) => {
   doc.setPage(pageCount);
   doc.setFontSize(8);
   doc.setTextColor(127, 140, 141);
-  doc.text('Генерирано от CarGuard - Вашият дигитален автомобилен асистент', 105, 287, { align: 'center' });
+  doc.text('Generated by CarGuard - Your Digital Car Assistant', 105, 287, { align: 'center' });
   
   // Save the PDF
   const fileName = `${car.brand}_${car.model}_${car.registrationNumber || 'report'}_${new Date().toISOString().split('T')[0]}.pdf`;
