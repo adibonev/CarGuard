@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseAuth';
-import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -26,26 +24,42 @@ const AuthCallback = () => {
           return;
         }
 
-        const user = session.user;
+        const authUser = session.user;
 
-        // Create or update user in your database
-        const response = await fetch('/api/auth/google-callback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: user.email,
-            name: user.user_metadata?.full_name || user.email.split('@')[0],
-            googleId: user.id,
-            emailVerified: user.email_confirmed_at !== null
-          })
-        });
+        // Check if user profile exists
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('*')
+          .eq('auth_user_id', authUser.id)
+          .single();
 
-        if (!response.ok) {
-          throw new Error('Failed to process Google sign-in');
+        if (!existingUser) {
+          // Create user profile for Google sign-in
+          const { data: newUser, error: createError } = await supabase
+            .from('users')
+            .insert({
+              name: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
+              email: authUser.email.toLowerCase(),
+              auth_user_id: authUser.id,
+              reminder_days: 30,
+              reminder_enabled: true,
+              email_verified: authUser.email_confirmed_at !== null,
+              google_id: authUser.id
+            })
+            .select()
+            .single();
+
+          if (createError) throw createError;
+
+          // Create account record
+          await supabase.from('accounts').insert({
+            user_id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            phone: null
+          });
         }
 
-        const data = await response.json();
-        login(data.user, data.token);
         navigate('/dashboard');
       } catch (err) {
         console.error('Auth callback error:', err);
@@ -57,7 +71,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, login]);
+  }, [navigate]);
 
   return (
     <div className="auth-container">

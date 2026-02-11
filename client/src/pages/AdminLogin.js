@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { supabase } from '../lib/supabaseAuth';
+import adminService from '../lib/supabaseAdmin';
 import '../styles/AdminLogin.css';
-
-const API_URL = 'https://web-production-2e60.up.railway.app/api';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -28,15 +27,38 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      console.log('Attempting admin login with:', { username: formData.username });
-      const res = await axios.post(`${API_URL}/admin/login`, formData);
-      console.log('Login successful:', res.data);
-      localStorage.setItem('adminToken', res.data.token);
-      localStorage.setItem('adminUser', JSON.stringify(res.data.admin));
+      console.log('Attempting admin login with:', { email: formData.email });
+      
+      // Sign in with Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (authError) throw authError;
+
+      // Get user profile
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_user_id', authData.user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Check if user is admin
+      if (!userData.is_admin) {
+        await supabase.auth.signOut();
+        throw new Error('Нямате администраторски права');
+      }
+
+      console.log('Admin login successful:', userData);
+      localStorage.setItem('isAdmin', 'true');
+      localStorage.setItem('adminUser', JSON.stringify(userData));
       navigate('/admin/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      const errorMsg = err.response?.data?.msg || err.response?.data?.errors?.[0]?.msg || err.message || 'Грешка при вход';
+      const errorMsg = err.message || 'Грешка при вход';
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -56,15 +78,15 @@ const AdminLogin = () => {
           {error && <div className="admin-error">{error}</div>}
           
           <div className="admin-form-group">
-            <label>Username</label>
+            <label>Email</label>
             <input
-              type="text"
-              name="username"
-              value={formData.username}
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
-              placeholder="Enter admin username"
+              placeholder="Enter admin email"
               required
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getBrands, getModels } from '../data/carBrands';
-import { carsAPI } from '../api';
+import carsService from '../lib/supabaseCars';
 import '../styles/CarForm.css';
 
 const CarForm = ({ onSubmit, onCancel, initialData }) => {
@@ -74,8 +74,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
     setVinData(null);
 
     try {
-      const response = await carsAPI.decodeVin(vinInput);
-      const data = response.data;
+      const data = await carsService.decodeVin(vinInput);
       
       setVinData(data);
       
@@ -112,7 +111,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
       }));
       
     } catch (err) {
-      setVinError(err.response?.data?.error || 'Грешка при декодиране на VIN');
+      setVinError(err.message || 'Грешка при декодиране на VIN');
     } finally {
       setVinLoading(false);
     }

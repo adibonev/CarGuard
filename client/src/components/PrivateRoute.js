@@ -3,10 +3,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = ({ children }) => {
-  const { token, isInitialized } = useAuth();
+  const { session, loading } = useAuth();
 
   // Чакай приложението да се инициализира преди да прави редирект
-  if (!isInitialized) {
+  if (loading) {
     return (
       <div style={{
         display: 'flex',
@@ -23,11 +23,10 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  if (!token) {
+  if (!session) {
     return <Navigate to="/login" />;
   }
 
   return children;
 };
-
 export default PrivateRoute;

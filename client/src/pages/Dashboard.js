@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { carsAPI, servicesAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
+import carsService from '../lib/supabaseCars';
+import servicesService from '../lib/supabaseServices';
 import CarForm from '../components/CarForm';
 import ServiceForm from '../components/ServiceForm';
 import { getBrandLogo } from '../data/brandLogos';
@@ -94,8 +95,15 @@ const Dashboard = () => {
 
   const loadAllServices = async () => {
     try {
-      const response = await servicesAPI.getAllServices();
-      setAllServices(response.data);
+      if (!user?.id) return;
+      // Get all services for all cars of this user
+      const userCars = await carsService.getAllCars(user.id);
+      const allUserServices = [];
+      for (const car of userCars) {
+        const carServices = await servicesService.getServices(car.id);
+        allUserServices.push(...carServices);
+      }
+      setAllServices(allUserServices);
     } catch (err) {
       console.error('Error loading all services:', err);
     }
@@ -104,10 +112,11 @@ const Dashboard = () => {
   const loadCars = async () => {
     try {
       setLoading(true);
-      const response = await carsAPI.getCars();
-      setCars(response.data);
-      if (response.data.length > 0 && !selectedCar) {
-        setSelectedCar(response.data[0]);
+      if (!user?.id) return;
+      const cars = await carsService.getAllCars(user.id);
+      setCars(cars);
+      if (cars.length > 0 && !selectedCar) {
+        setSelectedCar(cars[0]);
       }
     } catch (err) {
       console.error('Error loading cars:', err);
@@ -118,8 +127,8 @@ const Dashboard = () => {
 
   const loadServices = async (carId) => {
     try {
-      const response = await servicesAPI.getServices(carId);
-      setServices(response.data);
+      const services = await servicesService.getServices(carId);
+      setServices(services);
     } catch (err) {
       console.error('Error loading services:', err);
     }
@@ -129,11 +138,11 @@ const Dashboard = () => {
     try {
       if (editingCar) {
         // Редактиране
-        await carsAPI.updateCar(editingCar.id, carData);
+        await carsService.updateCar(editingCar.id, carData);
         setEditingCar(null);
       } else {
         // Добавяне
-        await carsAPI.addCar(carData);
+        await carsService.createCar(user.id, carData);
       }
       loadCars();
       setShowCarForm(false);
@@ -152,7 +161,7 @@ const Dashboard = () => {
       return;
     }
     try {
-      await carsAPI.deleteCar(carId);
+      await carsService.deleteCar(carId);
       loadCars();
       if (selectedCar?.id === carId) {
         setSelectedCar(null);
@@ -172,18 +181,18 @@ const Dashboard = () => {
   const handleAddService = async (serviceData) => {
     try {
       console.log('Adding service:', serviceData);
-      await servicesAPI.addService(
-        selectedCar.id,
-        serviceData.serviceType,
-        serviceData.expiryDate,
-        serviceData.cost
-      );
+      await servicesService.createService({
+        car_id: selectedCar.id,
+        service_type: serviceData.serviceType,
+        service_date: serviceData.expiryDate,
+        cost: serviceData.cost
+      });
       loadServices(selectedCar.id);
       loadAllServices();
       setShowServiceForm(false);
     } catch (err) {
       console.error('Error adding service:', err);
-      alert('Грешка при добавяне на услуга: ' + (err.response?.data?.errors?.[0]?.msg || err.message));
+      alert('Грешка при добавяне на услуга: ' + err.message);
     }
   };
 
@@ -192,8 +201,9 @@ const Dashboard = () => {
       return;
     }
     try {
-      await servicesAPI.deleteService(serviceId);
+      await servicesService.deleteService(serviceId);
       loadServices(selectedCar.id);
+      loadAllServices();
     } catch (err) {
       console.error('Error deleting service:', err);
     }
@@ -515,7 +525,6 @@ const Dashboard = () => {
                         strokeWidth={2}
                         dot={{ fill: carColors[idx % carColors.length] }}
                       />
-                    ))}
                     ))}
                   </LineChart>
                 </ResponsiveContainer>

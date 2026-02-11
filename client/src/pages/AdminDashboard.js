@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { supabase } from '../lib/supabaseAuth';
+import adminService from '../lib/supabaseAdmin';
 import '../styles/AdminDashboard.css';
-
-const API_URL = 'https://web-production-2e60.up.railway.app/api/admin';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -16,43 +15,50 @@ const AdminDashboard = () => {
   const [admin, setAdmin] = useState(null);
   const navigate = useNavigate();
 
-  const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-      'x-admin-token': localStorage.getItem('adminToken')
-    }
-  });
-
   useEffect(() => {
-    const adminUser = localStorage.getItem('adminUser');
-    if (!adminUser || !localStorage.getItem('adminToken')) {
-      navigate('/admin');
-      return;
-    }
-    setAdmin(JSON.parse(adminUser));
-    loadData();
+    const checkAdmin = async () => {
+      const adminUser = localStorage.getItem('adminUser');
+      const isAdmin = localStorage.getItem('isAdmin');
+      
+      if (!adminUser || !isAdmin) {
+        navigate('/admin');
+        return;
+      }
+
+      // Check session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        handleLogout();
+        return;
+      }
+
+      setAdmin(JSON.parse(adminUser));
+      loadData();
+    };
+
+    checkAdmin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [statsRes, usersRes, brandsRes, servicesRes, regsRes] = await Promise.all([
-        api.get('/stats'),
-        api.get('/users'),
-        api.get('/chart/brands'),
-        api.get('/chart/services'),
-        api.get('/chart/registrations')
+      const [stats, users, brands, services, registrations] = await Promise.all([
+        adminService.getStats(),
+        adminService.getUsers(),
+        adminService.getBrandChart(),
+        adminService.getServiceChart(),
+        adminService.getRegistrationChart()
       ]);
       
-      setStats(statsRes.data);
-      setUsers(usersRes.data);
-      setBrandChart(brandsRes.data);
-      setServiceChart(servicesRes.data);
-      setRegistrationChart(regsRes.data);
+      setStats(stats);
+      setUsers(users);
+      setBrandChart(brands);
+      setServiceChart(services);
+      setRegistrationChart(registrations);
     } catch (err) {
       console.error('Error loading admin data:', err);
-      if (err.response?.status === 401) {
+      if (err.message?.includes('JWT')) {
         handleLogout();
       }
     } finally {
@@ -60,8 +66,9 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('isAdmin');
     localStorage.removeItem('adminUser');
     navigate('/admin');
   };
