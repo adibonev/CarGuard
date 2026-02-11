@@ -34,6 +34,9 @@ const Dashboard = () => {
   const [chartFilterService, setChartFilterService] = useState('all');
   const [chartPeriod, setChartPeriod] = useState('6');
   
+  // States for Documents Filter
+  const [docFilterType, setDocFilterType] = useState('all');
+  
   // Mobile menu state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -1240,6 +1243,127 @@ const Dashboard = () => {
     </div>
   );
 
+  const renderDocuments = () => {
+    // Get all services with files
+    const documentsData = allServices
+      .filter(s => s.fileUrl)
+      .map(s => {
+        const car = cars.find(c => c.id === s.carId);
+        return {
+          ...s,
+          car
+        };
+      });
+
+    // Filter by service type
+    const filteredDocs = docFilterType === 'all' 
+      ? documentsData 
+      : documentsData.filter(d => d.serviceType === docFilterType);
+
+    // Sort by date (newest first)
+    const sortedDocs = [...filteredDocs].sort((a, b) => 
+      new Date(b.expiryDate) - new Date(a.expiryDate)
+    );
+
+    return (
+      <div className="tab-content documents-content">
+        <div className="content-header">
+          <h2>📁 Документи</h2>
+        </div>
+
+        <div className="documents-filter-bar">
+          <select 
+            value={docFilterType} 
+            onChange={(e) => setDocFilterType(e.target.value)}
+            className="doc-filter-select"
+          >
+            <option value="all">📋 Всички документи ({documentsData.length})</option>
+            <option value="гражданска">🛡️ Гражданска застраховка</option>
+            <option value="винетка">🛣️ Винетка</option>
+            <option value="преглед">🔧 Технически преглед</option>
+            <option value="каско">💎 КАСКО</option>
+            <option value="данък">💰 Данък МПС</option>
+            <option value="пожарогасител">🔴 Пожарогасител</option>
+            <option value="ремонт">🛠️ Ремонт</option>
+            <option value="обслужване">🛢️ Обслужване</option>
+            <option value="гуми">🛞 Гуми</option>
+            <option value="зареждане">⛽ Зареждане</option>
+            <option value="друго">📝 Друго</option>
+          </select>
+        </div>
+
+        {sortedDocs.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📂</div>
+            <h3>Няма прикачени документи</h3>
+            <p>{docFilterType === 'all' 
+              ? 'Добави документи към събитията от раздел "Wydarzenia"' 
+              : 'Няма документи за тази категория'
+            }</p>
+          </div>
+        ) : (
+          <div className="documents-grid">
+            {sortedDocs.map(doc => {
+              const fileExt = doc.fileUrl.split('.').pop().toLowerCase();
+              const isPDF = fileExt === 'pdf';
+              const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(fileExt);
+              
+              return (
+                <div key={doc.id} className="document-card">
+                  <div className="doc-preview">
+                    {isPDF ? (
+                      <div className="doc-icon pdf">📄</div>
+                    ) : isImage ? (
+                      <img src={doc.fileUrl} alt="Document preview" className="doc-image" />
+                    ) : (
+                      <div className="doc-icon">📎</div>
+                    )}
+                  </div>
+                  <div className="doc-info">
+                    <h4>{getServiceName(doc.serviceType)}</h4>
+                    <p className="doc-car">
+                      🚗 {doc.car?.brand} {doc.car?.model} {doc.car?.year && `(${doc.car.year})`}
+                    </p>
+                    <p className="doc-date">
+                      📅 {new Date(doc.expiryDate).toLocaleDateString('bg-BG')}
+                    </p>
+                    {doc.mileage && (
+                      <p className="doc-mileage">
+                        🛣️ {doc.mileage.toLocaleString()} км
+                      </p>
+                    )}
+                    {doc.cost > 0 && (
+                      <p className="doc-cost">
+                        💰 {doc.cost.toFixed(2)} лв.
+                      </p>
+                    )}
+                  </div>
+                  <div className="doc-actions">
+                    <a 
+                      href={doc.fileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="doc-view-btn"
+                    >
+                      👁️ Преглед
+                    </a>
+                    <a 
+                      href={doc.fileUrl} 
+                      download
+                      className="doc-download-btn"
+                    >
+                      ⬇️ Изтегли
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="dashboard-new">
       {/* Mobile Header */}
@@ -1283,6 +1407,16 @@ const Dashboard = () => {
           <span className="nav-text">Събития</span>
           {getExpiringServices().length > 0 && (
             <span className="nav-badge warning">{getExpiringServices().length}</span>
+          )}
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'documents' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('documents'); setMobileMenuOpen(false); }}
+        >
+          <span className="nav-icon">📁</span>
+          <span className="nav-text">Документи</span>
+          {allServices.filter(s => s.fileUrl).length > 0 && (
+            <span className="nav-badge">{allServices.filter(s => s.fileUrl).length}</span>
           )}
         </button>
         <button 
@@ -1339,6 +1473,16 @@ const Dashboard = () => {
             )}
           </button>
           <button 
+            className={`nav-item ${activeTab === 'documents' ? 'active' : ''}`}
+            onClick={() => setActiveTab('documents')}
+          >
+            <span className="nav-icon">📁</span>
+            <span className="nav-text">Документи</span>
+            {allServices.filter(s => s.fileUrl).length > 0 && (
+              <span className="nav-badge">{allServices.filter(s => s.fileUrl).length}</span>
+            )}
+          </button>
+          <button 
             className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
@@ -1366,6 +1510,7 @@ const Dashboard = () => {
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'cars' && renderCars()}
         {activeTab === 'services' && renderServices()}
+        {activeTab === 'documents' && renderDocuments()}
         {activeTab === 'settings' && renderSettings()}
       </main>
     </div>
