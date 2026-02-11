@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // Helper to format date
 const formatDate = (dateString) => {
@@ -82,7 +82,7 @@ export const generateCarReport = async (car, services) => {
     ['Километраж', car.mileage ? `${car.mileage} км` : 'N/A'],
   ];
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: yPos,
     head: [],
     body: techData,
@@ -99,7 +99,7 @@ export const generateCarReport = async (car, services) => {
     margin: { left: 20 },
   });
   
-  yPos = doc.lastAutoTable.finalY + 15;
+  yPos = doc.previousAutoTable.finalY + 15;
   
   // Section 2: Active Services
   const activeServices = services.filter(s => {
@@ -121,7 +121,7 @@ export const generateCarReport = async (car, services) => {
       s.mileage ? `${s.mileage} км` : 'N/A',
     ]);
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [['Услуга', 'Валидна до', 'Цена', 'Километраж']],
       body: activeServicesData,
@@ -139,7 +139,7 @@ export const generateCarReport = async (car, services) => {
       margin: { left: 20, right: 20 },
     });
     
-    yPos = doc.lastAutoTable.finalY + 15;
+    yPos = doc.previousAutoTable.finalY + 15;
   } else {
     doc.setFontSize(10);
     doc.setTextColor(127, 140, 141);
@@ -188,7 +188,7 @@ export const generateCarReport = async (car, services) => {
       return row;
     });
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [['Дата', 'Услуга', 'Цена', 'Гориво', 'Цена/литър', 'Километраж']],
       body: historyData,
@@ -225,7 +225,7 @@ export const generateCarReport = async (car, services) => {
       },
     });
     
-    yPos = doc.lastAutoTable.finalY + 10;
+    yPos = doc.previousAutoTable.finalY + 10;
   } else {
     doc.setFontSize(10);
     doc.setTextColor(127, 140, 141);
@@ -266,7 +266,7 @@ export const generateCarReport = async (car, services) => {
     ['Обща стойност на гориво', totalFuelCost > 0 ? formatCurrency(totalFuelCost) : 'N/A'],
   ];
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: yPos,
     head: [],
     body: summaryData,
