@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../api';
+import { supabase } from '../lib/supabaseAuth';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
 
@@ -57,12 +57,17 @@ const Home = () => {
     setError('');
     setLoading(true);
     try {
-      const response = await authAPI.login(loginData.email, loginData.password);
-      authLogin(response.data.user, response.data.token);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password
+      });
+
+      if (error) throw error;
+
       setShowLoginModal(false);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.msg || 'Грешка при вход');
+      setError(err.message || 'Грешка при вход');
     } finally {
       setLoading(false);
     }
@@ -77,12 +82,30 @@ const Home = () => {
     }
     setLoading(true);
     try {
-      const response = await authAPI.register(registerData.name, registerData.email, registerData.password);
-      authLogin(response.data.user, response.data.token);
+      // 1. Create Supabase auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: registerData.email,
+        password: registerData.password
+      });
+
+      if (authError) throw authError;
+
+      // 2. Create user profile in users table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([{
+          name: registerData.name,
+          email: registerData.email,
+          auth_user_id: authData.user.id
+        }]);
+
+      if (profileError) throw profileError;
+
       setShowRegisterModal(false);
-      navigate('/dashboard');
+      setError('Моля проверете имейла си за потвърждение!');
+      // Don't navigate yet - user needs to confirm email
     } catch (err) {
-      setError(err.response?.data?.msg || 'Грешка при регистрация');
+      setError(err.message || 'Грешка при регистрация');
     } finally {
       setLoading(false);
     }
