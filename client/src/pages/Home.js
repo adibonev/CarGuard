@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseAuth';
-import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
   const [activeSection, setActiveSection] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -57,7 +55,7 @@ const Home = () => {
     setError('');
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password
       });
