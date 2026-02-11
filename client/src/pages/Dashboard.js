@@ -42,7 +42,7 @@ const Dashboard = () => {
   const [showDocumentForm, setShowDocumentForm] = useState(false);
   const [docFormData, setDocFormData] = useState({
     carId: '',
-    category: 'друго',
+    category: 'other',
     file: null,
     notes: ''
   });
@@ -65,7 +65,7 @@ const Dashboard = () => {
       setReminderDays(value);
     } catch (err) {
       console.error('Error updating reminder days:', err);
-      alert('Грешка при актуализиране на напомянията');
+      alert('Error updating reminders');
     }
   };
 
@@ -75,12 +75,12 @@ const Dashboard = () => {
       setReminderEnabled(enabled);
     } catch (err) {
       console.error('Error updating reminder enabled:', err);
-      alert('Грешка при актуализиране на напомянията');
+      alert('Error updating reminders');
     }
   };
 
   useEffect(() => {
-    // Чакай приложението да се инициализира преди да зареди данните
+    // Wait for app to initialize before loading data
     if (!isInitialized) return;
     
     // Initialize reminder days from user profile
@@ -150,11 +150,11 @@ const Dashboard = () => {
   const handleAddCar = async (carData) => {
     try {
       if (editingCar) {
-        // Редактиране
+        // Edit
         await carsService.updateCar(editingCar.id, carData);
         setEditingCar(null);
       } else {
-        // Добавяне
+        // Add
         await carsService.createCar(user.id, carData);
       }
       loadCars();
@@ -170,7 +170,7 @@ const Dashboard = () => {
   };
 
   const handleDeleteCar = async (carId) => {
-    if (!window.confirm('Сигурен ли си, че искаш да изтриеш този автомобил?')) {
+    if (!window.confirm('Are you sure you want to delete this vehicle?')) {
       return;
     }
     try {
@@ -223,7 +223,7 @@ const Dashboard = () => {
           await servicesService.updateService(tempService.id, { fileUrl });
         } catch (uploadError) {
           console.error('Error uploading file:', uploadError);
-          alert('Грешка при качване на файла. Услугата е запазена без файл.');
+          alert('Error uploading file. Service saved without file.');
         }
       } else {
         // No file, just create service
@@ -246,7 +246,7 @@ const Dashboard = () => {
       setShowServiceForm(false);
     } catch (err) {
       console.error('Error adding service:', err);
-      alert('Грешка при добавяне на услуга: ' + err.message);
+      alert('Error adding service: ' + err.message);
     }
   };
 
@@ -259,7 +259,7 @@ const Dashboard = () => {
     }
     
     if (!docFormData.file) {
-      alert('Моля изберете файл');
+      alert('Please select a file');
       return;
     }
     
@@ -271,7 +271,7 @@ const Dashboard = () => {
         serviceType: docFormData.category,
         expiryDate: new Date().toISOString(),
         cost: 0,
-        notes: docFormData.notes || `Качен документ: ${docFormData.category}`,
+        notes: docFormData.notes || `Uploaded document: ${docFormData.category}`,
         mileage: null
       };
       
@@ -294,10 +294,10 @@ const Dashboard = () => {
       }
       loadAllServices();
       
-      alert('Документът е качен успешно! ✅');
+      alert('Document uploaded successfully! ✅');
     } catch (err) {
       console.error('Error uploading document:', err);
-      alert('Грешка при качване на документ: ' + err.message);
+      alert('Error uploading document: ' + err.message);
     }
   };
 
@@ -311,12 +311,12 @@ const Dashboard = () => {
       await generateCarReport(selectedCar, allServices.filter(s => s.carId === selectedCar.id));
     } catch (err) {
       console.error('Error generating PDF:', err);
-      alert('Грешка при генериране на PDF: ' + err.message);
+      alert('Error generating PDF: ' + err.message);
     }
   };
 
   const handleDeleteDocument = async (serviceId, fileUrl) => {
-    if (!window.confirm('Сигурен ли си, че искаш да изтриеш този документ?')) {
+    if (!window.confirm('Are you sure you want to delete this document?')) {
       return;
     }
     
@@ -335,16 +335,16 @@ const Dashboard = () => {
       }
       loadAllServices();
       
-      alert('Документът е изтрит успешно! ✅');
+      alert('Document deleted successfully! ✅');
     } catch (err) {
       console.error('Error deleting document:', err);
-      alert('Грешка при изтриване на документ: ' + err.message);
+      alert('Error deleting document: ' + err.message);
     }
   };
 
 
   const handleDeleteService = async (serviceId) => {
-    if (!window.confirm('Сигурен ли си, че искаш да изтриеш тази услуга?')) {
+    if (!window.confirm('Are you sure you want to delete this service?')) {
       return;
     }
     try {
@@ -358,34 +358,34 @@ const Dashboard = () => {
 
   const getServiceIcon = (type) => {
     const icons = {
-      'гражданска': '🛡️',
-      'винетка': '🛣️',
-      'преглед': '🔧',
-      'каско': '💎',
-      'данък': '💰',
-      'пожарогасител': '🔴',
-      'ремонт': '🛠️',
-      'обслужване': '🛢️',
-      'гуми': '🛞',
-      'зареждане': '⛽',
-      'друго': '📝'
+      'civil_liability': '🛡️',
+      'vignette': '🛣️',
+      'inspection': '🔧',
+      'casco': '💎',
+      'tax': '💰',
+      'fire_extinguisher': '🔴',
+      'repair': '🛠️',
+      'maintenance': '🛢️',
+      'tires': '🛞',
+      'refuel': '⛽',
+      'other': '📝'
     };
     return icons[type] || '📋';
   };
 
   const getServiceName = (type) => {
     const names = {
-      'гражданска': 'Гражданска отговорност',
-      'винетка': 'Винетка',
-      'преглед': 'Технически преглед',
-      'каско': 'КАСКО',
-      'данък': 'Данък МПС',
-      'пожарогасител': 'Заверка на пожарогасител',
-      'ремонт': 'Ремонт',
-      'обслужване': 'Обслужване',
-      'гуми': 'Добавяне на гуми',
-      'зареждане': 'Зареждане',
-      'друго': 'Друго'
+      'civil_liability': 'Civil Liability Insurance',
+      'vignette': 'Vignette',
+      'inspection': 'Technical Inspection',
+      'casco': 'CASCO Insurance',
+      'tax': 'Vehicle Tax',
+      'fire_extinguisher': 'Fire Extinguisher Check',
+      'repair': 'Repair',
+      'maintenance': 'Maintenance',
+      'tires': 'Tire Change',
+      'refuel': 'Refuel',
+      'other': 'Other'
     };
     return names[type] || type;
   };
@@ -395,9 +395,9 @@ const Dashboard = () => {
     const expiry = new Date(expiryDate);
     const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
     
-    if (daysLeft < 0) return { status: 'expired', text: 'Изтекъл!', class: 'status-expired' };
-    if (daysLeft <= reminderDays) return { status: 'warning', text: `${daysLeft} дни`, class: 'status-warning' };
-    return { status: 'ok', text: `${daysLeft} дни`, class: 'status-ok' };
+    if (daysLeft < 0) return { status: 'expired', text: 'Expired!', class: 'status-expired' };
+    if (daysLeft <= reminderDays) return { status: 'warning', text: `${daysLeft} days`, class: 'status-warning' };
+    return { status: 'ok', text: `${daysLeft} days`, class: 'status-ok' };
   };
 
   const getExpiringServices = () => {
@@ -440,8 +440,8 @@ const Dashboard = () => {
     });
   };
 
-  const monthNames = ['Януари', 'Февруари', 'Март', 'Април', 'Май', 'Юни', 
-                      'Юли', 'Август', 'Септември', 'Октомври', 'Ноември', 'Декември'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
 
   const navigateMonth = (direction) => {
     setCurrentMonth(prev => {
@@ -506,28 +506,28 @@ const Dashboard = () => {
           <div className="stat-box-icon cars">🚗</div>
           <div className="stat-box-content">
             <span className="stat-box-value">{cars.length}</span>
-            <span className="stat-box-label">Автомобили</span>
+            <span className="stat-box-label">Vehicles</span>
           </div>
         </div>
         <div className="stat-box">
           <div className="stat-box-icon services">📋</div>
           <div className="stat-box-content">
             <span className="stat-box-value">{allServices.length}</span>
-            <span className="stat-box-label">Общо събития</span>
+            <span className="stat-box-label">Total Events</span>
           </div>
         </div>
         <div className="stat-box warning">
           <div className="stat-box-icon">⚠️</div>
           <div className="stat-box-content">
             <span className="stat-box-value">{getExpiringServices().length}</span>
-            <span className="stat-box-label">Изтичащи скоро</span>
+            <span className="stat-box-label">Expiring Soon</span>
           </div>
         </div>
         <div className="stat-box">
           <div className="stat-box-icon money">💰</div>
           <div className="stat-box-content">
-            <span className="stat-box-value">{getTotalCosts().toFixed(0)} лв</span>
-            <span className="stat-box-label">Общо разходи</span>
+            <span className="stat-box-value">{getTotalCosts().toFixed(0)} BGN</span>
+            <span className="stat-box-label">Total Costs</span>
           </div>
         </div>
       </div>
@@ -535,10 +535,10 @@ const Dashboard = () => {
       {cars.length === 0 ? (
         <div className="empty-state-dashboard">
           <div className="empty-icon">🚗</div>
-          <h3>Добави първия си автомобил</h3>
-          <p>Започни да следиш сроковете на застраховки и винетки</p>
+          <h3>Add your first vehicle</h3>
+          <p>Start tracking insurance and vignette deadlines</p>
           <button className="primary-btn" onClick={() => { setActiveTab('cars'); setShowCarForm(true); }}>
-            + Добави автомобил
+            + Add Vehicle
           </button>
         </div>
       ) : (
@@ -627,27 +627,27 @@ const Dashboard = () => {
                   onChange={(e) => setChartFilterService(e.target.value)}
                   className="chart-filter-select"
                 >
-                  <option value="all">📋 Всички разходи</option>
-                  <option value="гражданска">🛡️ Гражданска</option>
-                  <option value="винетка">🎫 Винетка</option>
-                  <option value="преглед">🔧 Технически преглед</option>
-                  <option value="каско">🔒 КАСКО</option>
-                  <option value="данък">💰 Данък МПС</option>
-                  <option value="пожарогасител">🧯 Пожарогасител</option>
-                  <option value="ремонт">🔨 Ремонт</option>
-                  <option value="обслужване">⚙️ Обслужване</option>
-                  <option value="гуми">🚗 Гуми</option>
-                  <option value="зареждане">⛽ Зареждане</option>
-                  <option value="друго">📝 Друго</option>
+                  <option value="all">📋 All Costs</option>
+                  <option value="civil_liability">🛡️ Civil Liability</option>
+                  <option value="vignette">🎫 Vignette</option>
+                  <option value="inspection">🔧 Technical Inspection</option>
+                  <option value="casco">🔒 CASCO</option>
+                  <option value="tax">💰 Vehicle Tax</option>
+                  <option value="fire_extinguisher">🧯 Fire Extinguisher</option>
+                  <option value="repair">🔨 Repair</option>
+                  <option value="maintenance">⚙️ Maintenance</option>
+                  <option value="tires">🚗 Tires</option>
+                  <option value="refuel">⛽ Refuel</option>
+                  <option value="other">📝 Other</option>
                 </select>
                 <select 
                   value={chartPeriod} 
                   onChange={(e) => setChartPeriod(e.target.value)}
                   className="chart-filter-select"
                 >
-                  <option value="3">📅 3 месеца</option>
-                  <option value="6">📅 6 месеца</option>
-                  <option value="12">📅 12 месеца</option>
+                  <option value="3">📅 3 months</option>
+                  <option value="6">📅 6 months</option>
+                  <option value="12">📅 12 months</option>
                 </select>
               </div>
             </div>
@@ -1161,18 +1161,18 @@ const Dashboard = () => {
                     onChange={(e) => setEventFilterType(e.target.value)}
                     className="control-select"
                   >
-                    <option value="all">Всички</option>
-                    <option value="преглед">🔧 Технически преглед</option>
-                    <option value="гражданска">🛡️ Гражданска застраховка</option>
-                    <option value="каско">💎 КАСКО</option>
-                    <option value="винетка">🛣️ Винетка</option>
-                    <option value="данък">💰 Данък</option>
-                    <option value="пожарогасител">🔴 Заверка на пожарогасител</option>
-                    <option value="ремонт">🛠️ Ремонт</option>
-                    <option value="обслужване">🛢️ Обслужване</option>
-                    <option value="гуми">🛞 Добавяне на гуми</option>
-                    <option value="зареждане">⛽ Зареждане</option>
-                    <option value="друго">📝 Друго</option>
+                    <option value="all">All</option>
+                    <option value="inspection">🔧 Technical Inspection</option>
+                    <option value="civil_liability">🛡️ Civil Liability Insurance</option>
+                    <option value="casco">💎 CASCO</option>
+                    <option value="vignette">🛣️ Vignette</option>
+                    <option value="tax">💰 Tax</option>
+                    <option value="fire_extinguisher">🔴 Fire Extinguisher Check</option>
+                    <option value="repair">🛠️ Repair</option>
+                    <option value="maintenance">🛢️ Maintenance</option>
+                    <option value="tires">🛞 Tire Change</option>
+                    <option value="refuel">⛽ Refuel</option>
+                    <option value="other">📝 Other</option>
                   </select>
                 </div>
           </div>
