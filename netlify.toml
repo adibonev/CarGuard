@@ -8,5 +8,5 @@
   status = 200
 
 [context.production.environment]
-  REACT_APP_SUPABASE_URL = "https://lyttoaknjphiirxxyzohhd.supabase.co"
+  REACT_APP_SUPABASE_URL = "https://lytoaknjphiirxxyzohd.supabase.co"
   REACT_APP_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5dG9ha25qcGhpaXJ4eHl6b2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzYzODgsImV4cCI6MjA4NTcxMjM4OH0.1V-ps85fLQwe9ZA5jBvLnqTqOloDkHmV3otXi0aqmXw"
