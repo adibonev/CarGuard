@@ -267,27 +267,27 @@
   }
 
   .input-mode-selector {
-    padding: 12px 15px;
-    gap: 8px;
+    padding: 8px 12px;
+    gap: 6px;
   }
 
   .mode-btn {
-    padding: 10px 12px;
-    font-size: 13px;
+    padding: 8px 10px;
+    font-size: 12px;
   }
 
   .vin-section {
-    padding: 15px;
+    padding: 12px;
   }
 
   .vin-input-group input {
-    font-size: 14px;
-    padding: 10px;
+    font-size: 16px;
+    padding: 8px;
   }
 
   .decode-vin-btn {
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: 8px 12px;
+    font-size: 13px;
   }
 
   .car-form-tabs {
@@ -296,79 +296,143 @@
   }
 
   .form-tab-btn {
-    font-size: 12px;
-    padding: 10px 8px;
+    font-size: 11px;
+    padding: 8px 6px;
     white-space: nowrap;
-    min-width: 100px;
+    min-width: 90px;
   }
 
   .form-content {
-    padding: 15px;
+    padding: 12px;
   }
 
   .form-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .form-field {
+    margin-bottom: 0;
   }
 
   .form-field label {
-    font-size: 13px;
+    font-size: 12px;
+    margin-bottom: 4px;
   }
 
   .form-field input,
   .form-field select {
-    font-size: 14px;
-    padding: 10px;
+    font-size: 16px;
+    padding: 8px 10px;
   }
 
   .form-actions {
-    padding: 15px;
-    gap: 10px;
+    padding: 10px 12px;
+    gap: 8px;
+    margin-top: 0;
+    padding-top: 12px;
   }
 
   .submit-btn,
   .cancel-btn {
-    padding: 12px 20px;
+    padding: 10px 16px;
     font-size: 14px;
   }
 
+  .tire-visual-hint {
+    margin-bottom: 12px;
+  }
+
   .tire-diagram {
-    width: 100px;
-    height: 100px;
-    border-width: 12px;
+    width: 80px;
+    height: 80px;
+    border-width: 10px;
   }
 
   .tire-diagram span {
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .tire-hint-text {
+    font-size: 10px;
+  }
+
+  .vin-success,
+  .vin-error {
+    padding: 10px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .vin-missing-fields {
+    gap: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px 10px;
+    font-size: 16px;
   }
 }
 
 @media (max-width: 480px) {
   .input-mode-selector {
-    flex-direction: column;
+    padding: 6px 10px;
   }
 
   .mode-btn {
-    width: 100%;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .car-form-tabs {
+    padding: 0;
+  }
+
+  .form-tab-btn {
+    padding: 6px 4px;
+    font-size: 10px;
+    min-width: 70px;
+  }
+
+  .form-content {
+    padding: 10px;
+  }
+
+  .form-field label {
+    font-size: 11px;
+  }
+
+  .form-field input,
+  .form-field select {
+    padding: 7px 8px;
   }
 
   .form-actions {
-    flex-direction: column;
+    padding: 8px 10px;
+    padding-top: 10px;
   }
 
   .submit-btn,
   .cancel-btn {
     width: 100%;
-  }
-
-  .vin-success {
-    padding: 12px;
+    padding: 9px 12px;
     font-size: 13px;
   }
 
-  .vin-error {
-    padding: 12px;
-    font-size: 13px;
+  .tire-diagram {
+    width: 70px;
+    height: 70px;
+    border-width: 8px;
   }
 }
 

@@ -4046,20 +4046,48 @@
   
   /* Modal mobile */
   .modal-overlay {
-    padding: 10px;
+    padding: 0;
   }
   
   .modal-content-wrapper {
-    max-height: 95vh;
-    border-radius: 12px;
+    max-height: 100vh;
+    border-radius: 0;
   }
   
   .modal-header {
-    padding: 15px;
+    padding: 10px 15px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
   }
   
   .modal-body {
+    padding: 12px;
+  }
+
+  .car-form,
+  .service-form {
     padding: 15px;
+  }
+
+  .car-form .form-group,
+  .service-form .form-group {
+    margin-bottom: 12px;
+  }
+
+  .car-form label,
+  .service-form label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .car-form input,
+  .car-form select,
+  .service-form input,
+  .service-form select {
+    padding: 10px 12px;
+    font-size: 16px;
   }
   
   /* Service cards mobile */
@@ -4153,33 +4181,65 @@
   }
 
   .modal-header h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+
+  .modal-header {
+    padding: 8px 12px;
+  }
+
+  .modal-body {
+    padding: 10px;
   }
 
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .car-form,
+  .service-form {
+    padding: 10px;
+  }
+
+  .car-form .form-group,
+  .service-form .form-group {
+    margin-bottom: 10px;
+  }
+
+  .car-form label,
+  .service-form label {
+    font-size: 11px;
+    margin-bottom: 3px;
   }
 
   .car-form input,
   .car-form select,
   .service-form input,
   .service-form select {
+    padding: 8px 10px;
     font-size: 16px; /* Prevents iOS zoom on focus */
   }
 
   .dashboard-new .main-content {
-    padding: 15px;
+    padding: 12px;
   }
 
   .content-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .content-header h1 {
+    font-size: 1.3rem;
   }
 
   .content-header .add-btn {
     width: 100%;
     justify-content: center;
+    padding: 10px 16px;
   }
 
   .car-grid {
@@ -4187,15 +4247,20 @@
   }
 
   .stat-box-modern {
-    padding: 15px;
+    padding: 12px;
   }
 
   .stat-box-value {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .stat-box-label {
-    font-size: 12px;
+    font-size: 11px;
+  }
+
+  .form-actions button {
+    padding: 10px 16px;
+    font-size: 14px;
   }
 }
 
