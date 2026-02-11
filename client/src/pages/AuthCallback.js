@@ -76,16 +76,16 @@ const AuthCallback = () => {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h2>{loading ? 'Обработване...' : 'Грешка'}</h2>
+        <h2>{loading ? 'Processing...' : 'Error'}</h2>
         {loading ? (
           <p style={{ textAlign: 'center', color: '#666' }}>
-            Вашата сесия се обработва... Моля, изчакайте.
+            Your session is being processed... Please wait.
           </p>
         ) : (
           <>
             <div className="error-message">{error}</div>
             <p style={{ textAlign: 'center', color: '#666' }}>
-              Редиректиране към логване... ако не се редиректира, <a href="/login">кликнете тук</a>
+              Redirecting to login... if it doesn’t redirect, <a href="/login">click here</a>
             </p>
           </>
         )}

@@ -120,7 +120,7 @@ export const servicesService = {
 
     if (error) {
       if (error.message && error.message.includes('Bucket not found')) {
-        throw new Error('Storage bucket не е конфигуриран. Моля създай "documents" bucket в Supabase Dashboard > Storage. Виж STORAGE_SETUP.md за инструкции.');
+        throw new Error('Storage bucket is not configured. Please create a "documents" bucket in Supabase Dashboard > Storage. See STORAGE_SETUP.md for instructions.');
       }
       throw error;
     }

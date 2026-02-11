@@ -125,10 +125,10 @@ export const carsService = {
     if (error) throw error;
   },
 
-  // Decode VIN (using external API через Edge Function в бъдеще)
+  // Decode VIN (using external API via Edge Function in the future)
   async decodeVin(vin) {
-    // За сега използваме директно NHTSA API
-    // В бъдеще може да създадем Edge Function за това
+    // For now we use the NHTSA API directly
+    // In the future we can create an Edge Function for this
     const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`);
     const result = await response.json();
 
@@ -138,7 +138,7 @@ export const carsService = {
 
     const results = result.Results;
     
-    // Извлечи важните данни
+    // Extract important data
     const getMakeModel = (variableName) => {
       const item = results.find(r => r.Variable === variableName);
       return item?.Value || '';
