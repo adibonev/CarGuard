@@ -589,6 +589,7 @@
   height: 64px;
   object-fit: contain;
   margin-bottom: 16px;
+  animation: logoPulse 1.4s ease-in-out infinite;
 }
 
 /* Responsive */

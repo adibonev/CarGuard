@@ -101,10 +101,16 @@
   width: 34px;
   height: 34px;
   object-fit: contain;
+  animation: logoIntro 700ms ease-out;
 }
 
 .logo:hover {
   transform: scale(1.05);
+}
+
+@keyframes logoIntro {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 /* Navigation Tabs */

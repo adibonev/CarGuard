@@ -35,7 +35,8 @@ const translateServiceType = (type) => {
 
 const loadLogoDataUrl = async () => {
   try {
-    const response = await fetch('/logo.png');
+    const baseUrl = process.env.PUBLIC_URL || '';
+    const response = await fetch(`${baseUrl}/logo.png`);
     if (!response.ok) return null;
     const blob = await response.blob();
     const dataUrl = await new Promise((resolve) => {

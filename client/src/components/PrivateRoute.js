@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = ({ children }) => {
   const { session, loading } = useAuth();
+  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
 
   // Wait for app initialization before redirecting
   if (loading) {
@@ -17,8 +18,9 @@ const PrivateRoute = ({ children }) => {
       }}>
         <div style={{ textAlign: 'center' }}>
           <img
-            src="/logo.png"
+            src={logoUrl}
             alt="CarGuard logo"
+            className="cg-loading-logo"
             style={{ width: '64px', height: '64px', marginBottom: '16px' }}
           />
           <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>

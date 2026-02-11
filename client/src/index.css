@@ -16,6 +16,16 @@ code {
     monospace;
 }
 
+.cg-loading-logo {
+  animation: logoPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0% { transform: scale(0.95); opacity: 0.75; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.75; }
+}
+
 /* Mobile improvements */
 @media (max-width: 768px) {
   html {

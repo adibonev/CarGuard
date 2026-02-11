@@ -50,6 +50,8 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -121,7 +123,7 @@ const Home = () => {
       <header className="home-header">
         <div className="header-container">
           <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src="/logo.png" alt="CarGuard logo" className="logo-img" />
+            <img src={logoUrl} alt="CarGuard logo" className="logo-img" />
             <span>CarGuard</span>
           </div>
           

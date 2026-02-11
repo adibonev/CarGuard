@@ -14,6 +14,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [admin, setAdmin] = useState(null);
   const navigate = useNavigate();
+  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -299,7 +300,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="admin-loading">
-        <img src="/logo.png" alt="CarGuard logo" className="admin-loading-logo" />
+        <img src={logoUrl} alt="CarGuard logo" className="admin-loading-logo" />
         <div className="spinner"></div>
         <p>Loading data...</p>
       </div>
@@ -310,7 +311,7 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <img src="/logo.png" alt="CarGuard logo" className="admin-logo" />
+          <img src={logoUrl} alt="CarGuard logo" className="admin-logo" />
           <span className="admin-title">Admin Panel</span>
         </div>
 
