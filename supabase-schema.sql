@@ -13,7 +13,10 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
+  password VARCHAR(255), -- Nullable for Google OAuth users
+  auth_user_id UUID UNIQUE, -- Supabase Auth user ID
+  google_id VARCHAR(255), -- Google OAuth ID
+  email_verified BOOLEAN DEFAULT FALSE,
   reminder_days INTEGER NOT NULL DEFAULT 30,
   reminder_enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -22,6 +25,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Индекс за бързо търсене по email
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Индекс за auth_user_id
+CREATE INDEX IF NOT EXISTS idx_users_auth_user_id ON users(auth_user_id);
 
 -- =====================================================
 -- 2. ТАБЛИЦА ADMINS
