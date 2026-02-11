@@ -16,7 +16,12 @@ const PrivateRoute = ({ children }) => {
         backgroundColor: '#f5f5f5'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '24px', marginBottom: '20px' }}>⏳</div>
+          <img
+            src="/logo.png"
+            alt="CarGuard logo"
+            style={{ width: '64px', height: '64px', marginBottom: '16px' }}
+          />
+          <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
           <p>Loading...</p>
         </div>
       </div>

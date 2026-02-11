@@ -120,7 +120,10 @@ const Home = () => {
       {/* Header */}
       <header className="home-header">
         <div className="header-container">
-          <h1 className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>🚗 CarGuard</h1>
+          <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img src="/logo.png" alt="CarGuard logo" className="logo-img" />
+            <span>CarGuard</span>
+          </div>
           
           {/* Navigation Tabs */}
           <nav className="nav-tabs">

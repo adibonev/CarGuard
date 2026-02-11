@@ -29,6 +29,12 @@
   font-size: 24px;
 }
 
+.mobile-header-left .logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
 .mobile-header-left .logo-text {
   font-size: 18px;
   font-weight: 700;
@@ -207,6 +213,12 @@
 
 .logo-icon {
   font-size: 28px;
+}
+
+.logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .logo-text {
@@ -560,6 +572,13 @@
 .loading-state {
   text-align: center;
   padding: 60px;
+}
+
+.loading-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 16px;
 }
 
 .spinner {

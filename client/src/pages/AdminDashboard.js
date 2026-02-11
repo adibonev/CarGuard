@@ -299,6 +299,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="admin-loading">
+        <img src="/logo.png" alt="CarGuard logo" className="admin-loading-logo" />
         <div className="spinner"></div>
         <p>Loading data...</p>
       </div>
@@ -309,7 +310,7 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <span className="admin-logo">🛡️</span>
+          <img src="/logo.png" alt="CarGuard logo" className="admin-logo" />
           <span className="admin-title">Admin Panel</span>
         </div>
 

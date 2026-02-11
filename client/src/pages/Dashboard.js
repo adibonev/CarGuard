@@ -764,6 +764,7 @@ const Dashboard = () => {
     <div className="tab-content cars-content-new">
       {loading ? (
         <div className="loading-state">
+          <img src="/logo.png" alt="CarGuard logo" className="loading-logo" />
           <div className="spinner"></div>
           <p>Loading...</p>
         </div>
@@ -1583,7 +1584,7 @@ const Dashboard = () => {
       {/* Mobile Header */}
       <div className="mobile-header">
         <div className="mobile-header-left">
-          <span className="logo-icon">🚗</span>
+          <img src="/logo.png" alt="CarGuard logo" className="logo-img" />
           <span className="logo-text">CarGuard</span>
         </div>
         <button 
@@ -1656,7 +1657,7 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <span className="logo-icon">🚗</span>
+          <img src="/logo.png" alt="CarGuard logo" className="logo-img" />
           <span className="logo-text">CarGuard</span>
         </div>
 

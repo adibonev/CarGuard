@@ -33,6 +33,27 @@ const translateServiceType = (type) => {
   return serviceTypeMap[type?.toLowerCase()] || type || 'N/A';
 };
 
+const loadLogoDataUrl = async () => {
+  try {
+    const response = await fetch('/logo.png');
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+    if (!dataUrl) return null;
+
+    let format = 'PNG';
+    if (blob.type === 'image/jpeg' || blob.type === 'image/jpg') format = 'JPEG';
+    return { dataUrl, format };
+  } catch (err) {
+    return null;
+  }
+};
+
 export const generateCarReport = async (car, services) => {
   const doc = new jsPDF();
   
@@ -44,19 +65,24 @@ export const generateCarReport = async (car, services) => {
   doc.rect(0, 0, 210, 40, 'F');
   
   // Logo/Icon
-  doc.setFontSize(32);
-  doc.setTextColor(255, 255, 255);
-  doc.text('🚗', 15, 22);
+  const logo = await loadLogoDataUrl();
+  if (logo?.dataUrl) {
+    doc.addImage(logo.dataUrl, logo.format, 15, 8, 24, 24);
+  } else {
+    doc.setFontSize(32);
+    doc.setTextColor(255, 255, 255);
+    doc.text('🚗', 15, 22);
+  }
   
   // Brand name
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
-  doc.text('CarGuard', 30, 20);
+  doc.text('CarGuard', 45, 20);
   
   // Tagline
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Your Digital Car Assistant', 30, 28);
+  doc.text('Your Digital Car Assistant', 45, 28);
   
   // Report Title with red accent (#dc3545)
   doc.setFontSize(16);
