@@ -7,7 +7,7 @@
   margin: 0 auto;
 }
 
-/* Избор на режим */
+/* Mode selection */
 .input-mode-selector {
   display: flex;
   gap: 10px;
@@ -39,7 +39,7 @@
   border-color: white;
 }
 
-/* VIN секция */
+/* VIN section */
 .vin-section {
   padding: 20px;
   background: #f8f9fa;
@@ -113,7 +113,7 @@
   font-size: 14px;
 }
 
-/* VIN резултат */
+/* VIN result */
 .vin-result {
   margin-top: 20px;
   padding: 15px;
@@ -151,7 +151,7 @@
   font-style: italic;
 }
 
-/* Предупреждение за европейски VIN */
+/* Warning for European VIN */
 .vin-warning {
   background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
   border: 1px solid #ffc107;
@@ -163,7 +163,7 @@
   color: #856404;
 }
 
-/* Намерена информация от VIN */
+/* Found info from VIN */
 .vin-found-info {
   background: #f0fff0;
   border: 1px solid #4CAF50;
@@ -192,7 +192,7 @@
   color: #666;
 }
 
-/* Намерени полета */
+/* Found fields */
 .vin-item.vin-found {
   background: #e8f5e9;
   padding: 6px 10px;
@@ -200,7 +200,7 @@
   border-left: 3px solid #4CAF50;
 }
 
-/* Липсващи полета секция */
+/* Missing fields section */
 .vin-missing-section {
   margin-top: 20px;
   padding: 15px;

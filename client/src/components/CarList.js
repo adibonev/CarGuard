@@ -2,7 +2,7 @@ import React from 'react';
 
 const CarList = ({ cars, selectedCar, onSelectCar, onDeleteCar }) => {
   if (cars.length === 0) {
-    return <p className="no-data">Нямаш добавени автомобили</p>;
+    return <p className="no-data">No vehicles added</p>;
   }
 
   return (
@@ -15,19 +15,19 @@ const CarList = ({ cars, selectedCar, onSelectCar, onDeleteCar }) => {
         >
           <div className="car-info">
             <h3>{car.brand} {car.model}</h3>
-            <p>Година: {car.year}</p>
-            {car.licensePlate && <p>Рег. табличка: {car.licensePlate}</p>}
+            <p>Year: {car.year}</p>
+            {car.licensePlate && <p>Plate: {car.licensePlate}</p>}
           </div>
           <button
             className="delete-btn"
             onClick={(e) => {
               e.stopPropagation();
-              if (window.confirm('Сигурен ли си?')) {
+              if (window.confirm('Are you sure?')) {
                 onDeleteCar(car._id);
               }
             }}
           >
-            Изтрий
+            Delete
           </button>
         </div>
       ))}

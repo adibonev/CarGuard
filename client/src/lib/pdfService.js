@@ -16,18 +16,17 @@ const formatCurrency = (amount) => {
 
 // Service type translations
 const serviceTypeMap = {
-  'застраховка': 'Insurance',
-  'винетка': 'Vignette',
-  'преглед': 'Technical Inspection',
-  'каско': 'Casco Insurance',
-  'данък': 'Tax',
-  'пожарогасител': 'Fire Extinguisher',
-  'ремонт': 'Repair',
-  'обслужване': 'Maintenance',
-  'гуми': 'Tires',
-  'зареждане': 'Refuel',
-  'друго': 'Other',
-  'гражданска': 'Civil Liability'
+  'civil_liability': 'Civil Liability Insurance',
+  'vignette': 'Vignette',
+  'inspection': 'Technical Inspection',
+  'casco': 'CASCO Insurance',
+  'tax': 'Tax',
+  'fire_extinguisher': 'Fire Extinguisher',
+  'repair': 'Repair',
+  'maintenance': 'Maintenance',
+  'tires': 'Tires',
+  'refuel': 'Refuel',
+  'other': 'Other'
 };
 
 const translateServiceType = (type) => {
@@ -207,7 +206,7 @@ export const generateCarReport = async (car, services) => {
       ];
       
       // Add fuel info if it's a refuel
-      if (s.serviceType?.toLowerCase() === 'зареждане' && s.liters) {
+      if (s.serviceType?.toLowerCase() === 'refuel' && s.liters) {
         row.push(`${s.liters} L`);
         row.push(s.pricePerLiter ? formatCurrency(s.pricePerLiter) : 'N/A');
       } else {
@@ -284,7 +283,7 @@ export const generateCarReport = async (car, services) => {
   // Calculate totals
   const totalServices = services.length;
   const totalCost = services.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
-  const fuelServices = services.filter(s => s.serviceType?.toLowerCase() === 'зареждане');
+  const fuelServices = services.filter(s => s.serviceType?.toLowerCase() === 'refuel');
   const totalFuelLiters = fuelServices.reduce((sum, s) => sum + (parseFloat(s.liters) || 0), 0);
   const totalFuelCost = fuelServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0);
   

@@ -48,7 +48,7 @@ const AdminLogin = () => {
       // Check if user is admin
       if (!userData.is_admin) {
         await supabase.auth.signOut();
-        throw new Error('Нямате администраторски права');
+        throw new Error('You do not have admin privileges');
       }
 
       console.log('Admin login successful:', userData);
@@ -57,7 +57,7 @@ const AdminLogin = () => {
       navigate('/admin/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      const errorMsg = err.message || 'Грешка при вход';
+      const errorMsg = err.message || 'Login failed';
       setError(errorMsg);
     } finally {
       setLoading(false);

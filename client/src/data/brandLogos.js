@@ -1,4 +1,4 @@
-// Логота на автомобилни марки (SVG URLs от публични източници)
+// Car brand logos (SVG URLs from public sources)
 const brandLogos = {
   'Audi': 'https://www.carlogos.org/car-logos/audi-logo.png',
   'BMW': 'https://www.carlogos.org/car-logos/bmw-logo.png',

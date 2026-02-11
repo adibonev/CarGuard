@@ -4,7 +4,7 @@ import carsService from '../lib/supabaseCars';
 import '../styles/CarForm.css';
 
 const CarForm = ({ onSubmit, onCancel, initialData }) => {
-  const [inputMode, setInputMode] = useState('manual'); // 'manual' или 'vin'
+  const [inputMode, setInputMode] = useState('manual'); // 'manual' or 'vin'
   const [activeTab, setActiveTab] = useState('basic');
   const [vinInput, setVinInput] = useState('');
   const [vinLoading, setVinLoading] = useState(false);
@@ -33,7 +33,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
   const [availableModels, setAvailableModels] = useState([]);
   const brands = getBrands();
 
-  // При редактиране зареди данните
+  // Load data when editing
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -62,10 +62,10 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
     }
   }, [initialData]);
 
-  // Функция за декодиране на VIN
+  // VIN decode function
   const handleVinDecode = async () => {
     if (!vinInput || vinInput.length !== 17) {
-      setVinError('VIN номерът трябва да е точно 17 символа');
+      setVinError('VIN must be exactly 17 characters');
       return;
     }
 
@@ -78,27 +78,27 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
       
       setVinData(data);
       
-      // Намери марката в списъка (case-insensitive)
+      // Find brand in list (case-insensitive)
       let matchedBrand = '';
       if (data.brand) {
         const brandLower = data.brand.toLowerCase();
         matchedBrand = brands.find(b => b.toLowerCase() === brandLower) || '';
       }
       
-      // Обнови моделите ако има марка
+      // Update models if brand exists
       let matchedModel = '';
       if (matchedBrand) {
         const models = getModels(matchedBrand);
         setAvailableModels(models);
         
-        // Намери модела в списъка (case-insensitive)
+        // Find model in list (case-insensitive)
         if (data.model) {
           const modelLower = data.model.toLowerCase();
           matchedModel = models.find(m => m.toLowerCase() === modelLower) || data.model;
         }
       }
       
-      // Попълни формата с данните от VIN
+      // Populate form with VIN data
       setFormData(prev => ({
         ...prev,
         brand: matchedBrand || prev.brand,
@@ -111,7 +111,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
       }));
       
     } catch (err) {
-      setVinError(err.message || 'Грешка при декодиране на VIN');
+      setVinError(err.message || 'Error decoding VIN');
     } finally {
       setVinLoading(false);
     }
@@ -121,7 +121,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
     const { name, value } = e.target;
     
     if (name === 'brand') {
-      // Когато се смени марката, обнови моделите и изчисти избрания модел
+      // When brand changes, update models and clear selected model
       setAvailableModels(getModels(value));
       setFormData(prev => ({
         ...prev,
@@ -176,7 +176,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
 
   return (
     <div className="car-form-container">
-      {/* Избор на режим - ръчно или VIN */}
+      {/* Mode selection - manual or VIN */}
       {!initialData && (
         <div className="input-mode-selector">
           <button 
@@ -184,29 +184,29 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
             className={`mode-btn ${inputMode === 'manual' ? 'active' : ''}`}
             onClick={() => setInputMode('manual')}
           >
-            ✏️ Ръчно въвеждане
+            ✏️ Manual entry
           </button>
           <button 
             type="button"
             className={`mode-btn ${inputMode === 'vin' ? 'active' : ''}`}
             onClick={() => setInputMode('vin')}
           >
-            🔍 По VIN номер
+            🔍 By VIN number
           </button>
         </div>
       )}
 
-      {/* VIN секция */}
+      {/* VIN section */}
       {inputMode === 'vin' && !initialData && (
         <div className="vin-section">
           <div className="vin-input-group">
-            <label>VIN номер (17 символа)</label>
+            <label>VIN number (17 characters)</label>
             <div className="vin-input-row">
               <input
                 type="text"
                 value={vinInput}
                 onChange={(e) => setVinInput(e.target.value.toUpperCase())}
-                placeholder="Въведи VIN номер"
+                placeholder="Enter VIN"
                 maxLength={17}
                 className="vin-input"
               />
@@ -216,7 +216,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                 onClick={handleVinDecode}
                 disabled={vinLoading || vinInput.length !== 17}
               >
-                {vinLoading ? '⏳ Зареждане...' : '🔍 Провери'}
+                {vinLoading ? '⏳ Loading...' : '🔍 Check'}
               </button>
             </div>
             <div className="vin-counter">{vinInput.length}/17</div>
@@ -225,25 +225,25 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
 
           {vinData && (
             <div className="vin-result">
-              {/* Предупреждение за европейски VIN */}
+              {/* Warning for European VIN */}
               {vinData.isEuropean && (
                 <div className="vin-warning">
-                  ⚠️ <strong>Европейски VIN</strong> - Данните може да са непълни. 
-                  Проверете и коригирайте във формата по-долу.
+                  ⚠️ <strong>European VIN</strong> - Data may be incomplete. 
+                  Please verify and correct the form below.
                 </div>
               )}
 
-              {/* Показване на намерена информация */}
+              {/* Show found information */}
               <div className="vin-found-info">
-                <h4>✅ Намерена информация:</h4>
+                <h4>✅ Found information:</h4>
                 <div className="vin-found-grid">
-                  {vinData.brand && <span><strong>Марка:</strong> {vinData.brand}</span>}
-                  {vinData.year && <span><strong>Година:</strong> {vinData.year}</span>}
-                  {vinData.plantCountry && <span><strong>Произведен в:</strong> {vinData.plantCountry}</span>}
+                  {vinData.brand && <span><strong>Brand:</strong> {vinData.brand}</span>}
+                  {vinData.year && <span><strong>Year:</strong> {vinData.year}</span>}
+                  {vinData.plantCountry && <span><strong>Made in:</strong> {vinData.plantCountry}</span>}
                 </div>
               </div>
 
-              <p className="vin-hint">💡 Данните са попълнени във формата по-долу. Коригирай ги ако е нужно.</p>
+              <p className="vin-hint">💡 The form below is prefilled. Adjust if needed.</p>
             </div>
           )}
         </div>
@@ -255,21 +255,21 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
           className={`form-tab-btn ${activeTab === 'basic' ? 'active' : ''}`}
           onClick={() => setActiveTab('basic')}
         >
-          ℹ️ Основна информация
+          ℹ️ Basic information
         </button>
         <button 
           type="button" 
           className={`form-tab-btn ${activeTab === 'tech' ? 'active' : ''}`}
           onClick={() => setActiveTab('tech')}
         >
-          ⚙️ Технически данни
+          ⚙️ Technical data
         </button>
         <button 
           type="button" 
           className={`form-tab-btn ${activeTab === 'tires' ? 'active' : ''}`}
           onClick={() => setActiveTab('tires')}
         >
-          🔘 Гуми
+          🔘 Tires
         </button>
       </div>
 
@@ -279,21 +279,21 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
             <div className="form-section fade-in">
               <div className="form-row">
                 <div className="form-group half">
-                  <label>Марка *</label>
+                  <label>Brand *</label>
                   <select
                     name="brand"
                     value={formData.brand}
                     onChange={handleChange}
                     required
                   >
-                    <option value="">-- Избери марка --</option>
+                    <option value="">-- Select brand --</option>
                     {brands.map(brand => (
                       <option key={brand} value={brand}>{brand}</option>
                     ))}
                   </select>
                 </div>
                 <div className="form-group half">
-                  <label>Модел *</label>
+                  <label>Model *</label>
                   <select
                     name="model"
                     value={formData.model}
@@ -301,7 +301,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                     required
                     disabled={!formData.brand}
                   >
-                    <option value="">-- Избери модел --</option>
+                    <option value="">-- Select model --</option>
                     {availableModels.map(model => (
                       <option key={model} value={model}>{model}</option>
                     ))}
@@ -311,7 +311,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
               
               <div className="form-row">
                 <div className="form-group half">
-                  <label>Година *</label>
+                  <label>Year *</label>
                   <select
                     name="year"
                     value={formData.year}
@@ -324,7 +324,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                   </select>
                 </div>
                 <div className="form-group half">
-                  <label>Рег. номер</label>
+                  <label>License plate</label>
                   <input 
                     type="text" 
                     name="licensePlate" 
@@ -336,24 +336,24 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
               </div>
 
               <div className="form-group">
-                <label>VIN (Рама)</label>
+                <label>VIN (Chassis)</label>
                 <input 
                   type="text" 
                   name="vin" 
                   value={formData.vin} 
                   onChange={handleChange}
-                  placeholder="Въведи VIN номер"
+                  placeholder="Enter VIN"
                 />
               </div>
 
               <div className="form-group">
-                <label>Пробег (км)</label>
+                <label>Mileage (km)</label>
                 <input 
                   type="number" 
                   name="mileage" 
                   value={formData.mileage} 
                   onChange={handleChange}
-                  placeholder="пр. 150000"
+                  placeholder="e.g. 150000"
                 />
               </div>
             </div>
@@ -363,43 +363,43 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
             <div className="form-section fade-in">
               <div className="form-row">
                 <div className="form-group half">
-                  <label>Тип двигател</label>
+                  <label>Engine type</label>
                   <select name="engineType" value={formData.engineType} onChange={handleChange}>
-                    <option value="">-- Избери --</option>
-                    <option value="Benzin">Бензин</option>
-                    <option value="Diesel">Дизел</option>
-                    <option value="Electric">Електрически</option>
-                    <option value="Hybrid">Хибрид</option>
-                    <option value="LPG">Газ/Бензин</option>
-                    <option value="CNG">Метан/Бензин</option>
+                    <option value="">-- Select --</option>
+                    <option value="Benzin">Gasoline</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="LPG">LPG/Gasoline</option>
+                    <option value="CNG">CNG/Gasoline</option>
                   </select>
                 </div>
                 <div className="form-group half">
-                  <label>Конски сили (к.с.)</label>
+                  <label>Horsepower (HP)</label>
                   <input 
                     type="number" 
                     name="horsepower" 
                     value={formData.horsepower} 
                     onChange={handleChange}
-                    placeholder="пр. 150"
+                    placeholder="e.g. 150"
                   />
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="form-group half">
-                  <label>Скоростна кутия</label>
+                  <label>Transmission</label>
                   <select name="transmission" value={formData.transmission} onChange={handleChange}>
-                    <option value="">-- Избери --</option>
-                    <option value="Manual">Ръчна</option>
-                    <option value="Automatic">Автоматична</option>
-                    <option value="Semi-Auto">Полу-автоматична</option>
+                    <option value="">-- Select --</option>
+                    <option value="Manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                    <option value="Semi-Auto">Semi-automatic</option>
                   </select>
                 </div>
                 <div className="form-group half">
-                  <label>Евро стандарт</label>
+                  <label>Euro standard</label>
                   <select name="euroStandard" value={formData.euroStandard} onChange={handleChange}>
-                    <option value="">-- Избери --</option>
+                    <option value="">-- Select --</option>
                     <option value="Euro 1">Euro 1</option>
                     <option value="Euro 2">Euro 2</option>
                     <option value="Euro 3">Euro 3</option>
@@ -418,12 +418,12 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                 <div className="tire-diagram">
                    <span>{formData.tireWidth || '205'} / {formData.tireHeight || '55'} R{formData.tireDiameter || '16'}</span>
                 </div>
-                <small className="tire-hint-text">Въведи размерите на гумите</small>
+                <small className="tire-hint-text">Enter tire sizes</small>
               </div>
 
               <div className="form-row three-cols">
                 <div className="form-group">
-                  <label>Широчина</label>
+                  <label>Width</label>
                   <select name="tireWidth" value={formData.tireWidth} onChange={handleChange}>
                      <option value="">--</option>
                      {[135,145,155,165,175,185,195,205,215,225,235,245,255,265,275,285,295,305,315].map(w => (
@@ -432,7 +432,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Височина</label>
+                  <label>Height</label>
                   <select name="tireHeight" value={formData.tireHeight} onChange={handleChange}>
                      <option value="">--</option>
                      {[30,35,40,45,50,55,60,65,70,75,80,85].map(h => (
@@ -441,7 +441,7 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Диаметър (R)</label>
+                  <label>Diameter (R)</label>
                   <select name="tireDiameter" value={formData.tireDiameter} onChange={handleChange}>
                      <option value="">--</option>
                      {[13,14,15,16,17,18,19,20,21,22].map(d => (
@@ -453,34 +453,34 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
 
               <div className="form-row">
                 <div className="form-group half">
-                  <label>Сезон</label>
+                  <label>Season</label>
                   <select name="tireSeason" value={formData.tireSeason} onChange={handleChange}>
-                    <option value="">-- Избери --</option>
-                    <option value="Summer">Летни</option>
-                    <option value="Winter">Зимни</option>
-                    <option value="AllSeasons">Всесезонни</option>
+                    <option value="">-- Select --</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Winter">Winter</option>
+                    <option value="AllSeasons">All-season</option>
                   </select>
                 </div>
                 <div className="form-group half">
-                  <label>ДОТ</label>
+                  <label>DOT</label>
                   <input 
                     type="text" 
                     name="tireDot" 
                     value={formData.tireDot} 
                     onChange={handleChange}
-                    placeholder="пр. 2423"
+                    placeholder="e.g. 2423"
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Марка гуми</label>
+                <label>Tire brand</label>
                 <input 
                   type="text" 
                   name="tireBrand" 
                   value={formData.tireBrand} 
                   onChange={handleChange}
-                  placeholder="пр. Michelin, Continental..."
+                  placeholder="e.g. Michelin, Continental..."
                 />
               </div>
             </div>
@@ -488,8 +488,8 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
         </div>
 
         <div className="form-actions">
-          <button type="button" className="cancel-btn" onClick={onCancel}>Отказ</button>
-          <button type="submit" className="submit-btn">{initialData ? 'Запази промените' : 'Добави автомобил'}</button>
+          <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
+          <button type="submit" className="submit-btn">{initialData ? 'Save changes' : 'Add vehicle'}</button>
         </div>
       </form>
     </div>

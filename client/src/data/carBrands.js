@@ -1,4 +1,4 @@
-// Данни за марки и модели автомобили
+// Car brand and model data
 const carBrands = {
   'Audi': [
     'A1', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8',
@@ -233,12 +233,12 @@ const carBrands = {
   ]
 };
 
-// Сортирани марки по азбучен ред
+// Brands sorted alphabetically
 export const getBrands = () => {
   return Object.keys(carBrands).sort((a, b) => a.localeCompare(b));
 };
 
-// Модели за дадена марка
+// Models for a given brand
 export const getModels = (brand) => {
   return carBrands[brand] || [];
 };

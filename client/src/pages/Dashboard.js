@@ -254,7 +254,7 @@ const Dashboard = () => {
     e.preventDefault();
     
     if (!docFormData.carId) {
-      alert('Моля изберете автомобил');
+      alert('Please select a vehicle');
       return;
     }
     
@@ -285,7 +285,7 @@ const Dashboard = () => {
       await servicesService.updateService(service.id, { fileUrl });
       
       // Reset form
-      setDocFormData({ carId: '', category: 'друго', file: null, notes: '' });
+      setDocFormData({ carId: '', category: 'other', file: null, notes: '' });
       setShowDocumentForm(false);
       
       // Reload services
@@ -303,7 +303,7 @@ const Dashboard = () => {
 
   const handleDownloadPDF = async () => {
     if (!selectedCar) {
-      alert('Моля изберете автомобил');
+      alert('Please select a vehicle');
       return;
     }
     
@@ -401,7 +401,7 @@ const Dashboard = () => {
   };
 
   const getExpiringServices = () => {
-    const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
+    const expiringTypes = ['civil_liability', 'vignette', 'inspection', 'casco', 'tax', 'fire_extinguisher'];
     return allServices.filter(s => {
       if (!expiringTypes.includes(s.serviceType)) return false;
       const status = getServiceStatus(s.expiryDate);
@@ -546,7 +546,7 @@ const Dashboard = () => {
           {/* Calendar Section */}
           <div className="dashboard-section calendar-section">
             <div className="section-title">
-              <h3>📅 Календар с предстоящи събития</h3>
+              <h3>📅 Upcoming Events Calendar</h3>
               <div className="calendar-nav">
                 <button onClick={() => navigateMonth(-1)}>‹</button>
                 <span>{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
@@ -555,19 +555,19 @@ const Dashboard = () => {
             </div>
             <div className="calendar-grid">
               <div className="calendar-header">
-                <span>Нед</span>
-                <span>Пон</span>
-                <span>Вто</span>
-                <span>Сря</span>
-                <span>Чет</span>
-                <span>Пет</span>
-                <span>Съб</span>
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
               </div>
               <div className="calendar-days">
                 {getMonthDays(currentMonth).map((day, idx) => {
                   const events = day ? getEventsForDay(day) : [];
                   const isToday = day && day.toDateString() === new Date().toDateString();
-                  const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
+                  const expiringTypes = ['civil_liability', 'vignette', 'inspection', 'casco', 'tax', 'fire_extinguisher'];
                   const hasExpired = events.some(e => expiringTypes.includes(e.serviceType) && getServiceStatus(e.expiryDate).status === 'expired');
                   const hasWarning = events.some(e => expiringTypes.includes(e.serviceType) && getServiceStatus(e.expiryDate).status === 'warning');
                   
@@ -608,14 +608,14 @@ const Dashboard = () => {
           {/* Chart Section */}
           <div className="dashboard-section chart-section">
             <div className="section-title">
-              <h3>📊 Месечни разходи</h3>
+              <h3>📊 Monthly Expenses</h3>
               <div className="chart-filters">
                 <select 
                   value={chartFilterCar} 
                   onChange={(e) => setChartFilterCar(e.target.value)}
                   className="chart-filter-select"
                 >
-                  <option value="all">🚗 Всички автомобили</option>
+                  <option value="all">🚗 All vehicles</option>
                   {cars.map(car => (
                     <option key={car.id} value={car.id}>
                       {car.brand} {car.model}
@@ -657,9 +657,9 @@ const Dashboard = () => {
                   <LineChart data={getChartData()}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis dataKey="name" stroke="#666" fontSize={12} />
-                    <YAxis stroke="#666" fontSize={12} tickFormatter={(value) => `${value} лв`} />
+                    <YAxis stroke="#666" fontSize={12} tickFormatter={(value) => `${value} BGN`} />
                     <Tooltip 
-                      formatter={(value, name) => [`${value} лв`, name]}
+                      formatter={(value, name) => [`${value} BGN`, name]}
                       contentStyle={{ background: 'white', border: '1px solid #eee', borderRadius: '8px' }}
                     />
                     <Legend />
@@ -678,8 +678,8 @@ const Dashboard = () => {
               ) : (
                 <div className="no-chart-data">
                   <span>📊</span>
-                  <p>Няма данни за разходи</p>
-                  <small>Добави събития с цена за да видиш графиката</small>
+                  <p>No expense data</p>
+                  <small>Add services with a cost to see the chart</small>
                 </div>
               )}
             </div>
@@ -688,7 +688,7 @@ const Dashboard = () => {
           {/* Notifications Section */}
           <div className="dashboard-section notifications-section">
             <div className="section-title">
-              <h3>🔔 Напомняния</h3>
+              <h3>🔔 Reminders</h3>
             </div>
             <div className="notifications-list">
               {(() => {
@@ -707,27 +707,27 @@ const Dashboard = () => {
                       id: `exp-${service.id}`,
                       type: 'danger',
                       icon: '🚨',
-                      title: `${getServiceName(service.serviceType)} е изтекла!`,
-                      message: `${car?.brand} ${car?.model} - изтекла на ${expiryDate.toLocaleDateString('bg-BG')}`,
-                      time: 'Спешно'
+                      title: `${getServiceName(service.serviceType)} expired!`,
+                      message: `${car?.brand} ${car?.model} - expired on ${expiryDate.toLocaleDateString('en-GB')}`,
+                      time: 'Urgent'
                     });
                   } else if (daysLeft <= 7) {
                     notifications.push({
                       id: `warn-${service.id}`,
                       type: 'warning',
                       icon: '⚠️',
-                      title: `${getServiceName(service.serviceType)} изтича скоро`,
-                      message: `${car?.brand} ${car?.model} - остават ${daysLeft} дни`,
-                      time: `${daysLeft} дни`
+                      title: `${getServiceName(service.serviceType)} expires soon`,
+                      message: `${car?.brand} ${car?.model} - ${daysLeft} days left`,
+                      time: `${daysLeft} days`
                     });
                   } else if (daysLeft <= 30) {
                     notifications.push({
                       id: `info-${service.id}`,
                       type: 'info',
                       icon: '📋',
-                      title: `Напомняне за ${getServiceName(service.serviceType)}`,
-                      message: `${car?.brand} ${car?.model} - изтича на ${expiryDate.toLocaleDateString('bg-BG')}`,
-                      time: `${daysLeft} дни`
+                      title: `Reminder for ${getServiceName(service.serviceType)}`,
+                      message: `${car?.brand} ${car?.model} - expires on ${expiryDate.toLocaleDateString('en-GB')}`,
+                      time: `${daysLeft} days`
                     });
                   }
                 });
@@ -736,8 +736,8 @@ const Dashboard = () => {
                   return (
                     <div className="no-notifications">
                       <span>🔔</span>
-                      <p>Няма нови известия</p>
-                      <small>Всичко е наред с вашите автомобили</small>
+                      <p>No new notifications</p>
+                      <small>All your vehicles are up to date</small>
                     </div>
                   );
                 }
@@ -765,7 +765,7 @@ const Dashboard = () => {
       {loading ? (
         <div className="loading-state">
           <div className="spinner"></div>
-          <p>Зареждане...</p>
+          <p>Loading...</p>
         </div>
       ) : (
         <div className="cars-layout">
@@ -773,7 +773,7 @@ const Dashboard = () => {
             <div className="modal-overlay">
               <div className="modal-content-wrapper">
                 <div className="modal-header">
-                  <h3>{editingCar ? 'Редактиране на автомобил' : 'Добавяне на нов автомобил'}</h3>
+                  <h3>{editingCar ? 'Edit vehicle' : 'Add new vehicle'}</h3>
                   <button className="modal-close-btn" onClick={() => { setShowCarForm(false); setEditingCar(null); }}>✕</button>
                 </div>
                 <CarForm 
@@ -788,12 +788,12 @@ const Dashboard = () => {
           {/* Left Panel - Car List */}
           <div className="cars-list-panel">
             <div className="panel-header">
-              <h3>🚘 Автомобили ({cars.length})</h3>
+              <h3>🚘 Vehicles ({cars.length})</h3>
               <button 
                 className="add-car-btn" 
                 onClick={() => { setShowCarForm(true); setEditingCar(null); }}
               >
-                + Добави
+                + Add
               </button>
             </div>
             
@@ -801,8 +801,8 @@ const Dashboard = () => {
               {cars.length === 0 ? (
                 <div className="empty-cars">
                   <span>🚗</span>
-                  <p>Нямаш автомобили</p>
-                  <button onClick={() => setShowCarForm(true)}>Добави първия</button>
+                  <p>You have no vehicles</p>
+                  <button onClick={() => setShowCarForm(true)}>Add your first</button>
                 </div>
               ) : (
                 cars.map(car => {
@@ -825,7 +825,7 @@ const Dashboard = () => {
                       </div>
                       <div className="car-list-info">
                         <span className="car-list-name">{car.brand} {car.model}</span>
-                        <span className="car-list-year">{car.year} • {car.licensePlate || 'Без номер'}</span>
+                        <span className="car-list-year">{car.year} • {car.licensePlate || 'No plate'}</span>
                       </div>
                       {expiringCount > 0 && (
                         <span className="car-warning-badge">{expiringCount}</span>
@@ -853,28 +853,28 @@ const Dashboard = () => {
                     </div>
                     <div className="car-detail-title">
                       <h2>{selectedCar.brand} {selectedCar.model}</h2>
-                      <p>{selectedCar.year} г. {selectedCar.licensePlate && `• ${selectedCar.licensePlate}`}</p>
+                      <p>{selectedCar.year} {selectedCar.licensePlate && `• ${selectedCar.licensePlate}`}</p>
                     </div>
                   </div>
                   <div className="car-detail-actions">
                     <button 
                       className="action-btn pdf"
                       onClick={handleDownloadPDF}
-                      title="Изтегли PDF репорт"
+                      title="Download PDF report"
                     >
-                      📄 PDF Репорт
+                      📄 PDF Report
                     </button>
                     <button 
                       className="action-btn edit"
                       onClick={() => handleEditCar(selectedCar)}
                     >
-                      ✏️ Редактирай
+                      ✏️ Edit
                     </button>
                     <button 
                       className="action-btn delete"
                       onClick={() => handleDeleteCar(selectedCar.id)}
                     >
-                      🗑️ Изтрий
+                      🗑️ Delete
                     </button>
                   </div>
                 </div>
@@ -883,7 +883,7 @@ const Dashboard = () => {
                   <div className="spec-card">
                     <div className="spec-icon"><FaHashtag /></div>
                     <div>
-                      <h4>Рег. номер</h4>
+                      <h4>License plate</h4>
                       <p>{selectedCar.licensePlate || '—'}</p>
                     </div>
                   </div>
@@ -891,7 +891,7 @@ const Dashboard = () => {
                   <div className="spec-card">
                     <div className="spec-icon"><FaBarcode /></div>
                     <div>
-                      <h4>VIN (Рама)</h4>
+                      <h4>VIN (Chassis)</h4>
                       <p>{selectedCar.vin || '—'}</p>
                     </div>
                   </div>
@@ -899,15 +899,15 @@ const Dashboard = () => {
                   <div className="spec-card">
                     <div className="spec-icon"><FaCogs /></div>
                     <div>
-                      <h4>Двигател</h4>
+                      <h4>Engine</h4>
                       <p>
                         {[
-                          selectedCar.engineType === 'Benzin' ? 'Бензин' :
-                          selectedCar.engineType === 'Diesel' ? 'Дизел' :
-                          selectedCar.engineType === 'Electric' ? 'Електрически' :
-                          selectedCar.engineType === 'Hybrid' ? 'Хибрид' :
+                          selectedCar.engineType === 'Benzin' ? 'Gasoline' :
+                          selectedCar.engineType === 'Diesel' ? 'Diesel' :
+                          selectedCar.engineType === 'Electric' ? 'Electric' :
+                          selectedCar.engineType === 'Hybrid' ? 'Hybrid' :
                           selectedCar.engineType,
-                          selectedCar.horsepower ? `${selectedCar.horsepower} к.с.` : null
+                          selectedCar.horsepower ? `${selectedCar.horsepower} HP` : null
                         ].filter(Boolean).join(', ') || '—'}
                       </p>
                       {selectedCar.euroStandard && <span>{selectedCar.euroStandard}</span>}
@@ -917,10 +917,10 @@ const Dashboard = () => {
                   <div className="spec-card">
                     <div className="spec-icon"><FaExchangeAlt /></div>
                     <div>
-                      <h4>Скоростна кутия</h4>
+                      <h4>Transmission</h4>
                       <p>
-                        {selectedCar.transmission === 'Manual' ? 'Ръчна' : 
-                         selectedCar.transmission === 'Automatic' ? 'Автоматична' : 
+                        {selectedCar.transmission === 'Manual' ? 'Manual' : 
+                         selectedCar.transmission === 'Automatic' ? 'Automatic' : 
                          selectedCar.transmission || '—'}
                       </p>
                     </div>
@@ -929,15 +929,15 @@ const Dashboard = () => {
                   <div className="spec-card">
                     <div className="spec-icon"><FaRoad /></div>
                     <div>
-                      <h4>Пробег</h4>
-                      <p>{selectedCar.mileage ? `${selectedCar.mileage.toLocaleString()} км` : '—'}</p>
+                      <h4>Mileage</h4>
+                      <p>{selectedCar.mileage ? `${selectedCar.mileage.toLocaleString()} km` : '—'}</p>
                     </div>
                   </div>
                 </div>
 
                 {(selectedCar.tireWidth || selectedCar.tireDiameter || selectedCar.tireBrand) && (
                    <div className="car-tires-section">
-                     <h4>Гуми и джанти</h4>
+                     <h4>Tires & Rims</h4>
                      <div className={`tire-summary-card ${selectedCar.tireSeason ? selectedCar.tireSeason.toLowerCase() : ''}`}>
                         <div className="tire-season-visual">
                           {selectedCar.tireSeason === 'Summer' && <span className="season-emoji">☀️</span>}
@@ -953,7 +953,7 @@ const Dashboard = () => {
                            
                            <div className="tire-meta-row">
                              <span className="tire-brand-display">
-                               {selectedCar.tireBrand || 'Неизвестна марка'}
+                               {selectedCar.tireBrand || 'Unknown brand'}
                              </span>
                              {selectedCar.tireDot && (
                                <span className="tire-dot-badge">DOT {selectedCar.tireDot}</span>
@@ -961,9 +961,9 @@ const Dashboard = () => {
                            </div>
                            
                            <span className="tire-season-name">
-                              {selectedCar.tireSeason === 'Summer' ? 'Летни гуми' : 
-                               selectedCar.tireSeason === 'Winter' ? 'Зимни гуми' : 
-                               selectedCar.tireSeason === 'AllSeasons' ? 'Всесезонни гуми' : 'Неопределен сезон'}
+                              {selectedCar.tireSeason === 'Summer' ? 'Summer tires' : 
+                               selectedCar.tireSeason === 'Winter' ? 'Winter tires' : 
+                               selectedCar.tireSeason === 'AllSeasons' ? 'All-season tires' : 'Unknown season'}
                            </span>
                         </div>
                      </div>
@@ -972,12 +972,12 @@ const Dashboard = () => {
 
                 <div className="car-services-section">
                   <div className="section-header">
-                    <h3>📋 Събития ({services.length})</h3>
+                    <h3>📋 Services ({services.length})</h3>
                     <button 
                       className="add-service-btn"
                       onClick={() => setShowServiceForm(true)}
                     >
-                      + Добави събитие
+                      + Add service
                     </button>
                   </div>
 
@@ -996,13 +996,13 @@ const Dashboard = () => {
                   {services.length === 0 ? (
                     <div className="empty-services-detail">
                       <span>📭</span>
-                      <p>Няма добавени събития за този автомобил</p>
-                      <small>Добави застраховка, ремонт или друго събитие</small>
+                      <p>No services added for this vehicle</p>
+                      <small>Add insurance, repair, or another service</small>
                     </div>
                   ) : (
                     <div className="services-grid-detail">
                       {services.map(service => {
-                        const expiringTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
+                        const expiringTypes = ['civil_liability', 'vignette', 'inspection', 'casco', 'tax', 'fire_extinguisher'];
                         const isExpirable = expiringTypes.includes(service.serviceType);
                         const status = isExpirable ? getServiceStatus(service.expiryDate) : { class: 'status-neutral', text: '' };
                         
@@ -1012,10 +1012,10 @@ const Dashboard = () => {
                             <div className="service-detail-info">
                               <h4>{getServiceName(service.serviceType)}</h4>
                               <p>
-                                {isExpirable ? 'Изтича: ' : 'Дата: '}
-                                {new Date(service.expiryDate).toLocaleDateString('bg-BG')}
+                                {isExpirable ? 'Expires: ' : 'Date: '}
+                                {new Date(service.expiryDate).toLocaleDateString('en-GB')}
                               </p>
-                              {service.mileage && <span className="service-sub-info">🛣️ {service.mileage.toLocaleString()} км</span>}
+                              {service.mileage && <span className="service-sub-info">🛣️ {service.mileage.toLocaleString()} km</span>}
                               {service.liters && <span className="service-sub-info">⛽ {service.liters}L</span>}
                               {service.fileUrl && (
                                 <a 
@@ -1025,10 +1025,10 @@ const Dashboard = () => {
                                   className="service-file-link"
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  📎 Документ
+                                  📎 Document
                                 </a>
                               )}
-                              {service.cost > 0 && <span className="service-cost-badge">{service.cost.toFixed(2)} лв.</span>}
+                              {service.cost > 0 && <span className="service-cost-badge">{service.cost.toFixed(2)} BGN</span>}
                             </div>
                             {isExpirable ? (
                               <div className={`service-detail-status ${status.class}`}>
@@ -1053,8 +1053,8 @@ const Dashboard = () => {
             ) : (
               <div className="no-car-selected">
                 <span>👈</span>
-                <h3>Избери автомобил</h3>
-                <p>Кликни върху автомобил от списъка, за да видиш детайли</p>
+                <h3>Select a vehicle</h3>
+                <p>Click a vehicle from the list to view details</p>
               </div>
             )}
           </div>
@@ -1075,7 +1075,7 @@ const Dashboard = () => {
     // 2. Chart Data Preparation
     const getExpensesChartData = () => {
       const expenses = {};
-      const months = ['Яну', 'Фев', 'Мар', 'Апр', 'Май', 'Юни', 'Юли', 'Авг', 'Сеп', 'Окт', 'Ное', 'Дек'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
       // Initialize months
       months.forEach(m => expenses[m] = 0);
@@ -1094,26 +1094,26 @@ const Dashboard = () => {
     return (
     <div className="tab-content services-content">
       <div className="content-header">
-        <h2>📋 Събития</h2>
+        <h2>📋 Services</h2>
         <button className="primary-btn" onClick={() => setShowServiceForm(!showServiceForm)}>
-          {showServiceForm ? '✕ Затвори' : '+ Добави събитие'}
+          {showServiceForm ? '✕ Close' : '+ Add service'}
         </button>
       </div>
 
       {cars.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🚗</div>
-          <h3>Първо добави автомобил</h3>
-          <p>За да добавиш събитие, трябва да имаш поне един автомобил</p>
+          <h3>Add a vehicle first</h3>
+          <p>To add a service, you need at least one vehicle</p>
           <button className="primary-btn" onClick={() => setActiveTab('cars')}>
-            Към колите →
+            Go to vehicles →
           </button>
         </div>
       ) : (
         <>
           {showServiceForm && (
             <div className="form-container slide-in">
-              <h3 className="form-title">➕ Ново събитие</h3>
+              <h3 className="form-title">➕ New service</h3>
               <ServiceForm 
                 onSubmit={handleAddService} 
                 onCancel={() => setShowServiceForm(false)}
@@ -1127,7 +1127,7 @@ const Dashboard = () => {
           {/* Controls Row */}
           <div className="services-controls-row">
                 <div className="control-group">
-                  <label>Автомобил:</label>
+                  <label>Vehicle:</label>
                   <select 
                     value={selectedCar?.id || ''} 
                     onChange={(e) => handleCarChangeForService(e.target.value)}
@@ -1141,13 +1141,13 @@ const Dashboard = () => {
                   </select>
                 </div>
                 <div className="control-group">
-                  <label>Година:</label>
+                  <label>Year:</label>
                   <select 
                     value={eventFilterYear} 
                     onChange={(e) => setEventFilterYear(e.target.value)}
                     className="control-select"
                   >
-                    <option value="all">Всички</option>
+                    <option value="all">All</option>
                     <option value="2024">2024</option>
                     <option value="2025">2025</option>
                     <option value="2026">2026</option>
@@ -1155,7 +1155,7 @@ const Dashboard = () => {
                   </select>
                 </div>
                 <div className="control-group">
-                  <label>Категория:</label>
+                  <label>Category:</label>
                   <select 
                     value={eventFilterType} 
                     onChange={(e) => setEventFilterType(e.target.value)}
@@ -1180,13 +1180,13 @@ const Dashboard = () => {
           {/* Stats Summary */}
           <div className="events-stats-summary">
                 <div className="event-stat-card">
-                  <span className="ev-stat-label">Общо разходи</span>
+                  <span className="ev-stat-label">Total costs</span>
                   <span className="ev-stat-value">
-                      {filteredServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0).toFixed(2)} лв.
+                      {filteredServices.reduce((sum, s) => sum + (parseFloat(s.cost) || 0), 0).toFixed(2)} BGN
                   </span>
                 </div>
                 <div className="event-stat-card">
-                  <span className="ev-stat-label">Брой събития</span>
+                  <span className="ev-stat-label">Total services</span>
                   <span className="ev-stat-value">{filteredServices.length}</span>
                 </div>
           </div>
@@ -1194,8 +1194,8 @@ const Dashboard = () => {
           {filteredServices.length === 0 ? (
             <div className="empty-state small">
               <div className="empty-icon">📅</div>
-              <h3>Няма намерени събития</h3>
-              <p>Няма записи за избраните филтри</p>
+              <h3>No services found</h3>
+              <p>No records for the selected filters</p>
             </div>
           ) : (
             <div className="services-list-new">
@@ -1206,20 +1206,20 @@ const Dashboard = () => {
                         <div className="service-icon-circle">{getServiceIcon(service.serviceType)}</div>
                         <div className="service-main-info">
                           <h4>{getServiceName(service.serviceType)}</h4>
-                          <span className="service-date">{new Date(service.expiryDate).toLocaleDateString('bg-BG')}</span>
+                          <span className="service-date">{new Date(service.expiryDate).toLocaleDateString('en-GB')}</span>
                         </div>
                     </div>
                     
                     <div className="service-card-center">
                         {service.mileage && (
                             <div className="fuel-info">
-                              <span>🛣️ {service.mileage.toLocaleString()} км</span>
+                              <span>🛣️ {service.mileage.toLocaleString()} km</span>
                             </div>
                         )}
-                        {service.serviceType === 'зареждане' && service.liters && (
+                        {service.serviceType === 'refuel' && service.liters && (
                             <div className="fuel-info">
                               <span>⛽ {service.liters} L</span>
-                              {service.pricePerLiter && <span> • {service.pricePerLiter} лв./л</span>}
+                              {service.pricePerLiter && <span> • {service.pricePerLiter} BGN/L</span>}
                               {service.fuelType && <span> ({service.fuelType})</span>}
                             </div>
                         )}
@@ -1231,7 +1231,7 @@ const Dashboard = () => {
                                 rel="noopener noreferrer" 
                                 className="service-file-link"
                               >
-                                📎 Преглед на документ
+                                📎 View document
                               </a>
                             </div>
                         )}
@@ -1244,12 +1244,12 @@ const Dashboard = () => {
 
                     <div className="service-card-right">
                         <span className="service-cost-large">
-                          {service.cost > 0 ? `${parseFloat(service.cost).toFixed(2)} лв.` : '-'}
+                          {service.cost > 0 ? `${parseFloat(service.cost).toFixed(2)} BGN` : '-'}
                         </span>
                         <button 
                           className="delete-mini-btn"
                           onClick={() => handleDeleteService(service.id)}
-                          title="Изтрий"
+                          title="Delete"
                         >
                           ×
                         </button>
@@ -1263,7 +1263,7 @@ const Dashboard = () => {
           {/* Chart Section */}
           {filteredServices.length > 0 && (
               <div className="chart-section-filtered">
-                  <h3>📊 Графика на разходите</h3>
+                  <h3>📊 Expenses chart</h3>
                   <div className="chart-wrapper">
                       <ResponsiveContainer width="100%" height={300}>
                           <LineChart data={getExpensesChartData()}>
@@ -1271,7 +1271,7 @@ const Dashboard = () => {
                               <XAxis dataKey="name" stroke="#999" fontSize={12} tickLine={false} axisLine={false} />
                               <YAxis stroke="#999" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}`} />
                               <Tooltip 
-                                  formatter={(value) => [`${value} лв`, 'Разход']}
+                                  formatter={(value) => [`${value} BGN`, 'Cost']}
                                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                               />
                               <Line 
@@ -1296,13 +1296,13 @@ const Dashboard = () => {
   const renderSettings = () => (
     <div className="tab-content settings-content">
       <div className="content-header">
-        <h2>⚙️ Настройки</h2>
+        <h2>⚙️ Settings</h2>
       </div>
 
       <div className="settings-section">
-        <h3>👤 Профил</h3>
+        <h3>👤 Profile</h3>
         <div className="setting-item">
-          <label>Име:</label>
+          <label>Name:</label>
           <span>{user?.name}</span>
         </div>
         <div className="setting-item">
@@ -1312,12 +1312,12 @@ const Dashboard = () => {
       </div>
 
       <div className="settings-section">
-        <h3>🔔 Напомняния</h3>
+        <h3>🔔 Reminders</h3>
         <div className="setting-item">
-          <label>Email напомняния:</label>
+          <label>Email reminders:</label>
           <div className="reminder-toggle">
             <span className={`badge-status ${reminderEnabled ? 'active' : 'inactive'}`}>
-              {reminderEnabled ? 'Активни' : 'Неактивни'}
+              {reminderEnabled ? 'Active' : 'Inactive'}
             </span>
             <label className="switch">
               <input
@@ -1330,7 +1330,7 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="setting-item">
-          <label>Дни преди изтичане:</label>
+          <label>Days before expiration:</label>
           <div className="reminder-days-control">
             <select 
               value={reminderDays} 
@@ -1338,12 +1338,12 @@ const Dashboard = () => {
               className="reminder-select"
               disabled={!reminderEnabled}
             >
-              <option value="7">7 дни</option>
-              <option value="14">14 дни</option>
-              <option value="30">30 дни</option>
-              <option value="45">45 дни</option>
-              <option value="60">60 дни</option>
-              <option value="90">90 дни</option>
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+              <option value="45">45 days</option>
+              <option value="60">60 days</option>
+              <option value="90">90 days</option>
             </select>
           </div>
         </div>
@@ -1351,7 +1351,7 @@ const Dashboard = () => {
 
       <div className="settings-section">
         <button className="danger-btn" onClick={() => { logout(); navigate('/'); }}>
-          🚪 Изход от профила
+          🚪 Log out
         </button>
       </div>
     </div>
@@ -1417,13 +1417,13 @@ const Dashboard = () => {
           <div className="document-upload-form">
             <form onSubmit={handleDocumentUpload}>
               <div className="form-group">
-                <label>Избери автомобил</label>
+                <label>Select vehicle</label>
                 <select 
                   value={docFormData.carId || ''}
                   onChange={(e) => setDocFormData({ ...docFormData, carId: e.target.value })}
                   required
                 >
-                  <option value="">-- Избери автомобил --</option>
+                  <option value="">-- Select vehicle --</option>
                   {cars.map(car => (
                     <option key={car.id} value={car.id}>
                       {car.brand} {car.model} {car.year && `(${car.year})`} {car.licensePlate && `- ${car.licensePlate}`}
@@ -1433,34 +1433,34 @@ const Dashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Категория документ</label>
+                <label>Document category</label>
                 <select 
                   value={docFormData.category}
                   onChange={(e) => setDocFormData({ ...docFormData, category: e.target.value })}
                   required
                 >
-                  <option value="гражданска">🛡️ Гражданска застраховка</option>
-                  <option value="винетка">🛣️ Винетка</option>
-                  <option value="преглед">🔧 Технически преглед</option>
-                  <option value="каско">💎 КАСКО</option>
-                  <option value="данък">💰 Данък МПС</option>
-                  <option value="пожарогасител">🔴 Пожарогасител</option>
-                  <option value="ремонт">🛠️ Ремонт</option>
-                  <option value="обслужване">🛢️ Обслужване</option>
-                  <option value="гуми">🛞 Гуми</option>
-                  <option value="друго">📝 Друго</option>
+                  <option value="civil_liability">🛡️ Civil Liability Insurance</option>
+                  <option value="vignette">🛣️ Vignette</option>
+                  <option value="inspection">🔧 Technical Inspection</option>
+                  <option value="casco">💎 CASCO</option>
+                  <option value="tax">💰 Vehicle Tax</option>
+                  <option value="fire_extinguisher">🔴 Fire Extinguisher</option>
+                  <option value="repair">🛠️ Repair</option>
+                  <option value="maintenance">🛢️ Maintenance</option>
+                  <option value="tires">🛞 Tires</option>
+                  <option value="other">📝 Other</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Файл (PDF, JPG, PNG до 50MB)</label>
+                <label>File (PDF, JPG, PNG up to 50MB)</label>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.webp"
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file && file.size > 50 * 1024 * 1024) {
-                      alert('Файлът е твърде голям. Максимален размер: 50MB');
+                      alert('File is too large. Maximum size: 50MB');
                       e.target.value = '';
                       return;
                     }
@@ -1471,28 +1471,28 @@ const Dashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Бележки (по избор)</label>
+                <label>Notes (optional)</label>
                 <textarea
                   value={docFormData.notes}
                   onChange={(e) => setDocFormData({ ...docFormData, notes: e.target.value })}
-                  placeholder="Допълнителна информация за документа..."
+                  placeholder="Additional information about the document..."
                   rows="3"
                 />
               </div>
 
               <div className="form-actions">
                 <button type="submit" className="submit-btn">
-                  📤 Качи документ
+                  📤 Upload document
                 </button>
                 <button 
                   type="button" 
                   className="cancel-btn"
                   onClick={() => {
                     setShowDocumentForm(false);
-                    setDocFormData({ carId: '', category: 'друго', file: null, notes: '' });
+                    setDocFormData({ carId: '', category: 'other', file: null, notes: '' });
                   }}
                 >
-                  Откажи
+                  Cancel
                 </button>
               </div>
             </form>
@@ -1502,10 +1502,10 @@ const Dashboard = () => {
         {sortedDocs.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">📂</div>
-            <h3>Няма прикачени документи</h3>
+            <h3>No documents attached</h3>
             <p>{docFilterType === 'all' 
-              ? 'Използвай бутона "➕ Добави документ" за да качиш файлове' 
-              : 'Няма документи за тази категория'
+              ? 'Use the "➕ Add Document" button to upload files' 
+              : 'No documents for this category'
             }</p>
           </div>
         ) : (
@@ -1532,16 +1532,16 @@ const Dashboard = () => {
                       🚗 {doc.car?.brand} {doc.car?.model} {doc.car?.year && `(${doc.car.year})`}
                     </p>
                     <p className="doc-date">
-                      📅 {new Date(doc.expiryDate).toLocaleDateString('bg-BG')}
+                      📅 {new Date(doc.expiryDate).toLocaleDateString('en-GB')}
                     </p>
                     {doc.mileage && (
                       <p className="doc-mileage">
-                        🛣️ {doc.mileage.toLocaleString()} км
+                        🛣️ {doc.mileage.toLocaleString()} km
                       </p>
                     )}
                     {doc.cost > 0 && (
                       <p className="doc-cost">
-                        💰 {doc.cost.toFixed(2)} лв.
+                        💰 {doc.cost.toFixed(2)} BGN
                       </p>
                     )}
                   </div>
@@ -1552,21 +1552,21 @@ const Dashboard = () => {
                       rel="noopener noreferrer"
                       className="doc-view-btn"
                     >
-                      👁️ Преглед
+                      👁️ View
                     </a>
                     <a 
                       href={doc.fileUrl} 
                       download
                       className="doc-download-btn"
                     >
-                      ⬇️ Изтегли
+                      ⬇️ Download
                     </a>
                     <button
                       onClick={() => handleDeleteDocument(doc.id, doc.fileUrl)}
                       className="doc-delete-btn"
-                      title="Изтрий документ"
+                      title="Delete document"
                     >
-                      🗑️ Изтрий
+                      🗑️ Delete
                     </button>
                   </div>
                 </div>
@@ -1603,14 +1603,14 @@ const Dashboard = () => {
           onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
         >
           <span className="nav-icon">🏠</span>
-          <span className="nav-text">Табло</span>
+          <span className="nav-text">Dashboard</span>
         </button>
         <button 
           className={`mobile-nav-item ${activeTab === 'cars' ? 'active' : ''}`}
           onClick={() => { setActiveTab('cars'); setMobileMenuOpen(false); }}
         >
           <span className="nav-icon">🚘</span>
-          <span className="nav-text">Автопарк</span>
+          <span className="nav-text">My Vehicles</span>
           {cars.length > 0 && <span className="nav-badge">{cars.length}</span>}
         </button>
         <button 
@@ -1618,7 +1618,7 @@ const Dashboard = () => {
           onClick={() => { setActiveTab('services'); setMobileMenuOpen(false); }}
         >
           <span className="nav-icon">📋</span>
-          <span className="nav-text">Събития</span>
+          <span className="nav-text">Services</span>
           {getExpiringServices().length > 0 && (
             <span className="nav-badge warning">{getExpiringServices().length}</span>
           )}
@@ -1628,7 +1628,7 @@ const Dashboard = () => {
           onClick={() => { setActiveTab('documents'); setMobileMenuOpen(false); }}
         >
           <span className="nav-icon">📁</span>
-          <span className="nav-text">Документи</span>
+          <span className="nav-text">Documents</span>
           {allServices.filter(s => s.fileUrl).length > 0 && (
             <span className="nav-badge">{allServices.filter(s => s.fileUrl).length}</span>
           )}
@@ -1638,7 +1638,7 @@ const Dashboard = () => {
           onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
         >
           <span className="nav-icon">⚙️</span>
-          <span className="nav-text">Настройки</span>
+          <span className="nav-text">Settings</span>
         </button>
         <div className="mobile-user-info">
           <span>👤 {user?.name}</span>

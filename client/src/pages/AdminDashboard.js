@@ -75,22 +75,23 @@ const AdminDashboard = () => {
 
   const getServiceName = (type) => {
     const names = {
-      'гражданска': 'Гражданска отговорност',
-      'винетка': 'Винетка',
-      'преглед': 'Технически преглед',
-      'каско': 'КАСКО',
-      'данък': 'Данък МПС',
-      'ремонт': 'Ремонт',
-      'обслужване': 'Обслужване',
-      'гуми': 'Смяна гуми',
-      'зареждане': 'Зареждане',
-      'друго': 'Друго'
+      'civil_liability': 'Civil Liability Insurance',
+      'vignette': 'Vignette',
+      'inspection': 'Technical Inspection',
+      'casco': 'CASCO',
+      'tax': 'Vehicle Tax',
+      'fire_extinguisher': 'Fire Extinguisher Check',
+      'repair': 'Repair',
+      'maintenance': 'Maintenance',
+      'tires': 'Tire Change',
+      'refuel': 'Refuel',
+      'other': 'Other'
     };
     return names[type] || type;
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('bg-BG', {
+    return new Date(dateString).toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -106,28 +107,28 @@ const AdminDashboard = () => {
           <div className="stat-icon">👥</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.totalUsers || 0}</div>
-            <div className="stat-label">Общо потребители</div>
+            <div className="stat-label">Total users</div>
           </div>
         </div>
         <div className="admin-stat-card success">
           <div className="stat-icon">🚗</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.totalCars || 0}</div>
-            <div className="stat-label">Автомобили</div>
+            <div className="stat-label">Vehicles</div>
           </div>
         </div>
         <div className="admin-stat-card info">
           <div className="stat-icon">📋</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.totalServices || 0}</div>
-            <div className="stat-label">Услуги</div>
+            <div className="stat-label">Services</div>
           </div>
         </div>
         <div className="admin-stat-card warning">
           <div className="stat-icon">⚠️</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.expiringServices || 0}</div>
-            <div className="stat-label">Изтичащи скоро</div>
+            <div className="stat-label">Expiring soon</div>
           </div>
         </div>
       </div>
@@ -137,38 +138,38 @@ const AdminDashboard = () => {
           <div className="stat-mini-icon">📅</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.newUsersToday || 0}</div>
-            <div className="stat-label">Нови днес</div>
+            <div className="stat-label">New today</div>
           </div>
         </div>
         <div className="admin-stat-card small">
           <div className="stat-mini-icon">📆</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.newUsersWeek || 0}</div>
-            <div className="stat-label">Нови тази седмица</div>
+            <div className="stat-label">New this week</div>
           </div>
         </div>
         <div className="admin-stat-card small">
           <div className="stat-mini-icon">🗓️</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.newUsersMonth || 0}</div>
-            <div className="stat-label">Нови този месец</div>
+            <div className="stat-label">New this month</div>
           </div>
         </div>
         <div className="admin-stat-card small danger">
           <div className="stat-mini-icon">❌</div>
           <div className="stat-content">
             <div className="stat-number">{stats?.expiredServices || 0}</div>
-            <div className="stat-label">Изтекли услуги</div>
+            <div className="stat-label">Expired services</div>
           </div>
         </div>
       </div>
 
       <div className="charts-row">
         <div className="chart-card">
-          <h3>🚘 Топ 10 марки автомобили</h3>
+          <h3>🚘 Top 10 car brands</h3>
           <div className="bar-chart">
             {brandChart.length === 0 ? (
-              <p className="no-data">Няма данни</p>
+              <p className="no-data">No data</p>
             ) : (
               brandChart.map((item, index) => {
                 const maxCount = Math.max(...brandChart.map(b => b.count));
@@ -189,10 +190,10 @@ const AdminDashboard = () => {
         </div>
 
         <div className="chart-card">
-          <h3>📊 Разпределение на услугите</h3>
+          <h3>📊 Services distribution</h3>
           <div className="service-chart">
             {serviceChart.length === 0 ? (
-              <p className="no-data">Няма данни</p>
+              <p className="no-data">No data</p>
             ) : (
               serviceChart.map((item, index) => {
                 const total = serviceChart.reduce((sum, s) => sum + parseInt(s.count), 0);
@@ -223,8 +224,8 @@ const AdminDashboard = () => {
   const renderUsers = () => (
     <div className="admin-users">
       <div className="users-header">
-        <h3>👥 Всички потребители ({users.length})</h3>
-        <button className="refresh-btn" onClick={loadData}>🔄 Обнови</button>
+        <h3>👥 All users ({users.length})</h3>
+        <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
       </div>
       
       <div className="users-table-container">
@@ -232,11 +233,11 @@ const AdminDashboard = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Име</th>
+              <th>Name</th>
               <th>Email</th>
-              <th>Регистриран</th>
-              <th>Коли</th>
-              <th>Услуги</th>
+              <th>Registered</th>
+              <th>Cars</th>
+              <th>Services</th>
             </tr>
           </thead>
           <tbody>
@@ -265,10 +266,10 @@ const AdminDashboard = () => {
 
   const renderActivity = () => (
     <div className="admin-activity">
-      <h3>📈 Регистрации през последните 30 дни</h3>
+      <h3>📈 Registrations in the last 30 days</h3>
       <div className="activity-chart">
         {registrationChart.length === 0 ? (
-          <p className="no-data">Няма данни за периода</p>
+          <p className="no-data">No data for this period</p>
         ) : (
           <div className="line-chart">
             {registrationChart.map((item, index) => {
@@ -279,12 +280,12 @@ const AdminDashboard = () => {
                   <div 
                     className="line-fill" 
                     style={{ height: `${height}%` }}
-                    title={`${item.date}: ${item.count} регистрации`}
+                    title={`${item.date}: ${item.count} registrations`}
                   >
                     {item.count > 0 && <span>{item.count}</span>}
                   </div>
                   <div className="line-label">
-                    {new Date(item.date).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })}
+                    {new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })}
                   </div>
                 </div>
               );
@@ -299,7 +300,7 @@ const AdminDashboard = () => {
     return (
       <div className="admin-loading">
         <div className="spinner"></div>
-        <p>Зареждане на данни...</p>
+        <p>Loading data...</p>
       </div>
     );
   }
@@ -318,14 +319,14 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab('overview')}
           >
             <span className="nav-icon">📊</span>
-            <span>Преглед</span>
+            <span>Overview</span>
           </button>
           <button 
             className={`admin-nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
             <span className="nav-icon">👥</span>
-            <span>Потребители</span>
+            <span>Users</span>
             <span className="nav-badge">{users.length}</span>
           </button>
           <button 
@@ -333,7 +334,7 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab('activity')}
           >
             <span className="nav-icon">📈</span>
-            <span>Активност</span>
+            <span>Activity</span>
           </button>
         </nav>
 
@@ -346,7 +347,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           <button className="admin-logout" onClick={handleLogout}>
-            🚪 Изход
+            🚪 Log out
           </button>
         </div>
       </aside>
@@ -354,12 +355,12 @@ const AdminDashboard = () => {
       <main className="admin-main">
         <header className="admin-header">
           <h1>
-            {activeTab === 'overview' && '📊 Статистика'}
-            {activeTab === 'users' && '👥 Потребители'}
-            {activeTab === 'activity' && '📈 Активност'}
+            {activeTab === 'overview' && '📊 Analytics'}
+            {activeTab === 'users' && '👥 Users'}
+            {activeTab === 'activity' && '📈 Activity'}
           </h1>
           <div className="header-actions">
-            <span className="last-update">Последно обновяване: {new Date().toLocaleTimeString('bg-BG')}</span>
+            <span className="last-update">Last update: {new Date().toLocaleTimeString('en-GB')}</span>
             <button className="refresh-btn" onClick={loadData}>🔄</button>
           </div>
         </header>

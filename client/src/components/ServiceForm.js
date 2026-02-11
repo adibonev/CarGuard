@@ -62,14 +62,14 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     if (file) {
       // Check file size (max 50MB)
       if (file.size > 50 * 1024 * 1024) {
-        alert('Файлът е твърде голям. Максимален размер: 50MB');
+        alert('File is too large. Maximum size: 50MB');
         e.target.value = '';
         return;
       }
       // Check file type
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Невалиден файлов формат. Позволени са: PDF, JPG, PNG, WEBP');
+        alert('Invalid file format. Allowed: PDF, JPG, PNG, WEBP');
         e.target.value = '';
         return;
       }
@@ -83,16 +83,16 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.expiryDate) {
-      alert('Моля, изберете дата');
+      alert('Please select a date');
       return;
     }
     if (!selectedCarId) {
-      alert('Моля, изберете автомобил');
+      alert('Please select a vehicle');
       return;
     }
 
-    if (formData.serviceType === 'зареждане' && (!formData.liters || !formData.fuelType)) {
-        alert('Моля попълнете литри и вид гориво.');
+    if (formData.serviceType === 'refuel' && (!formData.liters || !formData.fuelType)) {
+      alert('Please enter liters and fuel type.');
         return;
     }
     
@@ -111,7 +111,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     
     // Reset form
     setFormData({
-      serviceType: 'ремонт',
+      serviceType: 'repair',
       expiryDate: new Date().toISOString().split('T')[0],
       cost: '',
       notes: '',
@@ -127,13 +127,13 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     <form className="service-form" onSubmit={handleSubmit}>
       {cars && cars.length > 0 && (
         <div className="form-group">
-          <label>Автомобил</label>
+          <label>Vehicle</label>
           <select
             value={selectedCarId || ''}
             onChange={(e) => onCarChange && onCarChange(e.target.value)}
             required
           >
-            <option value="">-- Избери автомобил --</option>
+            <option value="">-- Select vehicle --</option>
             {cars.map(car => (
               <option key={car.id} value={car.id}>
                 {car.brand} {car.model} ({car.year})
@@ -143,7 +143,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
         </div>
       )}
       <div className="form-group">
-        <label>Вид събитие</label>
+        <label>Service type</label>
         <select
           name="serviceType"
           value={formData.serviceType}
@@ -158,7 +158,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
         </select>
       </div>
       <div className="form-group">
-        <label>Дата</label>
+        <label>Date</label>
         <input
           type="date"
           name="expiryDate"
@@ -169,22 +169,22 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       </div>
 
       <div className="form-group">
-        <label>Пробег (км) - незадължително</label>
+        <label>Mileage (km) - optional</label>
         <input
           type="number"
           name="mileage"
           value={formData.mileage}
           onChange={handleChange}
-          placeholder="Напр. 125000"
+          placeholder="e.g. 125000"
           min="0"
         />
       </div>
 
-      {formData.serviceType === 'зареждане' ? (
+      {formData.serviceType === 'refuel' ? (
         <>
             <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
                 <div className="form-group" style={{ flex: 1 }}>
-                    <label>Литри (L)</label>
+                    <label>Liters (L)</label>
                     <input
                     type="number"
                     name="liters"
@@ -195,7 +195,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                     />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                    <label>Цена/литър (лв.)</label>
+                    <label>Price per liter (BGN)</label>
                     <input
                     type="number"
                     name="pricePerLiter"
@@ -207,7 +207,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                 </div>
             </div>
             <div className="form-group">
-                <label>Вид гориво</label>
+                <label>Fuel type</label>
                 <select
                     name="fuelType"
                     value={formData.fuelType}
@@ -219,7 +219,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                 </select>
             </div>
              <div className="form-group">
-                <label>Крайна цена (лв.)</label>
+                <label>Total price (BGN)</label>
                 <input
                 type="number"
                 name="cost"
@@ -233,7 +233,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
         </>
       ) : (
         <div className="form-group">
-            <label>Цена (лв.)</label>
+            <label>Price (BGN)</label>
             <input
             type="number"
             name="cost"
@@ -246,34 +246,34 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
         </div>
       )}
 
-      {(formData.serviceType === 'ремонт' || formData.serviceType === 'друго') && (
+      {(formData.serviceType === 'repair' || formData.serviceType === 'other') && (
          <div className="form-group">
-            <label>Описание</label>
+            <label>Description</label>
             <textarea
               name="notes"
               value={formData.notes}
               onChange={handleChange}
-              placeholder={formData.serviceType === 'ремонт' ? "Какво е сменено?" : "Описание..."}
+              placeholder={formData.serviceType === 'repair' ? "What was replaced?" : "Description..."}
               rows="3"
             />
          </div>
       )}
       
-      {formData.serviceType === 'обслужване' && (
+      {formData.serviceType === 'maintenance' && (
          <div className="form-group">
-            <label>Коментар (незадължително)</label>
+            <label>Comment (optional)</label>
             <textarea
               name="notes"
               value={formData.notes}
               onChange={handleChange}
-              placeholder="Бележки..."
+              placeholder="Notes..."
               rows="2"
             />
          </div>
       )}
 
       <div className="form-group">
-        <label>📎 Прикачи документ (незадължително)</label>
+        <label>📎 Attach document (optional)</label>
         <input
           type="file"
           onChange={handleFileChange}
@@ -281,17 +281,17 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
         />
         {formData.file && (
           <small style={{ display: 'block', marginTop: '5px', color: '#28a745' }}>
-            ✓ Избран: {formData.file.name}
+            ✓ Selected: {formData.file.name}
           </small>
         )}
         <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
-          Позволени формати: PDF, JPG, PNG, WEBP (макс. 50MB)
+          Allowed formats: PDF, JPG, PNG, WEBP (max 50MB)
         </small>
       </div>
 
       <div className="form-buttons">
-        <button type="submit" className="submit-btn">Добави</button>
-        <button type="button" className="cancel-btn" onClick={onCancel}>Отказ</button>
+        <button type="submit" className="submit-btn">Add</button>
+        <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
       </div>
     </form>
   );

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const PrivateRoute = ({ children }) => {
   const { session, loading } = useAuth();
 
-  // Чакай приложението да се инициализира преди да прави редирект
+  // Wait for app initialization before redirecting
   if (loading) {
     return (
       <div style={{
@@ -17,7 +17,7 @@ const PrivateRoute = ({ children }) => {
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '24px', marginBottom: '20px' }}>⏳</div>
-          <p>Зареждане...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );

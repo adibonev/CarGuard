@@ -2,21 +2,21 @@ import React from 'react';
 
 const ServiceList = ({ services, onDeleteService }) => {
   const serviceLabels = {
-    'гражданска': '🛡️ Гражданска застраховка',
-    'винетка': '🛣️ Винетка',
-    'преглед': '🔧 Технически преглед',
-    'каско': '💎 КАСКО',
-    'данък': '💰 Данък',
-    'пожарогасител': '🔴 Заверка на пожарогасител',
-    'ремонт': '🛠️ Ремонт',
-    'обслужване': '🛢️ Обслужване',
-    'гуми': '🛞 Добавяне на гуми',
-    'зареждане': '⛽ Зареждане',
-    'друго': '📝 Друго'
+    'civil_liability': '🛡️ Civil Liability Insurance',
+    'vignette': '🛣️ Vignette',
+    'inspection': '🔧 Technical Inspection',
+    'casco': '💎 CASCO',
+    'tax': '💰 Tax',
+    'fire_extinguisher': '🔴 Fire Extinguisher Check',
+    'repair': '🛠️ Repair',
+    'maintenance': '🛢️ Maintenance',
+    'tires': '🛞 Tire Change',
+    'refuel': '⛽ Refuel',
+    'other': '📝 Other'
   };
 
   const isExpiringType = (type) => {
-    return ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'].includes(type);
+    return ['civil_liability', 'vignette', 'inspection', 'casco', 'tax', 'fire_extinguisher'].includes(type);
   };
 
   const getStatusColor = (service) => {
@@ -38,14 +38,14 @@ const ServiceList = ({ services, onDeleteService }) => {
     const expiry = new Date(service.expiryDate);
     const daysLeft = Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
 
-    if (daysLeft < 0) return 'ИЗТЕКЛО';
-    if (daysLeft === 0) return 'ИЗТИЧА ДНЕС';
-    if (daysLeft === 1) return 'Утре';
-    return `${daysLeft} дни`;
+    if (daysLeft < 0) return 'EXPIRED';
+    if (daysLeft === 0) return 'EXPIRES TODAY';
+    if (daysLeft === 1) return 'Tomorrow';
+    return `${daysLeft} days`;
   };
 
   if (services.length === 0) {
-    return <p className="no-data">Нямаш добавени събития</p>;
+    return <p className="no-data">No services added</p>;
   }
 
   return (
@@ -57,8 +57,8 @@ const ServiceList = ({ services, onDeleteService }) => {
             <div className="service-info">
               <h3>{serviceLabels[service.serviceType] || service.serviceType}</h3>
               <p className="expiry-date">
-                {isExpiring ? 'Изтича: ' : 'Дата: '}
-                {new Date(service.expiryDate).toLocaleDateString('bg-BG')}
+                {isExpiring ? 'Expires: ' : 'Date: '}
+                {new Date(service.expiryDate).toLocaleDateString('en-GB')}
               </p>
               {isExpiring && (
                 <p className={`status-text status-${getStatusColor(service)}`}>
@@ -66,20 +66,20 @@ const ServiceList = ({ services, onDeleteService }) => {
                 </p>
               )}
               {service.cost > 0 && (
-                <p className="service-cost">
-                   Цена: {service.cost.toFixed(2)} лв.
-                </p>
+                 <p className="service-cost">
+                   Cost: {service.cost.toFixed(2)} BGN
+                 </p>
               )}
             </div>
             <button
               className="delete-btn"
               onClick={() => {
-                if (window.confirm('Сигурен ли си?')) {
+                if (window.confirm('Are you sure?')) {
                   onDeleteService(service._id || service.id);
                 }
               }}
             >
-              Изтрий
+              Delete
             </button>
           </div>
         );
