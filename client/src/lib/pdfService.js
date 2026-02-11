@@ -99,7 +99,7 @@ export const generateCarReport = async (car, services) => {
     margin: { left: 20 },
   });
   
-  yPos = doc.previousAutoTable.finalY + 15;
+  yPos = doc.lastAutoTable.finalY + 15;
   
   // Section 2: Active Services
   const activeServices = services.filter(s => {
@@ -139,7 +139,7 @@ export const generateCarReport = async (car, services) => {
       margin: { left: 20, right: 20 },
     });
     
-    yPos = doc.previousAutoTable.finalY + 15;
+    yPos = doc.lastAutoTable.finalY + 15;
   } else {
     doc.setFontSize(10);
     doc.setTextColor(127, 140, 141);
@@ -225,7 +225,7 @@ export const generateCarReport = async (car, services) => {
       },
     });
     
-    yPos = doc.previousAutoTable.finalY + 10;
+    yPos = doc.lastAutoTable.finalY + 10;
   } else {
     doc.setFontSize(10);
     doc.setTextColor(127, 140, 141);
