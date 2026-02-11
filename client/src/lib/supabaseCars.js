@@ -1,5 +1,23 @@
 import { supabase } from './supabaseAuth';
 
+// Helper function to convert snake_case to camelCase
+const snakeToCamel = (car) => {
+  if (!car) return null;
+  return {
+    ...car,
+    licensePlate: car.license_plate,
+    engineType: car.engine_type,
+    euroStandard: car.euro_standard,
+    fuelType: car.fuel_type,
+    tireWidth: car.tire_width,
+    tireHeight: car.tire_height,
+    tireDiameter: car.tire_diameter,
+    tireSeason: car.tire_season,
+    tireBrand: car.tire_brand,
+    tireDot: car.tire_dot
+  };
+};
+
 export const carsService = {
   // Get all cars for current user
   async getAllCars(userId) {
@@ -10,7 +28,8 @@ export const carsService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    // Convert snake_case to camelCase
+    return data.map(snakeToCamel);
   },
 
   // Get single car
@@ -22,7 +41,8 @@ export const carsService = {
       .single();
 
     if (error) throw error;
-    return data;
+    // Convert snake_case to camelCase
+    return snakeToCamel(data);
   },
 
   // Create new car
