@@ -255,6 +255,123 @@
   }
 }
 
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+@media (max-width: 768px) {
+  .car-form-container {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .input-mode-selector {
+    padding: 12px 15px;
+    gap: 8px;
+  }
+
+  .mode-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .vin-section {
+    padding: 15px;
+  }
+
+  .vin-input-group input {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .decode-vin-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .car-form-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .form-tab-btn {
+    font-size: 12px;
+    padding: 10px 8px;
+    white-space: nowrap;
+    min-width: 100px;
+  }
+
+  .form-content {
+    padding: 15px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-field label {
+    font-size: 13px;
+  }
+
+  .form-field input,
+  .form-field select {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .form-actions {
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .tire-diagram {
+    width: 100px;
+    height: 100px;
+    border-width: 12px;
+  }
+
+  .tire-diagram span {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-mode-selector {
+    flex-direction: column;
+  }
+
+  .mode-btn {
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+
+  .vin-success {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .vin-error {
+    padding: 12px;
+    font-size: 13px;
+  }
+}
+
 .car-form-tabs {
   display: flex;
   background: #f8f9fa;

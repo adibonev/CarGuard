@@ -27,12 +27,31 @@ export const carsService = {
 
   // Create new car
   async createCar(userId, carData) {
+    // Convert camelCase to snake_case for Supabase
+    const dbData = {
+      user_id: userId,
+      brand: carData.brand,
+      model: carData.model,
+      year: carData.year,
+      license_plate: carData.licensePlate,
+      vin: carData.vin,
+      engine_type: carData.engineType,
+      horsepower: carData.horsepower,
+      transmission: carData.transmission,
+      euro_standard: carData.euroStandard,
+      mileage: carData.mileage,
+      fuel_type: carData.fuelType,
+      tire_width: carData.tireWidth,
+      tire_height: carData.tireHeight,
+      tire_diameter: carData.tireDiameter,
+      tire_season: carData.tireSeason,
+      tire_brand: carData.tireBrand,
+      tire_dot: carData.tireDot
+    };
+
     const { data, error } = await supabase
       .from('cars')
-      .insert({
-        user_id: userId,
-        ...carData
-      })
+      .insert(dbData)
       .select()
       .single();
 
@@ -42,9 +61,30 @@ export const carsService = {
 
   // Update car
   async updateCar(carId, carData) {
+    // Convert camelCase to snake_case for Supabase
+    const dbData = {
+      brand: carData.brand,
+      model: carData.model,
+      year: carData.year,
+      license_plate: carData.licensePlate,
+      vin: carData.vin,
+      engine_type: carData.engineType,
+      horsepower: carData.horsepower,
+      transmission: carData.transmission,
+      euro_standard: carData.euroStandard,
+      mileage: carData.mileage,
+      fuel_type: carData.fuelType,
+      tire_width: carData.tireWidth,
+      tire_height: carData.tireHeight,
+      tire_diameter: carData.tireDiameter,
+      tire_season: carData.tireSeason,
+      tire_brand: carData.tireBrand,
+      tire_dot: carData.tireDot
+    };
+
     const { data, error } = await supabase
       .from('cars')
-      .update(carData)
+      .update(dbData)
       .eq('id', carId)
       .select()
       .single();
