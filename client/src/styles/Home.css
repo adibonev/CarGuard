@@ -2131,6 +2131,89 @@
     min-height: -webkit-fill-available;
   }
 }
+
+/* Enhanced Mobile Styles for Auth Modals */
+@media (max-width: 768px) {
+  .auth-modal-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .auth-modal {
+    max-width: 100%;
+    margin: 0;
+    padding: 30px 20px;
+    border-radius: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .auth-modal h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .auth-field {
+    margin-bottom: 16px;
+  }
+
+  .auth-field label {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .auth-field input {
+    padding: 14px;
+    font-size: 16px; /* Prevents iOS zoom */
+    border-radius: 8px;
+  }
+
+  .auth-submit {
+    padding: 16px;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  .google-btn {
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .auth-switch {
+    font-size: 14px;
+    margin-top: 20px;
+  }
+
+  .modal-close {
+    top: 20px;
+    right: 20px;
+    font-size: 28px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.05);
+    border-radius: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-modal {
+    padding: 25px 15px;
+  }
+
+  .auth-field input {
+    padding: 12px;
+  }
+
+  .auth-submit,
+  .google-btn {
+    padding: 14px;
+  }
+}
 /* Google OAuth Button Styles */
 .oauth-divider {
   display: flex;

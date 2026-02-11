@@ -28,25 +28,26 @@ export const carsService = {
   // Create new car
   async createCar(userId, carData) {
     // Convert camelCase to snake_case for Supabase
+    // Also convert empty strings to null for numeric fields
     const dbData = {
       user_id: userId,
-      brand: carData.brand,
-      model: carData.model,
-      year: carData.year,
-      license_plate: carData.licensePlate,
-      vin: carData.vin,
-      engine_type: carData.engineType,
-      horsepower: carData.horsepower,
-      transmission: carData.transmission,
-      euro_standard: carData.euroStandard,
-      mileage: carData.mileage,
-      fuel_type: carData.fuelType,
-      tire_width: carData.tireWidth,
-      tire_height: carData.tireHeight,
-      tire_diameter: carData.tireDiameter,
-      tire_season: carData.tireSeason,
-      tire_brand: carData.tireBrand,
-      tire_dot: carData.tireDot
+      brand: carData.brand || null,
+      model: carData.model || null,
+      year: carData.year || null,
+      license_plate: carData.licensePlate || null,
+      vin: carData.vin || null,
+      engine_type: carData.engineType || null,
+      horsepower: carData.horsepower ? parseInt(carData.horsepower) : null,
+      transmission: carData.transmission || null,
+      euro_standard: carData.euroStandard || null,
+      mileage: carData.mileage ? parseInt(carData.mileage) : null,
+      fuel_type: carData.fuelType || null,
+      tire_width: carData.tireWidth ? parseInt(carData.tireWidth) : null,
+      tire_height: carData.tireHeight ? parseInt(carData.tireHeight) : null,
+      tire_diameter: carData.tireDiameter ? parseInt(carData.tireDiameter) : null,
+      tire_season: carData.tireSeason || null,
+      tire_brand: carData.tireBrand || null,
+      tire_dot: carData.tireDot || null
     };
 
     const { data, error } = await supabase
@@ -62,24 +63,25 @@ export const carsService = {
   // Update car
   async updateCar(carId, carData) {
     // Convert camelCase to snake_case for Supabase
+    // Also convert empty strings to null for numeric fields
     const dbData = {
-      brand: carData.brand,
-      model: carData.model,
-      year: carData.year,
-      license_plate: carData.licensePlate,
-      vin: carData.vin,
-      engine_type: carData.engineType,
-      horsepower: carData.horsepower,
-      transmission: carData.transmission,
-      euro_standard: carData.euroStandard,
-      mileage: carData.mileage,
-      fuel_type: carData.fuelType,
-      tire_width: carData.tireWidth,
-      tire_height: carData.tireHeight,
-      tire_diameter: carData.tireDiameter,
-      tire_season: carData.tireSeason,
-      tire_brand: carData.tireBrand,
-      tire_dot: carData.tireDot
+      brand: carData.brand || null,
+      model: carData.model || null,
+      year: carData.year || null,
+      license_plate: carData.licensePlate || null,
+      vin: carData.vin || null,
+      engine_type: carData.engineType || null,
+      horsepower: carData.horsepower ? parseInt(carData.horsepower) : null,
+      transmission: carData.transmission || null,
+      euro_standard: carData.euroStandard || null,
+      mileage: carData.mileage ? parseInt(carData.mileage) : null,
+      fuel_type: carData.fuelType || null,
+      tire_width: carData.tireWidth ? parseInt(carData.tireWidth) : null,
+      tire_height: carData.tireHeight ? parseInt(carData.tireHeight) : null,
+      tire_diameter: carData.tireDiameter ? parseInt(carData.tireDiameter) : null,
+      tire_season: carData.tireSeason || null,
+      tire_brand: carData.tireBrand || null,
+      tire_dot: carData.tireDot || null
     };
 
     const { data, error } = await supabase
