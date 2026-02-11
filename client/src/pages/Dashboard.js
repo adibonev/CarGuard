@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import carsService from '../lib/supabaseCars';
 import servicesService from '../lib/supabaseServices';
+import { generateCarReport } from '../lib/pdfService';
 import CarForm from '../components/CarForm';
 import ServiceForm from '../components/ServiceForm';
 import { getBrandLogo } from '../data/brandLogos';
@@ -36,6 +37,14 @@ const Dashboard = () => {
   
   // States for Documents Filter
   const [docFilterType, setDocFilterType] = useState('all');
+  
+  // States for Document Upload Form
+  const [showDocumentForm, setShowDocumentForm] = useState(false);
+  const [docFormData, setDocFormData] = useState({
+    category: 'друго',
+    file: null,
+    notes: ''
+  });
   
   // Mobile menu state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -184,6 +193,8 @@ const Dashboard = () => {
   const handleAddService = async (serviceData) => {
     try {
       console.log('Adding service:', serviceData);
+      console.log('Current user:', user);
+      console.log('User ID:', user?.id);
       
       let fileUrl = null;
       
@@ -193,6 +204,7 @@ const Dashboard = () => {
           // Create service first to get ID, then upload file
           const tempService = await servicesService.createService({
             carId: selectedCar.id,
+            userId: user.id,
             serviceType: serviceData.serviceType,
             expiryDate: serviceData.expiryDate,
             cost: serviceData.cost,
@@ -216,6 +228,7 @@ const Dashboard = () => {
         // No file, just create service
         await servicesService.createService({
           carId: selectedCar.id,
+          userId: user.id,
           serviceType: serviceData.serviceType,
           expiryDate: serviceData.expiryDate,
           cost: serviceData.cost,
@@ -235,6 +248,70 @@ const Dashboard = () => {
       alert('Грешка при добавяне на услуга: ' + err.message);
     }
   };
+
+  const handleDocumentUpload = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedCar) {
+      alert('Моля изберете автомобил');
+      return;
+    }
+    
+    if (!docFormData.file) {
+      alert('Моля изберете файл');
+      return;
+    }
+    
+    try {
+      // Create a service entry with just the document
+      const serviceData = {
+        carId: selectedCar.id,
+        userId: user.id,
+        serviceType: docFormData.category,
+        expiryDate: new Date().toISOString(),
+        cost: 0,
+        notes: docFormData.notes || `Качен документ: ${docFormData.category}`,
+        mileage: null
+      };
+      
+      // Create service first
+      const service = await servicesService.createService(serviceData);
+      
+      // Upload file
+      const fileUrl = await servicesService.uploadFile(docFormData.file, user.id, service.id);
+      
+      // Update service with file URL
+      await servicesService.updateService(service.id, { fileUrl });
+      
+      // Reset form
+      setDocFormData({ category: 'друго', file: null, notes: '' });
+      setShowDocumentForm(false);
+      
+      // Reload services
+      loadServices(selectedCar.id);
+      loadAllServices();
+      
+      alert('Документът е качен успешно! ✅');
+    } catch (err) {
+      console.error('Error uploading document:', err);
+      alert('Грешка при качване на документ: ' + err.message);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!selectedCar) {
+      alert('Моля изберете автомобил');
+      return;
+    }
+    
+    try {
+      await generateCarReport(selectedCar, allServices.filter(s => s.carId === selectedCar.id));
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Грешка при генериране на PDF: ' + err.message);
+    }
+  };
+
 
   const handleDeleteService = async (serviceId) => {
     if (!window.confirm('Сигурен ли си, че искаш да изтриеш тази услуга?')) {
@@ -750,6 +827,13 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="car-detail-actions">
+                    <button 
+                      className="action-btn pdf"
+                      onClick={handleDownloadPDF}
+                      title="Изтегли PDF репорт"
+                    >
+                      📄 PDF Репорт
+                    </button>
                     <button 
                       className="action-btn edit"
                       onClick={() => handleEditCar(selectedCar)}
@@ -1269,7 +1353,89 @@ const Dashboard = () => {
       <div className="tab-content documents-content">
         <div className="content-header">
           <h2>📁 Документи</h2>
+          <button 
+            className="add-btn"
+            onClick={() => {
+              if (!selectedCar) {
+                alert('Моля първо избери автомобил');
+                return;
+              }
+              setShowDocumentForm(!showDocumentForm);
+            }}
+          >
+            {showDocumentForm ? '✖️ Затвори' : '➕ Добави документ'}
+          </button>
         </div>
+
+        {showDocumentForm && (
+          <div className="document-upload-form">
+            <form onSubmit={handleDocumentUpload}>
+              <div className="form-group">
+                <label>Категория документ</label>
+                <select 
+                  value={docFormData.category}
+                  onChange={(e) => setDocFormData({ ...docFormData, category: e.target.value })}
+                  required
+                >
+                  <option value="гражданска">🛡️ Гражданска застраховка</option>
+                  <option value="винетка">🛣️ Винетка</option>
+                  <option value="преглед">🔧 Технически преглед</option>
+                  <option value="каско">💎 КАСКО</option>
+                  <option value="данък">💰 Данък МПС</option>
+                  <option value="пожарогасител">🔴 Пожарогасител</option>
+                  <option value="ремонт">🛠️ Ремонт</option>
+                  <option value="обслужване">🛢️ Обслужване</option>
+                  <option value="гуми">🛞 Гуми</option>
+                  <option value="друго">📝 Друго</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Файл (PDF, JPG, PNG до 5MB)</label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file && file.size > 5 * 1024 * 1024) {
+                      alert('Файлът е твърде голям. Максимален размер: 5MB');
+                      e.target.value = '';
+                      return;
+                    }
+                    setDocFormData({ ...docFormData, file });
+                  }}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Бележки (по избор)</label>
+                <textarea
+                  value={docFormData.notes}
+                  onChange={(e) => setDocFormData({ ...docFormData, notes: e.target.value })}
+                  placeholder="Допълнителна информация за документа..."
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="submit-btn">
+                  📤 Качи документ
+                </button>
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowDocumentForm(false);
+                    setDocFormData({ category: 'друго', file: null, notes: '' });
+                  }}
+                >
+                  Откажи
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         <div className="documents-filter-bar">
           <select 
@@ -1297,7 +1463,7 @@ const Dashboard = () => {
             <div className="empty-icon">📂</div>
             <h3>Няма прикачени документи</h3>
             <p>{docFilterType === 'all' 
-              ? 'Добави документи към събитията от раздел "Wydarzenia"' 
+              ? 'Използвай бутона "➕ Добави документ" за да качиш файлове' 
               : 'Няма документи за тази категория'
             }</p>
           </div>
