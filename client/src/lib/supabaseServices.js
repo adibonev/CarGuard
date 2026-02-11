@@ -13,6 +13,7 @@ const snakeToCamel = (service) => {
     carId: service.car_id,
     userId: service.user_id,
     mileage: service.mileage,
+    fileUrl: service.file_url,
     createdAt: service.created_at,
     updatedAt: service.updated_at
   };
@@ -34,6 +35,7 @@ const camelToSnake = (service) => {
   if (service.fuelType !== undefined) result.fuel_type = service.fuelType;
   if (service.notes !== undefined) result.notes = service.notes;
   if (service.mileage !== undefined) result.mileage = service.mileage;
+  if (service.fileUrl !== undefined) result.file_url = service.fileUrl;
   if (service.reminderSent !== undefined) result.reminder_sent = service.reminderSent;
   if (service.createdAt !== undefined) result.created_at = service.createdAt;
   if (service.updatedAt !== undefined) result.updated_at = service.updatedAt;
@@ -101,6 +103,46 @@ export const servicesService = {
       .eq('id', serviceId);
 
     if (error) throw error;
+  },
+
+  // Upload file to Supabase Storage
+  async uploadFile(file, userId, serviceId) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}/${serviceId}_${Date.now()}.${fileExt}`;
+    const filePath = `service-documents/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('documents')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  },
+
+  // Delete file from Supabase Storage
+  async deleteFile(fileUrl) {
+    if (!fileUrl) return;
+    
+    // Extract file path from URL
+    const urlParts = fileUrl.split('/storage/v1/object/public/documents/');
+    if (urlParts.length < 2) return;
+    
+    const filePath = urlParts[1];
+    
+    const { error } = await supabase.storage
+      .from('documents')
+      .remove([filePath]);
+
+    if (error) console.error('Error deleting file:', error);
   }
 };
 

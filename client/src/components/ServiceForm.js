@@ -9,7 +9,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     liters: '',
     pricePerLiter: '',
     fuelType: 'Benzin',
-    mileage: ''
+    mileage: '',
+    file: null
   });
 
   const serviceOptions = [
@@ -56,6 +57,29 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Файлът е твърде голям. Максимален размер: 5MB');
+        e.target.value = '';
+        return;
+      }
+      // Check file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Невалиден файлов формат. Позволени са: PDF, JPG, PNG, WEBP');
+        e.target.value = '';
+        return;
+      }
+      setFormData(prev => ({
+        ...prev,
+        file: file
+      }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.expiryDate) {
@@ -79,7 +103,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       cost: parseFloat(formData.cost) || 0,
       liters: parseFloat(formData.liters) || null,
       pricePerLiter: parseFloat(formData.pricePerLiter) || null,
-      mileage: parseInt(formData.mileage) || null
+      mileage: parseInt(formData.mileage) || null,
+      file: formData.file // Keep the file object
     };
 
     onSubmit(submitData);
@@ -93,7 +118,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       liters: '',
       pricePerLiter: '',
       fuelType: 'Benzin',
-      mileage: ''
+      mileage: '',
+      file: null
     });
   };
 
@@ -245,6 +271,23 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
             />
          </div>
       )}
+
+      <div className="form-group">
+        <label>📎 Прикачи документ (незадължително)</label>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
+        />
+        {formData.file && (
+          <small style={{ display: 'block', marginTop: '5px', color: '#28a745' }}>
+            ✓ Избран: {formData.file.name}
+          </small>
+        )}
+        <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+          Позволени формати: PDF, JPG, PNG, WEBP (макс. 5MB)
+        </small>
+      </div>
 
       <div className="form-buttons">
         <button type="submit" className="submit-btn">Добави</button>

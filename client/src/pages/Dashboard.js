@@ -181,17 +181,49 @@ const Dashboard = () => {
   const handleAddService = async (serviceData) => {
     try {
       console.log('Adding service:', serviceData);
-      await servicesService.createService({
-        carId: selectedCar.id,
-        serviceType: serviceData.serviceType,
-        expiryDate: serviceData.expiryDate,
-        cost: serviceData.cost,
-        liters: serviceData.liters,
-        pricePerLiter: serviceData.pricePerLiter,
-        fuelType: serviceData.fuelType,
-        notes: serviceData.notes,
-        mileage: serviceData.mileage
-      });
+      
+      let fileUrl = null;
+      
+      // Upload file if present
+      if (serviceData.file) {
+        try {
+          // Create service first to get ID, then upload file
+          const tempService = await servicesService.createService({
+            carId: selectedCar.id,
+            serviceType: serviceData.serviceType,
+            expiryDate: serviceData.expiryDate,
+            cost: serviceData.cost,
+            liters: serviceData.liters,
+            pricePerLiter: serviceData.pricePerLiter,
+            fuelType: serviceData.fuelType,
+            notes: serviceData.notes,
+            mileage: serviceData.mileage
+          });
+          
+          // Upload file with service ID
+          fileUrl = await servicesService.uploadFile(serviceData.file, user.id, tempService.id);
+          
+          // Update service with file URL
+          await servicesService.updateService(tempService.id, { fileUrl });
+        } catch (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          alert('Грешка при качване на файла. Услугата е запазена без файл.');
+        }
+      } else {
+        // No file, just create service
+        await servicesService.createService({
+          carId: selectedCar.id,
+          serviceType: serviceData.serviceType,
+          expiryDate: serviceData.expiryDate,
+          cost: serviceData.cost,
+          liters: serviceData.liters,
+          pricePerLiter: serviceData.pricePerLiter,
+          fuelType: serviceData.fuelType,
+          notes: serviceData.notes,
+          mileage: serviceData.mileage
+        });
+      }
+      
       loadServices(selectedCar.id);
       loadAllServices();
       setShowServiceForm(false);
@@ -868,6 +900,17 @@ const Dashboard = () => {
                               </p>
                               {service.mileage && <span className="service-sub-info">🛣️ {service.mileage.toLocaleString()} км</span>}
                               {service.liters && <span className="service-sub-info">⛽ {service.liters}L</span>}
+                              {service.fileUrl && (
+                                <a 
+                                  href={service.fileUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="service-file-link"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  📎 Документ
+                                </a>
+                              )}
                               {service.cost > 0 && <span className="service-cost-badge">{service.cost.toFixed(2)} лв.</span>}
                             </div>
                             {isExpirable ? (
@@ -1061,6 +1104,18 @@ const Dashboard = () => {
                               <span>⛽ {service.liters} L</span>
                               {service.pricePerLiter && <span> • {service.pricePerLiter} лв./л</span>}
                               {service.fuelType && <span> ({service.fuelType})</span>}
+                            </div>
+                        )}
+                        {service.fileUrl && (
+                            <div className="fuel-info">
+                              <a 
+                                href={service.fileUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="service-file-link"
+                              >
+                                📎 Преглед на документ
+                              </a>
                             </div>
                         )}
                         {service.notes && (
