@@ -1382,7 +1382,7 @@ const Dashboard = () => {
     return (
       <div className="tab-content documents-content">
         <div className="content-header">
-          <h2>📁 Документи</h2>
+          <h2>📁 Documents</h2>
         </div>
 
         <div className="documents-filter-bar">
@@ -1391,25 +1391,25 @@ const Dashboard = () => {
             onChange={(e) => setDocFilterType(e.target.value)}
             className="doc-filter-select"
           >
-            <option value="all">📋 Всички документи ({documentsData.length})</option>
-            <option value="гражданска">🛡️ Гражданска застраховка</option>
-            <option value="винетка">🛣️ Винетка</option>
-            <option value="преглед">🔧 Технически преглед</option>
-            <option value="каско">💎 КАСКО</option>
-            <option value="данък">💰 Данък МПС</option>
-            <option value="пожарогасител">🔴 Пожарогасител</option>
-            <option value="ремонт">🛠️ Ремонт</option>
-            <option value="обслужване">🛢️ Обслужване</option>
-            <option value="гуми">🛞 Гуми</option>
-            <option value="зареждане">⛽ Зареждане</option>
-            <option value="друго">📝 Друго</option>
+            <option value="all">📋 All Documents ({documentsData.length})</option>
+            <option value="civil_liability">🛡️ Civil Liability Insurance</option>
+            <option value="vignette">🛣️ Vignette</option>
+            <option value="inspection">🔧 Technical Inspection</option>
+            <option value="casco">💎 CASCO</option>
+            <option value="tax">💰 Vehicle Tax</option>
+            <option value="fire_extinguisher">🔴 Fire Extinguisher</option>
+            <option value="repair">🛠️ Repair</option>
+            <option value="maintenance">🛢️ Maintenance</option>
+            <option value="tires">🛞 Tires</option>
+            <option value="refuel">⛽ Refuel</option>
+            <option value="other">📝 Other</option>
           </select>
           
           <button 
             className="doc-add-btn"
             onClick={() => setShowDocumentForm(!showDocumentForm)}
           >
-            {showDocumentForm ? '✖️ Затвори' : '➕ Добави документ'}
+            {showDocumentForm ? '✖️ Close' : '➕ Add Document'}
           </button>
         </div>
 
@@ -1643,7 +1643,7 @@ const Dashboard = () => {
         <div className="mobile-user-info">
           <span>👤 {user?.name}</span>
           <button className="mobile-logout-btn" onClick={handleLogout}>
-            🚪 Изход
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -1666,14 +1666,14 @@ const Dashboard = () => {
             onClick={() => setActiveTab('dashboard')}
           >
             <span className="nav-icon">🏠</span>
-            <span className="nav-text">Табло</span>
+            <span className="nav-text">Dashboard</span>
           </button>
           <button 
             className={`nav-item ${activeTab === 'cars' ? 'active' : ''}`}
             onClick={() => setActiveTab('cars')}
           >
             <span className="nav-icon">🚘</span>
-            <span className="nav-text">Автопарк</span>
+            <span className="nav-text">My Vehicles</span>
             {cars.length > 0 && <span className="nav-badge">{cars.length}</span>}
           </button>
           <button 
@@ -1681,7 +1681,7 @@ const Dashboard = () => {
             onClick={() => setActiveTab('services')}
           >
             <span className="nav-icon">📋</span>
-            <span className="nav-text">Събития</span>
+            <span className="nav-text">Services</span>
             {getExpiringServices().length > 0 && (
               <span className="nav-badge warning">{getExpiringServices().length}</span>
             )}
@@ -1691,7 +1691,7 @@ const Dashboard = () => {
             onClick={() => setActiveTab('documents')}
           >
             <span className="nav-icon">📁</span>
-            <span className="nav-text">Документи</span>
+            <span className="nav-text">Documents</span>
             {allServices.filter(s => s.fileUrl).length > 0 && (
               <span className="nav-badge">{allServices.filter(s => s.fileUrl).length}</span>
             )}
@@ -1701,7 +1701,7 @@ const Dashboard = () => {
             onClick={() => setActiveTab('settings')}
           >
             <span className="nav-icon">⚙️</span>
-            <span className="nav-text">Настройки</span>
+            <span className="nav-text">Settings</span>
           </button>
         </nav>
 
