@@ -765,9 +765,7 @@ const Dashboard = () => {
     <div className="tab-content cars-content-new">
       {loading ? (
         <div className="loading-state">
-          <div className="logo-orbit logo-orbit--loading">
-            <img src={logoUrl} alt="CarGuard logo" className="loading-logo" />
-          </div>
+          <img src={logoUrl} alt="CarGuard logo" className="loading-logo" />
           <div className="spinner"></div>
           <p>Loading...</p>
         </div>

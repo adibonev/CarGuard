@@ -195,7 +195,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                     />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                    <label>Price per liter (BGN)</label>
+                    <label>Price per liter (€)</label>
                     <input
                     type="number"
                     name="pricePerLiter"
@@ -219,7 +219,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                 </select>
             </div>
              <div className="form-group">
-                <label>Total price (BGN)</label>
+                <label>Total price (€)</label>
                 <input
                 type="number"
                 name="cost"
@@ -233,7 +233,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
         </>
       ) : (
         <div className="form-group">
-            <label>Price (BGN)</label>
+            <label>Price (€)</label>
             <input
             type="number"
             name="cost"

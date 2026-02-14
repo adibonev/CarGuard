@@ -67,7 +67,7 @@ const ServiceList = ({ services, onDeleteService }) => {
               )}
               {service.cost > 0 && (
                  <p className="service-cost">
-                   Cost: {service.cost.toFixed(2)} BGN
+                   Cost: {service.cost.toFixed(2)} €
                  </p>
               )}
             </div>

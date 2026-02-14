@@ -21,7 +21,7 @@ const PrivateRoute = ({ children }) => {
             src={logoUrl}
             alt="CarGuard logo"
             className="cg-loading-logo"
-            style={{ width: '64px', height: '64px', marginBottom: '16px' }}
+            style={{ width: '96px', height: '96px', marginBottom: '20px' }}
           />
           <div style={{ fontSize: '24px', marginBottom: '16px' }}>⏳</div>
           <p>Loading...</p>

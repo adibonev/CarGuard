@@ -300,9 +300,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="admin-loading">
-        <div className="logo-orbit logo-orbit--loading">
-          <img src={logoUrl} alt="CarGuard logo" className="admin-loading-logo" />
-        </div>
+        <img src={logoUrl} alt="CarGuard logo" className="admin-loading-logo" />
         <div className="spinner"></div>
         <p>Loading data...</p>
       </div>

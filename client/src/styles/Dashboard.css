@@ -26,17 +26,17 @@
 }
 
 .mobile-header-left .logo-icon {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .mobile-header-left .logo-img {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
 .mobile-header-left .logo-text {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 
@@ -212,17 +212,17 @@
 }
 
 .logo-icon {
-  font-size: 28px;
+  font-size: 32px;
 }
 
 .logo-img {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
 .logo-text {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -575,8 +575,8 @@
 }
 
 .loading-logo {
-  width: 64px;
-  height: 64px;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
   margin-bottom: 16px;
   animation: logoPulse 1.4s ease-in-out infinite;
@@ -3886,7 +3886,12 @@
   }
   
   .logo-text {
-    font-size: 16px;
+    font-size: 18px;
+  }
+
+  .logo-img {
+    width: 32px;
+    height: 32px;
   }
   
   .sidebar-nav {

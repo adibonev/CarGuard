@@ -26,13 +26,13 @@
 }
 
 .admin-logo {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
 .admin-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
 }
 
@@ -585,8 +585,8 @@
 }
 
 .admin-loading-logo {
-  width: 64px;
-  height: 64px;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
   margin-bottom: 16px;
   animation: logoPulse 1.4s ease-in-out infinite;

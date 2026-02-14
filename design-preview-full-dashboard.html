@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вариант 2 - Пълна Демо Версия - CarGuard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary: #dc3545;
+            --secondary: #c82333;
+            --dark: #1a1a1a;
+            --dark-secondary: #2d2d2d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gradient: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+            background: #f8f9fa;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(180deg, var(--dark) 0%, var(--dark-secondary) 100%) !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 1rem 2rem;
+        }
+        
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: 900;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-link {
+            color: white !important;
+            font-weight: 600;
+            margin: 0 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-nav {
+            padding: 0.625rem 1.75rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        /* Dashboard Container */
+        .dashboard-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Welcome Section */
+        .welcome-header {
+            background: var(--gradient);
+            color: white;
+            padding: 3rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(220, 53, 69, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .welcome-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .welcome-header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .welcome-header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border-left: 5px solid var(--primary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.2);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        /* Section Card */
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #f8f9fa;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        /* Car Cards */
+        .cars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .car-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .car-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .car-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .car-card.selected {
+            border: 4px solid var(--primary);
+        }
+        
+        .car-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .car-card h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .car-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        /* Service Items */
+        .services-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .service-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .service-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.1);
+        }
+        
+        .service-item.status-warning {
+            border-left: 5px solid var(--warning);
+            background: #fff8e1;
+        }
+        
+        .service-item.status-expired {
+            border-left: 5px solid var(--danger);
+            background: #ffebee;
+        }
+        
+        .service-item.status-ok {
+            border-left: 5px solid var(--success);
+        }
+        
+        .service-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .service-details h4 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--dark);
+        }
+        
+        .service-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .service-status {
+            text-align: right;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge.expired {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .status-badge.warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+        
+        .status-badge.ok {
+            background: var(--success);
+            color: white;
+        }
+        
+        /* Buttons */
+        .btn-primary-custom {
+            background: var(--gradient);
+            color: white;
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+        
+        .btn-outline-custom {
+            background: transparent;
+            color: var(--primary);
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            border: 2px solid var(--primary);
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-custom:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .empty-state i {
+            font-size: 5rem;
+            color: #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .empty-state h3 {
+            color: var(--dark);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 2rem;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-action-btn {
+            background: white;
+            border: 2px solid #e9ecef;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .quick-action-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.15);
+        }
+        
+        .quick-action-btn i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .quick-action-btn h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        /* Notifications */
+        .notification-item {
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            padding: 1rem;
+            background: #fff8e1;
+            border-left: 4px solid var(--warning);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .notification-item.urgent {
+            background: #ffebee;
+            border-left-color: var(--danger);
+        }
+        
+        .notification-item i {
+            font-size: 1.5rem;
+            color: var(--warning);
+        }
+        
+        .notification-item.urgent i {
+            color: var(--danger);
+        }
+        
+        .notification-content h5 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .notification-content p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        /* Toggle View Button */
+        .view-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        
+        .btn-toggle {
+            background: var(--gradient);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .btn-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(220, 53, 69, 0.6);
+        }
+        
+        /* Hide sections */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Tab Navigation */
+        .tab-navigation {
+            background: white;
+            border-bottom: 2px solid #e9ecef;
+            position: sticky;
+            top: 72px;
+            z-index: 99;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .nav-tabs-custom {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            padding: 0;
+        }
+        
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 1.25rem 2rem;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .tab-btn i {
+            font-size: 1.25rem;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+            background: #f8f9fa;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: linear-gradient(to bottom, rgba(220, 53, 69, 0.05), transparent);
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .welcome-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cars-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-lightning-charge-fill"></i> CarGuard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" id="nav-dashboard" style="display: none;">
+                        <a class="nav-link" href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item" id="nav-user" style="display: none;">
+                        <a class="nav-link" href="#"><i class="bi bi-person-circle"></i> <span id="user-name">Иван Петров</span></a>
+                    </li>
+                    <li class="nav-item" id="nav-logout-item" style="display: none;">
+                        <button class="btn btn-nav btn-logout ms-2" onclick="toggleView()">
+                            <i class="bi bi-box-arrow-left"></i> Изход
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="hidden">
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <div class="container-fluid">
+                <div class="nav-tabs-custom">
+                    <button class="tab-btn active" onclick="switchTab(event, 'overview')">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Преглед</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab(event, 'cars')">
+                        <i class="bi bi-car-front"></i>
+                        <span>Моите коли</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab(event, 'services')">
+                        <i class="bi bi-wrench"></i>
+                        <span>Услуги</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab(event, 'statistics')">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Статистики</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab(event, 'settings')">
+                        <i class="bi bi-gear"></i>
+                        <span>Настройки</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-container">
+            <!-- OVERVIEW TAB -->
+            <div id="tab-overview" class="tab-content active">
+                <!-- Welcome Header -->
+                <div class="welcome-header">
+                    <h1><i class="bi bi-emoji-smile"></i> Добре дошъл обратно, Иван!</h1>
+                    <p>Ето преглед на твоите автомобили и предстоящи услуги</p>
+                </div>
+
+                    <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-car-front-fill"></i>
+                        </div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Автомобили</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Наближаващи срокове</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Извършени услуги</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <div class="stat-value">1,240</div>
+                        <div class="stat-label">Разходи (лв.)</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="quick-action-btn" onclick="switchTabByName('cars')">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        <h4>Добави автомобил</h4>
+                    </div>
+                    <div class="quick-action-btn" onclick="switchTabByName('services')">
+                        <i class="bi bi-wrench"></i>
+                        <h4>Добави услуга</h4>
+                    </div>
+                    <div class="quick-action-btn" onclick="switchTabByName('statistics')">
+                        <i class="bi bi-file-pdf"></i>
+                        <h4>Генерирай отчет</h4>
+                    </div>
+                    <div class="quick-action-btn" onclick="switchTabByName('settings')">
+                        <i class="bi bi-gear"></i>
+                        <h4>Настройки</h4>
+                    </div>
+                </div>
+
+                <!-- Notifications Section -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-bell-fill"></i>
+                            Важни напомняния
+                        </h2>
+                    </div>
+                    
+                    <div class="notification-item urgent">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div class="notification-content">
+                            <h5>Техническият преглед на BMW 320d изтича след 3 дни!</h5>
+                            <p>Краен срок: 15 Февруари 2026</p>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div class="notification-content">
+                            <h5>Гражданска отговорност на Audi A4 изтича след 25 дни</h5>
+                            <p>Краен срок: 09 Март 2026</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Cars Preview -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-car-front"></i>
+                            Моите автомобили
+                        </h2>
+                        <button class="btn-outline-custom" onclick="switchTabByName('cars')">
+                            Виж всички <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="cars-grid">
+                    <div class="car-card selected">
+                        <i class="car-icon bi bi-car-front-fill"></i>
+                        <h3>BMW 320d</h3>
+                        <div class="car-info-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Година: 2019</span>
+                        </div>
+                        <div class="car-info-item">
+                            <i class="bi bi-hash"></i>
+                            <span>Рег. номер: CB 1234 AB</span>
+                        </div>
+                        <div class="car-info-item">
+                            <i class="bi bi-speedometer"></i>
+                            <span>125,000 км</span>
+                        </div>
+                    </div>
+                    
+                    <div class="car-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="car-icon bi bi-car-front-fill"></i>
+                        <h3>Audi A4</h3>
+                        <div class="car-info-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Година: 2021</span>
+                        </div>
+                        <div class="car-info-item">
+                            <i class="bi bi-hash"></i>
+                            <span>Рег. номер: PB 5678 CD</span>
+                        </div>
+                        <div class="car-info-item">
+                            <i class="bi bi-speedometer"></i>
+                            <span>45,000 км</span>
+                        </div>
+                    </div>
+                    
+                    <div class="car-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="car-icon bi bi-car-front-fill"></i>
+                        <h3>Mercedes C200</h3>
+                        <div class="car-info-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Година: 2018</span>
+                        </div>
+                        <div class="car-info-item">
+                            <i class="bi bi-hash"></i>
+                            <span>Рег. номер: CA 9876 EF</span>
+                        </div>
+                        <div class="car-info-item">
+                            <i class="bi bi-speedometer"></i>
+                            <span>98,000 км</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- CARS TAB -->
+            <div id="tab-cars" class="tab-content">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-car-front"></i>
+                            Моите автомобили
+                        </h2>
+                        <button class="btn-primary-custom">
+                            <i class="bi bi-plus-lg"></i> Добави нова кола
+                        </button>
+                    </div>
+                    
+                    <div class="cars-grid">
+                        <div class="car-card selected">
+                            <i class="car-icon bi bi-car-front-fill"></i>
+                            <h3>BMW 320d</h3>
+                            <div class="car-info-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>Година: 2019</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-hash"></i>
+                                <span>Рег. номер: CB 1234 AB</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-speedometer"></i>
+                                <span>125,000 км</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-fuel-pump"></i>
+                                <span>Дизел</span>
+                            </div>
+                        </div>
+                        
+                        <div class="car-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="car-icon bi bi-car-front-fill"></i>
+                            <h3>Audi A4</h3>
+                            <div class="car-info-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>Година: 2021</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-hash"></i>
+                                <span>Рег. номер: PB 5678 CD</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-speedometer"></i>
+                                <span>45,000 км</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-fuel-pump"></i>
+                                <span>Бензин</span>
+                            </div>
+                        </div>
+                        
+                        <div class="car-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="car-icon bi bi-car-front-fill"></i>
+                            <h3>Mercedes C200</h3>
+                            <div class="car-info-item">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>Година: 2018</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-hash"></i>
+                                <span>Рег. номер: CA 9876 EF</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-speedometer"></i>
+                                <span>98,000 км</span>
+                            </div>
+                            <div class="car-info-item">
+                                <i class="bi bi-fuel-pump"></i>
+                                <span>Дизел</span>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="service-icon">
+                                    <i class="bi bi-wrench"></i>
+                                </div>
+                                <div class="service-details">
+                                    <h4>🔧 Сервиз - спирачни накладки</h4>
+                                    <div class="service-date">Дата: 05 Януари 2026</div>
+                                    <div class="text-muted small">Цена: 450 лв.</div>
+                                </div>
+                            </div>
+                            <div class="service-status">
+                                <div class="badge bg-success">Завършено</div>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="service-icon">
+                                    <i class="bi bi-card-checklist"></i>
+                                </div>
+                                <div class="service-details">
+                                    <h4>🛣️ Винетка</h4>
+                                    <div class="service-date">Изтича: 31 Декември 2026</div>
+                                </div>
+                            </div>
+                            <div class="service-status">
+                                <div class="status-badge ok">ОК</div>
+                                <div class="mt-2 text-muted">323 дни</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATISTICS TAB -->
+            <div id="tab-statistics" class="tab-content">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-graph-up"></i>
+                            Статистики и отчети
+                        </h2>
+                        <button class="btn-primary-custom">
+                            <i class="bi bi-file-pdf"></i> Изтегли PDF отчет
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Expense Summary -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left-color: #667eea;">
+                            <div class="stat-value" style="color: #667eea;">1,240</div>
+                            <div class="stat-label">Общо разходи (лв.)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left-color: var(--success);">
+                            <div class="stat-value" style="color: var(--success);">18</div>
+                            <div class="stat-label">Завършени услуги</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left-color: var(--warning);">
+                            <div class="stat-value" style="color: var(--warning);">207</div>
+                            <div class="stat-label">Средно на услуга (лв.)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card" style="border-left-color: var(--primary);">
+                            <div class="stat-value" style="color: var(--primary);">3</div>
+                            <div class="stat-label">Последен месец</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="section-card">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem; color: var(--dark);">
+                        <i class="bi bi-bar-chart-fill"></i> Разходи по месеци
+                    </h4>
+                    <div style="background: #f8f9fa; padding: 4rem 2rem; border-radius: 12px; text-align: center;">
+                        <i class="bi bi-graph-up" style="font-size: 4rem; color: #dee2e6;"></i>
+                        <p class="text-muted mt-3">График на разходите (Chart.js интеграция)</p>
+                    </div>
+                </div>
+
+                <div class="section-card mt-4">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem; color: var(--dark);">
+                        <i class="bi bi-pie-chart-fill"></i> Разпределение по тип услуга
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div style="background: #f8f9fa; padding: 3rem 2rem; border-radius: 12px; text-align: center;">
+                                <i class="bi bi-pie-chart" style="font-size: 4rem; color: #dee2e6;"></i>
+                                <p class="text-muted mt-3">Pie Chart (Chart.js)</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div style="padding: 2rem;">
+                                <h5 style="font-weight: 700; margin-bottom: 1.5rem;">Топ 5 услуги</h5>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>🛢️ Смяна на масло</span>
+                                        <strong>420 лв.</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" style="width: 85%; background: var(--gradient);"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>🔧 Технически преглед</span>
+                                        <strong>280 лв.</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" style="width: 56%; background: var(--gradient);"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>🛞 Гуми</span>
+                                        <strong>320 лв.</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" style="width: 64%; background: var(--gradient);"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>🛡️ Застраховка</span>
+                                        <strong>180 лв.</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" style="width: 36%; background: var(--gradient);"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>🛠️ Ремонти</span>
+                                        <strong>40 лв.</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" style="width: 8%; background: var(--gradient);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB -->
+            <div id="tab-settings" class="tab-content">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+        let currentTab = 'overview';
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.closest('.tab-btn').classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+                            <i class="bi bi-gear"></i>
+                            Настройки
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Profile Settings -->
+                <div class="section-card">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem; color: var(--dark);">
+                        <i class="bi bi-person-circle"></i> Профил
+                    </h4>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Име</label>
+                            <input type="text" class="form-control" value="Иван Петров" style="border-radius: 12px; padding: 0.875rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Имейл</label>
+                            <input type="email" class="form-control" value="ivan.petrov@email.com" style="border-radius: 12px; padding: 0.875rem;">
+                        </div>
+                        <div class="col-12">
+                            <button class="btn-primary-custom">
+                                <i class="bi bi-save"></i> Запази промените
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="section-card">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem; color: var(--dark);">
+                        <i class="bi bi-bell"></i> Настройки за напомняния
+                    </h4>
+                    <div class="mb-4">
+                        <div class="form-check form-switch mb-3" style="font-size: 1.1rem;">
+                            <input class="form-check-input" type="checkbox" id="emailNotif" checked style="width: 3em; height: 1.5em;">
+                            <label class="form-check-label fw-bold ms-2" for="emailNotif">
+                                Имейл известия
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3" style="font-size: 1.1rem;">
+                            <input class="form-check-input" type="checkbox" id="pushNotif" checked style="width: 3em; height: 1.5em;">
+                            <label class="form-check-label fw-bold ms-2" for="pushNotif">
+                                Push известия
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Колко дни предварително да получавам напомняния?</label>
+                        <select class="form-select" style="border-radius: 12px; padding: 0.875rem; max-width: 300px;">
+                            <option>7 дни</option>
+                            <option>14 дни</option>
+                            <option selected>30 дни</option>
+                            <option>60 дни</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary-custom">
+                        <i class="bi bi-save"></i> Запази настройките
+                    </button>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="section-card" style="border: 2px solid var(--danger);">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem; color: var(--danger);">
+                        <i class="bi bi-exclamation-triangle"></i> Опасна зона
+                    </h4>
+                    <p class="text-muted mb-3">Тези действия са необратими. Моля, бъдете внимателни.</p>
+                    <button class="btn btn-outline-danger" style="border-radius: 50px; padding: 0.75rem 2rem; font-weight: 700;">
+                        <i class="bi bi-trash"></i> Изтрий акаунта
+                    </button>
+                </div>
+            </div>
+  </div>
+                </div>
+
+                <!-- Car Details Section -->
+                <div class="section-card">
+                    <h3 class="mb-4" style="font-weight: 800; color: var(--dark);">
+                        <i class="bi bi-info-circle"></i> Детайли за BMW 320d
+                    </h3>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+                                <h5 style="font-weight: 700; margin-bottom: 1rem;">Основна информация</h5>
+                                <p><strong>Марка:</strong> BMW</p>
+                                <p><strong>Модел:</strong> 320d</p>
+                                <p><strong>Година:</strong> 2019</p>
+                                <p><strong>VIN:</strong> WBA3B5G50ENS52945</p>
+                                <p><strong>Рег. номер:</strong> CB 1234 AB</p>
+                                <p class="mb-0"><strong>Цвят:</strong> Черен металик</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px;">
+                                <h5 style="font-weight: 700; margin-bottom: 1rem;">Технически данни</h5>
+                                <p><strong>Двигател:</strong> 2.0L Diesel</p>
+                                <p><strong>Мощност:</strong> 190 к.с.</p>
+                                <p><strong>Трансмисия:</strong> Автоматична</p>
+                                <p><strong>Пробег:</strong> 125,000 км</p>
+                                <p><strong>Гориво:</strong> Дизел</p>
+                                <p class="mb-0"><strong>Разход:</strong> 5.2 л/100км</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVICES TAB -->
+            <div id="tab-services" class="tab-content">
+                <!-- Car Selector -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-wrench"></i>
+                            Услуги
+                        </h2>
+                        <div class="d-flex gap-3 align-items-center">
+                            <select class="form-select" style="width: auto; border-radius: 50px; border: 2px solid var(--primary);">
+                                <option>BMW 320d</option>
+                                <option>Audi A4</option>
+                                <option>Mercedes C200</option>
+                            </select>
+                            <button class="btn-primary-custom">
+                                <i class="bi bi-plus-lg"></i> Добави услуга
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Services List -->
+                <div class="section-card">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem; color: var(--dark);">
+                        <i class="bi bi-clock-history"></i> Всички услуги за BMW 320d
+                    </h4>
+                    <div class="services-list">
+                    <div class="service-item status-expired">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="service-icon">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <div class="service-details">
+                                <h4>🔧 Технически преглед</h4>
+                                <div class="service-date">Изтича: 15 Февруари 2026</div>
+                            </div>
+                        </div>
+                        <div class="service-status">
+                            <div class="status-badge expired">ИЗТИЧА СКОРО</div>
+                            <div class="mt-2 text-muted">3 дни</div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-item status-warning">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="service-icon">
+                                <i class="bi bi-droplet-fill"></i>
+                            </div>
+                            <div class="service-details">
+                                <h4>🛢️ Смяна на масло</h4>
+                                <div class="service-date">Изтича: 28 Февруари 2026</div>
+                            </div>
+                        </div>
+                        <div class="service-status">
+                            <div class="status-badge warning">ВНИМАНИЕ</div>
+                            <div class="mt-2 text-muted">16 дни</div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-item status-ok">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="service-icon">
+                                <i class="bi bi-shield-fill-check"></i>
+                            </div>
+                            <div class="service-details">
+                                <h4>🛡️ Гражданска отговорност</h4>
+                                <div class="service-date">Изтича: 15 Юни 2026</div>
+                            </div>
+                        </div>
+                        <div class="service-status">
+                            <div class="status-badge ok">ОК</div>
+                            <div class="mt-2 text-muted">123 дни</div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-item status-ok">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="service-icon">
+                                <i class="bi bi-circle-fill"></i>
+                            </div>
+                            <div class="service-details">
+                                <h4>🛞 Гуми - сменени</h4>
+                                <div class="service-date">Дата: 10 Януари 2026</div>
+                                <div class="text-muted small">Цена: 320 лв.</div>
+                            </div>
+                        </div>
+                        <div class="service-status">
+                            <div class="badge bg-success">Завършено</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Home/Landing View (from previous design) -->
+    <div id="landing-view">
+        <!-- Hero Section -->
+        <section class="hero" style="margin-top: 72px; background: var(--dark); color: white; padding: 10rem 0 8rem; position: relative; overflow: hidden;">
+            <div style="content: ''; position: absolute; top: 0; right: 0; width: 50%; height: 100%; background: var(--gradient); opacity: 0.1; transform: skewX(-15deg);"></div>
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6" style="position: relative;">
+                        <h1 style="font-size: 4rem; font-weight: 900; margin-bottom: 1.5rem; line-height: 1.1;">
+                            Твоят автомобил заслужава <span style="background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">най-доброто</span>
+                        </h1>
+                        <p style="font-size: 1.5rem; color: #adb5bd; margin-bottom: 2.5rem;">
+                            Революционна платформа за управление на всичко свързано с твоя автомобил
+                        </p>
+                        <button class="btn btn-primary-custom me-3" onclick="toggleView()" style="padding: 1.25rem 3rem; font-size: 1.25rem;">
+                            Започни безплатно
+                        </button>
+                        <button class="btn btn-outline-custom" style="padding: 1.25rem 3rem; font-size: 1.25rem; background: transparent; border: 3px solid white; color: white;">
+                            Научи повече
+                        </button>
+                    </div>
+                    <div class="col-lg-6 text-center">
+                        <div style="position: relative; width: 100%; max-width: 550px; height: 450px; background: var(--gradient); border-radius: 30px; transform: rotate(-5deg); box-shadow: 0 20px 60px rgba(220, 53, 69, 0.5); display: flex; align-items: center; justify-content: center; font-size: 5rem; color: white; margin: 0 auto;">
+                            <i class="bi bi-car-front-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section style="padding: 6rem 0; background: #f8f9fa;">
+            <div class="container">
+                <h2 style="font-size: 3rem; font-weight: 900; text-align: center; margin-bottom: 1rem; color: var(--dark);">
+                    Защо CarGuard?
+                </h2>
+                <p style="text-align: center; color: #6c757d; font-size: 1.25rem; margin-bottom: 4rem;">
+                    Най-мощната система за управление на автомобили
+                </p>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div style="background: white; border-radius: 25px; padding: 3rem 2rem; height: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.08); transition: all 0.4s;">
+                            <div style="width: 90px; height: 90px; background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                            </div>
+                            <h3 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--dark);">
+                                Светкавично бързо
+                            </h3>
+                            <p style="color: #6c757d; line-height: 1.7; font-size: 1.1rem;">
+                                Моментален достъп до всички данни за твоя автомобил от всяко устройство
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; border-radius: 25px; padding: 3rem 2rem; height: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.08); transition: all 0.4s;">
+                            <div style="width: 90px; height: 90px; background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                            <h3 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--dark);">
+                                Анализ на разходи
+                            </h3>
+                            <p style="color: #6c757d; line-height: 1.7; font-size: 1.1rem;">
+                                Виж точно колко харчиш и оптимизирай бюджета си
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; border-radius: 25px; padding: 3rem 2rem; height: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.08); transition: all 0.4s;">
+                            <div style="width: 90px; height: 90px; background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);">
+                                <i class="bi bi-stars"></i>
+                            </div>
+                            <h3 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: var(--dark);">
+                                AI напомняния
+                            </h3>
+                            <p style="color: #6c757d; line-height: 1.7; font-size: 1.1rem;">
+                                Интелигентна система, която знае кога автомобилът ти се нуждае от грижи
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toggle Button -->
+    <div class="view-toggle">
+        <button class="btn-toggle" onclick="toggleView()">
+            <i class="bi bi-arrow-left-right"></i>
+            <span id="toggle-text">Виж Dashboard</span>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isDashboard = false;
+        let currentTab = 'overview';
+        
+        function switchTab(event, tabName) {
+            // Prevent default
+            if (event) event.preventDefault();
+            
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById('tab-' + tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Add active class to clicked button
+            if (event && event.target) {
+                const btn = event.target.closest('.tab-btn');
+                if (btn) {
+                    btn.classList.add('active');
+                }
+            }
+            
+            currentTab = tabName;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function switchTabByName(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            const selectedTab = document.getElementById('tab-' + tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Find and activate the corresponding tab button
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                if (btn.onclick && btn.onclick.toString().includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            currentTab = tabName;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function toggleView() {
+            isDashboard = !isDashboard;
+            const dashboardView = document.getElementById('dashboard-view');
+            const landingView = document.getElementById('landing-view');
+            const toggleText = document.getElementById('toggle-text');
+            const navDashboard = document.getElementById('nav-dashboard');
+            const navUser = document.getElementById('nav-user');
+            const navLogout = document.getElementById('nav-logout-item');
+            
+            if (isDashboard) {
+                // Show dashboard
+                dashboardView.classList.remove('hidden');
+                landingView.classList.add('hidden');
+                toggleText.textContent = 'Виж Home';
+                navDashboard.style.display = 'block';
+                navUser.style.display = 'block';
+                navLogout.style.display = 'block';
+                document.body.style.background = '#f8f9fa';
+            } else {
+                // Show landing
+                dashboardView.classList.add('hidden');
+                landingView.classList.remove('hidden');
+                toggleText.textContent = 'Виж Dashboard';
+                navDashboard.style.display = 'none';
+                navUser.style.display = 'none';
+                navLogout.style.display = 'none';
+                document.body.style.background = 'white';
+            }
+        }
+        
+        // Start with landing view
+        toggleView();
+        toggleView();
+    </script>
+</body>
+</html>

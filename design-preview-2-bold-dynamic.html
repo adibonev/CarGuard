@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вариант 2: Bold & Dynamic - CarGuard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary: #dc3545;
+            --secondary: #ff6b6b;
+            --dark: #1a1a1a;
+            --gradient: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: var(--dark) !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 1.25rem 2rem;
+        }
+        
+        .navbar-brand {
+            font-size: 2rem;
+            font-weight: 900;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-link {
+            color: white !important;
+            font-weight: 600;
+            margin: 0 1rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--gradient);
+            transition: width 0.3s;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .btn-nav {
+            padding: 0.75rem 2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-login {
+            background: transparent;
+            border: 2px solid var(--primary) !important;
+            color: white;
+        }
+        
+        .btn-signup {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(220, 53, 69, 0.6);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: var(--dark);
+            color: white;
+            padding: 10rem 0 8rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0.1;
+            transform: skewX(-15deg);
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+        
+        .hero .highlight {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            color: #adb5bd;
+            margin-bottom: 2.5rem;
+        }
+        
+        .hero-image {
+            position: relative;
+            width: 100%;
+            max-width: 550px;
+            height: 450px;
+            background: var(--gradient);
+            border-radius: 30px;
+            transform: rotate(-5deg);
+            box-shadow: 0 20px 60px rgba(220, 53, 69, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: white;
+        }
+        
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            background: var(--gradient);
+            border-radius: 30px;
+            opacity: 0.3;
+            filter: blur(20px);
+            z-index: -1;
+        }
+        
+        .btn-hero {
+            padding: 1.25rem 3rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary-hero {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        }
+        
+        .btn-primary-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(220, 53, 69, 0.6);
+        }
+        
+        .btn-outline-hero {
+            background: transparent;
+            border: 3px solid white;
+            color: white;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 6rem 0;
+            background: #f8f9fa;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 25px;
+            padding: 3rem 2rem;
+            height: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.4s;
+            border: 3px solid transparent;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 50px rgba(220, 53, 69, 0.3);
+        }
+        
+        .feature-icon {
+            width: 90px;
+            height: 90px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .feature-card p {
+            color: #6c757d;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        /* How It Works Section */
+        .how-it-works {
+            background: var(--dark);
+            color: white;
+            padding: 6rem 0;
+            position: relative;
+        }
+        
+        .step-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .step-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5);
+        }
+        
+        .step-card h4 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-card p {
+            color: #adb5bd;
+        }
+        
+        /* Services Section */
+        .services {
+            padding: 6rem 0;
+            background: white;
+        }
+        
+        .service-badge {
+            display: inline-flex;
+            align-items: center;
+            background: var(--gradient);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            margin: 0.75rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .service-badge:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(220, 53, 69, 0.5);
+        }
+        
+        .service-badge i {
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+        
+        /* CTA Section */
+        .cta {
+            background: var(--gradient);
+            color: white;
+            padding: 6rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .cta h2 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .cta p {
+            font-size: 1.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+        
+        .cta .btn {
+            background: white;
+            color: var(--primary);
+            padding: 1.5rem 4rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .cta .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        /* Section Titles */
+        .section-title {
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: #6c757d;
+            font-size: 1.25rem;
+            margin-bottom: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-lightning-charge-fill"></i> CarGuard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#why">Защо</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how">Как работи</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Услуги</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#demo">Демо</a></li>
+                </ul>
+                <div>
+                    <button class="btn btn-nav btn-login me-2">Вход</button>
+                    <button class="btn btn-nav btn-signup">Регистрация</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" style="margin-top: 84px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1>Твоят автомобил заслужава <span class="highlight">най-доброто</span></h1>
+                    <p>Революционна платформа за управление на всичко свързано с твоя автомобил</p>
+                    <button class="btn btn-primary-hero me-3">Започни безплатно</button>
+                    <button class="btn btn-outline-hero">Научи повече</button>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="hero-image mx-auto">
+                        <i class="bi bi-car-front-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="why">
+        <div class="container">
+            <h2 class="section-title">Защо CarGuard?</h2>
+            <p class="section-subtitle">Най-мощната система за управление на автомобили</p>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <h3>Светкавично бързо</h3>
+                        <p>Моментален достъп до всички данни за твоя автомобил от всяко устройство</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h3>Анализ на разходи</h3>
+                        <p>Виж точно колко харчиш и оптимизирай бюджета си</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <h3>AI напомняния</h3>
+                        <p>Интелигентна система, която знае кога автомобилът ти се нуждае от грижи</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how">
+        <div class="container">
+            <h2 class="section-title">Как работи?</h2>
+            <p class="section-subtitle">Просто. Бързо. Ефективно.</p>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h4>Регистрация</h4>
+                        <p>Създай профил за 30 секунди</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h4>Добави кола</h4>
+                        <p>Въведи данните на автомобила</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h4>Релаксирай</h4>
+                        <p>Ние ще се погрижим за напомнянията</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <h2 class="section-title">Всичко на едно място</h2>
+            <p class="section-subtitle">Следим всяка услуга за твоя автомобил</p>
+            <div class="text-center">
+                <span class="service-badge"><i class="bi bi-tools"></i> Технически преглед</span>
+                <span class="service-badge"><i class="bi bi-droplet-fill"></i> Смяна на масло</span>
+                <span class="service-badge"><i class="bi bi-circle-fill"></i> Гуми</span>
+                <span class="service-badge"><i class="bi bi-shield-fill-check"></i> Застраховка</span>
+                <span class="service-badge"><i class="bi bi-file-earmark-text-fill"></i> Регистрация</span>
+                <span class="service-badge"><i class="bi bi-wrench"></i> Ремонти</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Готов за промяна?</h2>
+            <p>Присъедини се към 10,000+ души, които вече управляват автомобилите си интелигентно</p>
+            <button class="btn">Стартирай безплатно</button>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

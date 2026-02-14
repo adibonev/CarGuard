@@ -11,7 +11,7 @@ const formatDate = (dateString) => {
 // Helper to format currency
 const formatCurrency = (amount) => {
   if (!amount && amount !== 0) return 'N/A';
-  return `${parseFloat(amount).toFixed(2)} BGN`;
+  return `${parseFloat(amount).toFixed(2)} €`;
 };
 
 // Service type translations

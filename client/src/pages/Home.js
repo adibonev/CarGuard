@@ -123,9 +123,7 @@ const Home = () => {
       <header className="home-header">
         <div className="header-container">
           <div className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="logo-orbit">
-              <img src={logoUrl} alt="CarGuard logo" className="logo-img" />
-            </div>
+            <img src={logoUrl} alt="CarGuard logo" className="logo-img" />
             <span>CarGuard</span>
           </div>
           
