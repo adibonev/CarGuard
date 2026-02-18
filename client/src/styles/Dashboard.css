@@ -14,12 +14,12 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow-x: hidden;
 }
 
 .dashboard-staging {
   min-height: 100vh;
   background: #f8f9fa;
+  overflow-x: hidden;
 }
 
 /* Tab Navigation */
@@ -485,47 +485,216 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 1rem;
+    padding: 0.75rem;
+    padding-bottom: 80px;
   }
-  
+
   .welcome-header {
-    padding: 2rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 14px;
+    margin-bottom: 1rem;
   }
-  
-  .welcome-header h1 {
-    font-size: 1.75rem;
-  }
-  
-  .welcome-header p {
-    font-size: 1rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-  
-  .quick-actions {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .section-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  
-  .tab-btn span:not(i) {
+
+  .welcome-header::before {
     display: none;
   }
-  
-  .tab-btn i {
+
+  .welcome-header h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .welcome-header p {
+    font-size: 0.85rem;
+  }
+
+  /* Stat cards — vertical layout on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.85rem 0.5rem;
+    border-radius: 12px;
+    border-left: none;
+    border-top: 4px solid var(--primary);
+    gap: 0.35rem;
+    grid-template-columns: unset;
+    grid-template-areas: unset;
+    column-gap: unset;
+  }
+
+  .stat-icon {
+    grid-area: unset;
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 0;
+  }
+
+  .stat-icon i {
+    font-size: 1.2rem !important;
+  }
+
+  .stat-label {
+    grid-area: unset;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    word-break: normal;
+    white-space: normal;
+    align-self: unset;
+    color: #6c757d;
+    font-weight: 600;
+  }
+
+  .stat-value {
+    grid-area: unset;
+    font-size: 1.4rem;
+    line-height: 1.1;
+    margin-bottom: 0;
+    align-self: unset;
+    word-break: normal;
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .quick-action-btn {
+    padding: 0.9rem 0.5rem;
+    border-radius: 12px;
+  }
+
+  .quick-action-btn i {
     font-size: 1.5rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .quick-action-btn h4 {
+    font-size: 0.8rem;
+  }
+
+  .section-card {
+    padding: 1rem;
+    border-radius: 14px;
+    margin-bottom: 1rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 0.65rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .cars-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .car-card {
+    padding: 1.1rem;
+    border-radius: 14px;
+  }
+
+  /* Hide desktop tab bar, show bottom nav instead */
+  .tab-navigation {
+    display: none;
+  }
+
+  .mobile-bottom-nav {
+    display: flex !important;
   }
 }
 
-@media (max-width: 576px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 400px) {
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .stat-icon i {
+    font-size: 1rem !important;
   }
 }
+
+/* Mobile bottom navigation bar */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #fff;
+  border-top: 2px solid #e9ecef;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+  height: 62px;
+  width: 100%;
+}
+
+.mobile-bottom-nav button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0.3rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #adb5bd;
+  font-size: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-bottom-nav button i {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.mobile-bottom-nav button.active {
+  color: #dc3545;
+}
+
+.mobile-bottom-nav button.active i {
+  color: #dc3545;
+}
+
+/* Navbar mobile tweaks */
+@media (max-width: 576px) {
+  .navbar.sticky-top {
+    padding: 0.6rem 1rem !important;
+  }
+}
+
+

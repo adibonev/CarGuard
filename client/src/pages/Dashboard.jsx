@@ -36,7 +36,6 @@ const Dashboard = () => {
   const [docUploading, setDocUploading] = useState(false);
 
   const { user, logout, updateReminderDays: updateReminderDaysContext, updateReminderEnabled: updateReminderEnabledContext, updateReminderSettings: updateReminderSettingsContext, isInitialized } = useAuth();
-  const logoUrl = '/logo.png';
 
   // COPY ALL HANDLER FUNCTIONS FROM ORIGINAL Dashboard.js
   // (All the functions from original are preserved here)
@@ -377,12 +376,12 @@ const Dashboard = () => {
   }
 
   return (
+    <>
     <div className="dashboard-staging">
       {/* BOOTSTRAP HEADER with original styling */}
       <nav className="navbar navbar-dark sticky-top" style={{background: 'linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', padding: '1rem 2rem'}}>
         <div className="container-fluid">
           <div className="navbar-brand d-flex align-items-center gap-2 mb-0">
-            <img src={logoUrl} alt="CarGuard" className="logo-img" style={{width: '40px', height: '40px', objectFit: 'contain'}} />
             <span style={{fontSize: '24px', fontWeight: '700'}}>CarGuard</span>
           </div>
           
@@ -422,6 +421,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile bottom navigation */}
 
       {/* Main Content */}
       <div className="dashboard-container">
@@ -1141,6 +1142,30 @@ const Dashboard = () => {
       )}
 
     </div>
+    {/* Mobile bottom navigation — outside dashboard-staging so position:fixed always works */}
+    <nav className="mobile-bottom-nav">
+      <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>
+        <i className="bi bi-speedometer2"></i>
+        <span>Overview</span>
+      </button>
+      <button className={activeTab === 'cars' ? 'active' : ''} onClick={() => setActiveTab('cars')}>
+        <i className="bi bi-car-front"></i>
+        <span>Vehicles</span>
+      </button>
+      <button className={activeTab === 'services' ? 'active' : ''} onClick={() => setActiveTab('services')}>
+        <i className="bi bi-wrench"></i>
+        <span>Services</span>
+      </button>
+      <button className={activeTab === 'documents' ? 'active' : ''} onClick={() => setActiveTab('documents')}>
+        <i className="bi bi-folder"></i>
+        <span>Documents</span>
+      </button>
+      <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+        <i className="bi bi-gear"></i>
+        <span>Settings</span>
+      </button>
+    </nav>
+    </>
   );
 };
 
