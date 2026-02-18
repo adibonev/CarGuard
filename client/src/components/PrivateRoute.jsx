@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = ({ children }) => {
   const { session, loading } = useAuth();
-  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
+  const logoUrl = '/logo.png';
 
   // Wait for app initialization before redirecting
   if (loading) {

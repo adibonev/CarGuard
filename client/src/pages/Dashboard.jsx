@@ -25,7 +25,7 @@ const Dashboard = () => {
   const [reminderEnabled, setReminderEnabled] = useState(true);
 
   const { user, logout, updateReminderDays: updateReminderDaysContext, updateReminderEnabled: updateReminderEnabledContext, isInitialized } = useAuth();
-  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
+  const logoUrl = '/logo.png';
 
   // COPY ALL HANDLER FUNCTIONS FROM ORIGINAL Dashboard.js
   // (All the functions from original are preserved here)

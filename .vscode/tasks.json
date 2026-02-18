@@ -31,7 +31,9 @@
       "type": "shell",
       "command": "npm",
       "args": ["start"],
-      "cwd": "${workspaceFolder}/client",
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      },
       "isBackground": true,
       "problemMatcher": {
         "pattern": {
@@ -42,8 +44,8 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": ".*webpack.*",
-          "endsPattern": ".*Compiled successfully.*"
+          "beginsPattern": ".*VITE v.*",
+          "endsPattern": ".*ready in.*"
         }
       },
       "presentation": {

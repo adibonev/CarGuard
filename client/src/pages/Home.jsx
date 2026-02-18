@@ -50,7 +50,7 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
+  const logoUrl = '/logo.png';
 
   const handleLogin = async (e) => {
     e.preventDefault();
