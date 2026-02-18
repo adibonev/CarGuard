@@ -44,8 +44,21 @@ const checkAndSendReminders = async () => {
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     
     // Only send reminders for these service types (ones that expire)
-    const reminderTypes = ['гражданска', 'винетка', 'преглед', 'каско', 'данък', 'пожарогасител'];
-
+      const reminderTypes = [
+        'civil_liability',
+        'vignette',
+        'inspection',
+        'casco',
+        'tax',
+        'fire_extinguisher',
+        // Legacy Bulgarian names (for old records)
+        'гражданска',
+        'винетка',
+        'преглед',
+        'каско',
+        'данък',
+        'пожарогасител'
+      ];
     for (const service of services) {
       // Skip service types that don't need reminders
       if (!reminderTypes.includes(service.service_type)) {
@@ -79,8 +92,10 @@ const checkAndSendReminders = async () => {
         continue;
       }
 
-      // Get user's reminder days setting (default 30)
-      const reminderDays = user.reminder_days || 30;
+      // Get per-type reminder days (falls back to global reminder_days, then 30)
+      const globalDays = user.reminder_days || 30;
+      const perTypeSettings = user.reminder_settings || {};
+      const reminderDays = perTypeSettings[service.service_type] ?? globalDays;
       const reminderDate = new Date(today.getTime() + reminderDays * 24 * 60 * 60 * 1000);
       const expiryDate = new Date(service.expiry_date);
       

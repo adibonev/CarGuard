@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendReminderEmail = async (userEmail, carInfo, serviceType, expiryDate) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'CarGuard <noreply@resend.dev>',
+      from: 'CarGuard <onboarding@resend.dev>',
       to: userEmail,
       subject: `🚗 Напомняне: ${serviceType} на ${carInfo.brand} ${carInfo.model} изтича скоро!`,
       html: `
