@@ -1,4 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+const SERVICE_OPTIONS = [
+  { value: 'repair',            icon: '🛠️', label: 'Ремонт' },
+  { value: 'maintenance',       icon: '🛢️', label: 'Поддръжка' },
+  { value: 'inspection',        icon: '🔧', label: 'Техн. преглед' },
+  { value: 'civil_liability',   icon: '🛡️', label: 'Гражданска' },
+  { value: 'casco',             icon: '💎', label: 'КАСКО' },
+  { value: 'vignette',          icon: '🛣️', label: 'Винетка' },
+  { value: 'tax',               icon: '💰', label: 'Данък МПС' },
+  { value: 'fire_extinguisher', icon: '🔴', label: 'Пожарогасител' },
+  { value: 'tires',             icon: '🛞', label: 'Гуми' },
+  { value: 'refuel',            icon: '⛽', label: 'Зареждане' },
+  { value: 'other',             icon: '📝', label: 'Друго' },
+];
+
+const FUEL_OPTIONS = [
+  { value: 'Benzin',   icon: '🔴', label: 'Бензин' },
+  { value: 'Diesel',   icon: '⚫', label: 'Дизел' },
+  { value: 'LPG',      icon: '🟡', label: 'Газ (LPG)' },
+  { value: 'Electric', icon: '⚡', label: 'Ток' },
+  { value: 'Methane',  icon: '🔵', label: 'Метан' },
+];
+
+const inputStyle = {
+  border: '1.5px solid #e9ecef',
+  borderRadius: '10px',
+  padding: '0.65rem 1rem',
+  fontSize: '0.95rem',
+  outline: 'none',
+  width: '100%',
+  background: '#fff',
+  transition: 'border-color 0.2s',
+  boxSizing: 'border-box',
+};
+
+const labelStyle = {
+  display: 'block',
+  fontWeight: 600,
+  fontSize: '0.82rem',
+  color: '#6c757d',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  marginBottom: '0.4rem',
+};
+
+const focusBorder = { borderColor: '#dc3545', boxShadow: '0 0 0 3px rgba(220,53,69,0.12)' };
+
+const FancyInput = ({ label, icon, children, style }) => (
+  <div style={{ marginBottom: '1.1rem', ...style }}>
+    <label style={labelStyle}>{icon && <span style={{ marginRight: 5 }}>{icon}</span>}{label}</label>
+    {children}
+  </div>
+);
 
 const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) => {
   const [formData, setFormData] = useState({
@@ -10,291 +63,308 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
     pricePerLiter: '',
     fuelType: 'Benzin',
     mileage: '',
-    file: null
+    file: null,
   });
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const serviceOptions = [
-    { value: 'repair', label: '🛠️ Repair' },
-    { value: 'maintenance', label: '🛢️ Maintenance (Oil/Filters)' },
-    { value: 'inspection', label: '🔧 Technical Inspection' },
-    { value: 'civil_liability', label: '🛡️ Civil Liability Insurance' },
-    { value: 'casco', label: '💎 CASCO' },
-    { value: 'vignette', label: '🛣️ Vignette' },
-    { value: 'tax', label: '💰 Tax' },
-    { value: 'fire_extinguisher', label: '🔴 Fire Extinguisher Check' },
-    { value: 'tires', label: '🛞 Tire Change' },
-    { value: 'refuel', label: '⛽ Refuel' },
-    { value: 'other', label: '📝 Other' }
-  ];
 
-  const fuelOptions = [
-    { value: 'Benzin', label: 'Gasoline' },
-    { value: 'Diesel', label: 'Diesel' },
-    { value: 'LPG', label: 'Gas (LPG)' },
-    { value: 'Electric', label: 'Electric' },
-    { value: 'Methane', label: 'Methane' }
-  ];
 
-  // Auto-calculate cost for refueling
   useEffect(() => {
     if (formData.serviceType === 'refuel') {
       const liters = parseFloat(formData.liters);
       const price = parseFloat(formData.pricePerLiter);
       if (!isNaN(liters) && !isNaN(price)) {
-        setFormData(prev => ({
-          ...prev,
-          cost: (liters * price).toFixed(2)
-        }));
+        setFormData(prev => ({ ...prev, cost: (liters * price).toFixed(2) }));
       }
     }
   }, [formData.liters, formData.pricePerLiter, formData.serviceType]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateFile = (file) => {
+    if (!file) return false;
+    if (file.size > 50 * 1024 * 1024) { alert('Файлът е твърде голям. Максимален размер: 50MB'); return false; }
+    const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) { alert('Невалиден формат. Позволени: PDF, JPG, PNG, WEBP'); return false; }
+    return true;
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Check file size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        alert('File is too large. Maximum size: 50MB');
-        e.target.value = '';
-        return;
-      }
-      // Check file type
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        alert('Invalid file format. Allowed: PDF, JPG, PNG, WEBP');
-        e.target.value = '';
-        return;
-      }
-      setFormData(prev => ({
-        ...prev,
-        file: file
-      }));
-    }
+    if (validateFile(file)) setFormData(prev => ({ ...prev, file }));
+    else if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (validateFile(file)) setFormData(prev => ({ ...prev, file }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.expiryDate) {
-      alert('Please select a date');
-      return;
-    }
-    if (!selectedCarId) {
-      alert('Please select a vehicle');
-      return;
-    }
-
+    if (!formData.expiryDate) { alert('Моля, изберете дата'); return; }
+    if (!selectedCarId) { alert('Моля, изберете автомобил'); return; }
     if (formData.serviceType === 'refuel' && (!formData.liters || !formData.fuelType)) {
-      alert('Please enter liters and fuel type.');
-        return;
+      alert('Моля, въведете литри и вид гориво.');
+      return;
     }
-    
-    // Create submission payload
-    const submitData = {
+    onSubmit({
       ...formData,
       expiryDate: new Date(formData.expiryDate).toISOString(),
       cost: parseFloat(formData.cost) || 0,
       liters: parseFloat(formData.liters) || null,
       pricePerLiter: parseFloat(formData.pricePerLiter) || null,
       mileage: parseInt(formData.mileage) || null,
-      file: formData.file // Keep the file object
-    };
-
-    onSubmit(submitData);
-    
-    // Reset form
+    });
     setFormData({
       serviceType: 'repair',
       expiryDate: new Date().toISOString().split('T')[0],
-      cost: '',
-      notes: '',
-      liters: '',
-      pricePerLiter: '',
-      fuelType: 'Benzin',
-      mileage: '',
-      file: null
+      cost: '', notes: '', liters: '', pricePerLiter: '',
+      fuelType: 'Benzin', mileage: '', file: null,
     });
   };
 
   return (
-    <form className="service-form" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+
+      {/* Vehicle selector */}
       {cars && cars.length > 0 && (
-        <div className="form-group">
-          <label>Vehicle</label>
+        <FancyInput label="Автомобил" icon="🚗">
           <select
+            style={{ ...inputStyle, cursor: 'pointer' }}
             value={selectedCarId || ''}
             onChange={(e) => onCarChange && onCarChange(e.target.value)}
             required
+            onFocus={e => Object.assign(e.target.style, focusBorder)}
+            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })}
           >
-            <option value="">-- Select vehicle --</option>
+            <option value="">— Избери автомобил —</option>
             {cars.map(car => (
               <option key={car.id} value={car.id}>
                 {car.brand} {car.model} ({car.year})
               </option>
             ))}
           </select>
-        </div>
+        </FancyInput>
       )}
-      <div className="form-group">
-        <label>Service type</label>
-        <select
-          name="serviceType"
-          value={formData.serviceType}
-          onChange={handleChange}
-          required
-        >
-          {serviceOptions.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="form-group">
-        <label>Date</label>
-        <input
-          type="date"
-          name="expiryDate"
-          value={formData.expiryDate}
-          onChange={handleChange}
-          required
-        />
+
+      {/* Service type — visual card grid */}
+      <div style={{ marginBottom: '1.4rem' }}>
+        <label style={labelStyle}>🔧 Вид услуга</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+          {SERVICE_OPTIONS.map(opt => {
+            const active = formData.serviceType === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, serviceType: opt.value }))}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.3rem',
+                  padding: '0.65rem 0.4rem',
+                  borderRadius: '12px',
+                  border: `2px solid ${active ? '#dc3545' : '#e9ecef'}`,
+                  background: active ? '#fff5f5' : '#f8f9fa',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  fontSize: '0.75rem',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? '#dc3545' : '#495057',
+                  lineHeight: 1.2,
+                  textAlign: 'center',
+                  boxShadow: active ? '0 2px 8px rgba(220,53,69,0.18)' : 'none',
+                }}
+              >
+                <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{opt.icon}</span>
+                <span>{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="form-group">
-        <label>Mileage (km) - optional</label>
-        <input
-          type="number"
-          name="mileage"
-          value={formData.mileage}
-          onChange={handleChange}
-          placeholder="e.g. 125000"
-          min="0"
-        />
+      {/* Date & Mileage */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
+        <FancyInput label="Дата" icon="📅" style={{ marginBottom: 0 }}>
+          <input type="date" name="expiryDate" value={formData.expiryDate} onChange={handleChange} required
+            style={inputStyle}
+            onFocus={e => Object.assign(e.target.style, focusBorder)}
+            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+        </FancyInput>
+        <FancyInput label="Пробег (км)" icon="🛣️" style={{ marginBottom: 0 }}>
+          <input type="number" name="mileage" value={formData.mileage} onChange={handleChange}
+            placeholder="125000" min="0" style={inputStyle}
+            onFocus={e => Object.assign(e.target.style, focusBorder)}
+            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+        </FancyInput>
       </div>
 
+      {/* Refuel fields */}
       {formData.serviceType === 'refuel' ? (
         <>
-            <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
-                <div className="form-group" style={{ flex: 1 }}>
-                    <label>Liters (L)</label>
-                    <input
-                    type="number"
-                    name="liters"
-                    value={formData.liters}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    />
-                </div>
-                <div className="form-group" style={{ flex: 1 }}>
-                    <label>Price per liter (€)</label>
-                    <input
-                    type="number"
-                    name="pricePerLiter"
-                    value={formData.pricePerLiter}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    />
-                </div>
+          <FancyInput label="Вид гориво" icon="⛽">
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {FUEL_OPTIONS.map(opt => {
+                const active = formData.fuelType === opt.value;
+                return (
+                  <button key={opt.value} type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, fuelType: opt.value }))}
+                    style={{
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      border: `2px solid ${active ? '#dc3545' : '#e9ecef'}`,
+                      background: active ? '#dc3545' : '#f8f9fa',
+                      color: active ? '#fff' : '#495057',
+                      fontWeight: active ? 700 : 500,
+                      fontSize: '0.83rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {opt.icon} {opt.label}
+                  </button>
+                );
+              })}
             </div>
-            <div className="form-group">
-                <label>Fuel type</label>
-                <select
-                    name="fuelType"
-                    value={formData.fuelType}
-                    onChange={handleChange}
-                >
-                    {fuelOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-            </div>
-             <div className="form-group">
-                <label>Total price (€)</label>
-                <input
-                type="number"
-                name="cost"
-                value={formData.cost}
-                onChange={handleChange}
-                placeholder="0.00"
-                step="0.01"
-                required
-                />
-            </div>
+          </FancyInput>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
+            <FancyInput label="Литри (L)" icon="💧" style={{ marginBottom: 0 }}>
+              <input type="number" name="liters" value={formData.liters} onChange={handleChange}
+                placeholder="0.00" step="0.01" style={inputStyle}
+                onFocus={e => Object.assign(e.target.style, focusBorder)}
+                onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+            </FancyInput>
+            <FancyInput label="Цена / л (€)" icon="💶" style={{ marginBottom: 0 }}>
+              <input type="number" name="pricePerLiter" value={formData.pricePerLiter} onChange={handleChange}
+                placeholder="0.00" step="0.01" style={inputStyle}
+                onFocus={e => Object.assign(e.target.style, focusBorder)}
+                onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+            </FancyInput>
+            <FancyInput label="Обща сума (€)" icon="🧾" style={{ marginBottom: 0 }}>
+              <input type="number" name="cost" value={formData.cost} onChange={handleChange}
+                placeholder="0.00" step="0.01" required
+                style={{ ...inputStyle, background: '#fff5f5', fontWeight: 700, color: '#dc3545' }}
+                onFocus={e => Object.assign(e.target.style, { ...focusBorder, background: '#fff5f5' })}
+                onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+            </FancyInput>
+          </div>
         </>
       ) : (
-        <div className="form-group">
-            <label>Price (€)</label>
-            <input
-            type="number"
-            name="cost"
-            value={formData.cost}
-            onChange={handleChange}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-            />
+        <FancyInput label="Цена (€)" icon="💶">
+          <input type="number" name="cost" value={formData.cost} onChange={handleChange}
+            placeholder="0.00" min="0" step="0.01" style={inputStyle}
+            onFocus={e => Object.assign(e.target.style, focusBorder)}
+            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+        </FancyInput>
+      )}
+
+      {/* Notes */}
+      {['repair', 'other', 'maintenance'].includes(formData.serviceType) && (
+        <FancyInput
+          label={formData.serviceType === 'repair' ? 'Описание на ремонта' : 'Бележки'}
+          icon="📋"
+        >
+          <textarea name="notes" value={formData.notes} onChange={handleChange}
+            placeholder={formData.serviceType === 'repair' ? 'Какво е сменено/ремонтирано?' : 'Бележки...'}
+            rows={3}
+            style={{ ...inputStyle, resize: 'vertical', minHeight: '80px' }}
+            onFocus={e => Object.assign(e.target.style, { ...focusBorder, resize: 'vertical', minHeight: '80px' })}
+            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none', resize: 'vertical', minHeight: '80px' })}
+          />
+        </FancyInput>
+      )}
+
+      {/* File upload — drag & drop */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <label style={labelStyle}>
+          📎 Прикачи документ{' '}
+          <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#adb5bd' }}>– незадължително</span>
+        </label>
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          style={{
+            border: `2px dashed ${dragOver ? '#dc3545' : formData.file ? '#28a745' : '#dee2e6'}`,
+            borderRadius: '12px',
+            padding: '1.2rem',
+            textAlign: 'center',
+            cursor: 'pointer',
+            background: dragOver ? '#fff5f5' : formData.file ? '#f0fff4' : '#fafafa',
+            transition: 'all 0.2s',
+          }}
+        >
+          {formData.file ? (
+            <div>
+              <span style={{ fontSize: '1.5rem' }}>✅</span>
+              <div style={{ fontWeight: 600, color: '#198754', marginTop: '0.3rem' }}>{formData.file.name}</div>
+              <div style={{ fontSize: '0.78rem', color: '#6c757d' }}>({(formData.file.size / 1024).toFixed(0)} KB) — Кликни за смяна</div>
+            </div>
+          ) : (
+            <div>
+              <span style={{ fontSize: '1.8rem' }}>📂</span>
+              <div style={{ fontWeight: 600, color: '#495057', marginTop: '0.3rem' }}>Плъзни файл тук или кликни</div>
+              <div style={{ fontSize: '0.78rem', color: '#adb5bd', marginTop: '0.2rem' }}>PDF, JPG, PNG, WEBP · макс. 50MB</div>
+            </div>
+          )}
         </div>
-      )}
-
-      {(formData.serviceType === 'repair' || formData.serviceType === 'other') && (
-         <div className="form-group">
-            <label>Description</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder={formData.serviceType === 'repair' ? "What was replaced?" : "Description..."}
-              rows="3"
-            />
-         </div>
-      )}
-      
-      {formData.serviceType === 'maintenance' && (
-         <div className="form-group">
-            <label>Comment (optional)</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Notes..."
-              rows="2"
-            />
-         </div>
-      )}
-
-      <div className="form-group">
-        <label>📎 Attach document (optional)</label>
-        <input
-          type="file"
-          onChange={handleFileChange}
-          accept=".pdf,.jpg,.jpeg,.png,.webp"
-        />
-        {formData.file && (
-          <small style={{ display: 'block', marginTop: '5px', color: '#28a745' }}>
-            ✓ Selected: {formData.file.name}
-          </small>
-        )}
-        <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
-          Allowed formats: PDF, JPG, PNG, WEBP (max 50MB)
-        </small>
+        <input ref={fileInputRef} type="file" onChange={handleFileChange}
+          accept=".pdf,.jpg,.jpeg,.png,.webp" style={{ display: 'none' }} />
       </div>
 
-      <div className="form-buttons">
-        <button type="submit" className="submit-btn">Add</button>
-        <button type="button" className="cancel-btn" onClick={onCancel}>Cancel</button>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid #f0f0f0' }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{
+            padding: '0.6rem 1.5rem',
+            borderRadius: '10px',
+            border: '1.5px solid #dee2e6',
+            background: '#fff',
+            color: '#6c757d',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: '0.92rem',
+          }}
+          onMouseEnter={e => e.target.style.borderColor = '#adb5bd'}
+          onMouseLeave={e => e.target.style.borderColor = '#dee2e6'}
+        >
+          Отказ
+        </button>
+        <button
+          type="submit"
+          style={{
+            padding: '0.6rem 1.8rem',
+            borderRadius: '10px',
+            border: 'none',
+            background: 'linear-gradient(135deg, #dc3545, #c82333)',
+            color: '#fff',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontSize: '0.92rem',
+            boxShadow: '0 4px 12px rgba(220,53,69,0.3)',
+          }}
+          onMouseEnter={e => e.target.style.boxShadow = '0 6px 16px rgba(220,53,69,0.45)'}
+          onMouseLeave={e => e.target.style.boxShadow = '0 4px 12px rgba(220,53,69,0.3)'}
+        >
+          ➕ Добави услуга
+        </button>
       </div>
     </form>
   );
 };
 
 export default ServiceForm;
+

@@ -23,6 +23,9 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [reminderDays, setReminderDays] = useState(30);
   const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [showCarPicker, setShowCarPicker] = useState(false);
+  const [carPickerMode, setCarPickerMode] = useState(null); // 'service' | 'pdf'
+  const [carPickerSelected, setCarPickerSelected] = useState(null);
 
   const { user, logout, updateReminderDays: updateReminderDaysContext, updateReminderEnabled: updateReminderEnabledContext, isInitialized } = useAuth();
   const logoUrl = '/logo.png';
@@ -156,6 +159,10 @@ const Dashboard = () => {
     }
   };
 
+  const openCarDetail = (car) => {
+    setSelectedCar(car);
+  };
+
   const handleCarChangeForService = (carId) => {
     const car = cars.find(c => c.id === parseInt(carId));
     if (car) {
@@ -212,18 +219,31 @@ const Dashboard = () => {
     }
   };
 
+  const openCarPicker = (mode) => {
+    setCarPickerSelected(selectedCar || cars[0] || null);
+    setCarPickerMode(mode);
+    setShowCarPicker(true);
+  };
+
+  const handleCarPickerConfirm = async () => {
+    if (!carPickerSelected) return;
+    setShowCarPicker(false);
+    if (carPickerMode === 'service') {
+      setSelectedCar(carPickerSelected);
+      setActiveTab('services');
+      setShowServiceForm(true);
+    } else if (carPickerMode === 'pdf') {
+      try {
+        await generateCarReport(carPickerSelected, allServices.filter(s => s.carId === carPickerSelected.id));
+      } catch (err) {
+        console.error('Error generating PDF:', err);
+        alert('Error generating PDF: ' + err.message);
+      }
+    }
+  };
+
   const handleDownloadPDF = async () => {
-    if (!selectedCar) {
-      alert('Please select a vehicle');
-      return;
-    }
-    
-    try {
-      await generateCarReport(selectedCar, allServices.filter(s => s.carId === selectedCar.id));
-    } catch (err) {
-      console.error('Error generating PDF:', err);
-      alert('Error generating PDF: ' + err.message);
-    }
+    openCarPicker('pdf');
   };
 
   const handleDeleteService = async (serviceId) => {
@@ -403,11 +423,11 @@ const Dashboard = () => {
                 <i className="bi bi-plus-circle-fill"></i>
                 <h4>Добави автомобил</h4>
               </div>
-              <div className="quick-action-btn" onClick={() => { setActiveTab('services'); setShowServiceForm(true); }}>
+              <div className="quick-action-btn" onClick={() => openCarPicker('service')}>
                 <i className="bi bi-wrench"></i>
                 <h4>Добави услуга</h4>
               </div>
-              <div className="quick-action-btn" onClick={handleDownloadPDF}>
+              <div className="quick-action-btn" onClick={() => openCarPicker('pdf')}>
                 <i className="bi bi-file-pdf"></i>
                 <h4>Генерирай отчет</h4>
               </div>
@@ -456,8 +476,12 @@ const Dashboard = () => {
                 </div>
                 <div className="cars-grid">
                     {cars.slice(0, 3).map((car, index) => (
-                      <div key={car.id} className={`car-card ${selectedCar?.id === car.id ? 'selected' : ''}`} onClick={() => setSelectedCar(car)}>
-                        <i className="car-icon bi bi-car-front-fill"></i>
+                      <div key={car.id} className="car-card">
+                        {getBrandLogo(car.brand) ? (
+                          <img src={getBrandLogo(car.brand)} alt={car.brand} className="car-icon" style={{width:'48px', height:'48px', objectFit:'contain'}} />
+                        ) : (
+                          <i className="car-icon bi bi-car-front-fill"></i>
+                        )}
                         <h3>{car.brand} {car.model}</h3>
                         <div className="car-info-item">
                           <i className="bi bi-calendar-check"></i>
@@ -496,10 +520,11 @@ const Dashboard = () => {
                 <p className="text-muted">Няма добавени автомобили. Кликнете "Добави кола" за да започнете!</p>
               </div>
             ) : (
+              <>
               <div className="row g-4">
                 {cars.map(car => (
                   <div key={car.id} className="col-md-4">
-                    <div className={`card car-card ${selectedCar?.id === car.id ? 'border-danger' : ''}`} onClick={() => setSelectedCar(car)}>
+                    <div className={`card car-card ${selectedCar?.id === car.id ? 'border-danger' : ''}`} onClick={() => openCarDetail(car)} style={{cursor:'pointer', borderWidth: selectedCar?.id === car.id ? '2px' : '1px'}}>
                       <div className="card-body">
                         <div className="d-flex align-items-center justify-content-between mb-3">
                           <div className="d-flex align-items-center gap-3">
@@ -535,6 +560,91 @@ const Dashboard = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Inline Car Detail Panel - Cars Tab */}
+              {selectedCar && (
+                <div style={{marginTop:'2rem', background:'#fff', borderRadius:'16px', border:'1px solid #e9ecef', boxShadow:'0 4px 20px rgba(0,0,0,0.08)', overflow:'hidden'}}>
+                  <div style={{background:'linear-gradient(135deg, #dc3545 0%, #c82333 100%)', padding:'1.25rem 1.5rem', display:'flex', alignItems:'center', gap:'1rem'}}>
+                    {getBrandLogo(selectedCar.brand) && (
+                      <img src={getBrandLogo(selectedCar.brand)} alt={selectedCar.brand} style={{width:'48px', height:'48px', objectFit:'contain', background:'#fff', borderRadius:'8px', padding:'4px'}} />
+                    )}
+                    <div style={{color:'#fff'}}>
+                      <div style={{fontWeight:700, fontSize:'1.2rem'}}>{selectedCar.brand} {selectedCar.model}</div>
+                      <div style={{opacity:0.85, fontSize:'0.88rem'}}>{selectedCar.year} г. &middot; {selectedCar.licensePlate}</div>
+                    </div>
+                  </div>
+                  <div style={{padding:'1.5rem'}}>
+                    <h6 style={{fontWeight:700, color:'#dc3545', marginBottom:'1rem'}}><i className="bi bi-info-circle me-2"></i>Основна информация</h6>
+                    <div className="row g-3 mb-4">
+                      {[
+                        { icon: 'bi-calendar2', label: 'Година', value: selectedCar.year },
+                        { icon: 'bi-hash', label: 'Рег. номер', value: selectedCar.licensePlate },
+                        { icon: 'bi-upc-scan', label: 'ВИН', value: selectedCar.vin },
+                        { icon: 'bi-lightning-charge', label: 'Тип двигател', value: selectedCar.engineType },
+                        { icon: 'bi-speedometer2', label: 'Конски сили', value: selectedCar.horsepower ? `${selectedCar.horsepower} к.с.` : null },
+                        { icon: 'bi-fuel-pump', label: 'Гориво', value: selectedCar.fuelType },
+                        { icon: 'bi-speedometer', label: 'Пробег', value: selectedCar.mileage ? `${Number(selectedCar.mileage).toLocaleString()} км` : null },
+                        { icon: 'bi-palette', label: 'Цвят', value: selectedCar.color },
+                      ].filter(f => f.value).map((field, i) => (
+                        <div key={i} className="col-6 col-md-3">
+                          <div style={{background:'#f8f9fa', borderRadius:'10px', padding:'0.75rem 1rem'}}>
+                            <div style={{fontSize:'0.72rem', color:'#6c757d', marginBottom:'2px'}}><i className={`bi ${field.icon} me-1`}></i>{field.label}</div>
+                            <div style={{fontWeight:600, color:'#1a1a1a'}}>{field.value}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {(selectedCar.tireWidth || selectedCar.tireBrand || selectedCar.tireSeason) && (
+                      <>
+                        <h6 style={{fontWeight:700, color:'#dc3545', marginBottom:'1rem'}}><i className="bi bi-circle me-2"></i>Гуми</h6>
+                        <div className="row g-3 mb-4">
+                          {[
+                            { icon: 'bi-arrows-expand', label: 'Размер', value: [selectedCar.tireWidth, selectedCar.tireHeight, selectedCar.tireDiameter].filter(Boolean).join('/') || null },
+                            { icon: 'bi-tag', label: 'Марка гуми', value: selectedCar.tireBrand },
+                            { icon: 'bi-thermometer-half', label: 'Сезон', value: selectedCar.tireSeason },
+                            { icon: 'bi-calendar3', label: 'DOT', value: selectedCar.tireDot },
+                          ].filter(f => f.value).map((field, i) => (
+                            <div key={i} className="col-6 col-md-3">
+                              <div style={{background:'#f8f9fa', borderRadius:'10px', padding:'0.75rem 1rem'}}>
+                                <div style={{fontSize:'0.72rem', color:'#6c757d', marginBottom:'2px'}}><i className={`bi ${field.icon} me-1`}></i>{field.label}</div>
+                                <div style={{fontWeight:600, color:'#1a1a1a'}}>{field.value}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    <h6 style={{fontWeight:700, color:'#dc3545', marginBottom:'1rem'}}><i className="bi bi-wrench me-2"></i>Услуги</h6>
+                    {services.length === 0 ? (
+                      <div style={{color:'#6c757d', padding:'1rem 0'}}>Няма добавени услуги</div>
+                    ) : (
+                      <div className="d-flex flex-column gap-2">
+                        {services.map(service => {
+                          const status = isExpiringType(service.serviceType) ? getServiceStatus(service.expiryDate) : null;
+                          const statusColor = status?.status === 'expired' ? '#dc3545' : status?.status === 'warning' ? '#fd7e14' : '#198754';
+                          return (
+                            <div key={service.id} style={{background:'#f8f9fa', borderRadius:'10px', padding:'0.75rem 1rem', borderLeft:`4px solid ${status ? statusColor : '#dee2e6'}`}}>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div>
+                                  <div style={{fontWeight:600}}>{getServiceIcon(service.serviceType)} {getServiceName(service.serviceType)}</div>
+                                  <div style={{fontSize:'0.82rem', color:'#6c757d'}}>
+                                    {service.expiryDate && <span>{isExpiringType(service.serviceType) ? 'Изтича:' : 'Дата:'} {new Date(service.expiryDate).toLocaleDateString('bg-BG')}</span>}
+                                    {service.cost > 0 && <span className="ms-3">💰 {service.cost} €</span>}
+                                    {service.mileage > 0 && <span className="ms-3">🛣️ {Number(service.mileage).toLocaleString()} км</span>}
+                                  </div>
+                                  {service.notes && <div style={{fontSize:'0.8rem', color:'#495057', marginTop:'2px'}}>{service.notes}</div>}
+                                </div>
+                                {status && <span style={{fontSize:'0.75rem', fontWeight:600, color:statusColor, whiteSpace:'nowrap'}}>{status.text}</span>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </div>
         )}
@@ -553,15 +663,19 @@ const Dashboard = () => {
               <div className="alert alert-info">Моля, изберете автомобил първо</div>
             ) : (
               <>
-                <div className="card mb-4">
-                  <div className="card-body">
-                    <label className="form-label">Избери автомобил:</label>
-                    <select className="form-select" value={selectedCar?.id || ''} onChange={(e) => handleCarChangeForService(e.target.value)}>
-                      {cars.map(car => (
-                        <option key={car.id} value={car.id}>{car.brand} {car.model} - {car.licensePlate}</option>
-                      ))}
-                    </select>
+                <div className="d-flex align-items-center gap-3 mb-4 p-3" style={{background:'#f8f9fa', borderRadius:'12px', border:'1px solid #e9ecef'}}>
+                  {getBrandLogo(selectedCar.brand) && (
+                    <img src={getBrandLogo(selectedCar.brand)} alt={selectedCar.brand} style={{width:'40px', height:'40px', objectFit:'contain'}} />
+                  )}
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700}}>{selectedCar.brand} {selectedCar.model}</div>
+                    <div style={{fontSize:'0.85rem', color:'#6c757d'}}>{selectedCar.licensePlate}</div>
                   </div>
+                  <select className="form-select" style={{width:'auto'}} value={selectedCar?.id || ''} onChange={(e) => handleCarChangeForService(e.target.value)}>
+                    {cars.map(car => (
+                      <option key={car.id} value={car.id}>{car.brand} {car.model} - {car.licensePlate}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="card">
@@ -707,6 +821,59 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Car Picker Modal */}
+      {showCarPicker && (
+        <div className="modal show d-block" style={{background:'rgba(0,0,0,0.5)'}} onClick={() => setShowCarPicker(false)}>
+          <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
+            <div className="modal-content" style={{borderRadius:'16px', overflow:'hidden'}}>
+              <div className="modal-header" style={{background:'linear-gradient(135deg, #dc3545 0%, #c82333 100%)', color:'#fff', border:'none'}}>
+                <h5 className="modal-title fw-bold">
+                  {carPickerMode === 'service' ? '🔧 Избери автомобил за услуга' : '📄 Избери автомобил за отчет'}
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowCarPicker(false)}></button>
+              </div>
+              <div className="modal-body p-3">
+                <div className="d-flex flex-column gap-2">
+                  {cars.map(car => (
+                    <div
+                      key={car.id}
+                      onClick={() => setCarPickerSelected(car)}
+                      style={{
+                        display:'flex', alignItems:'center', gap:'1rem',
+                        padding:'0.85rem 1rem', borderRadius:'12px', cursor:'pointer',
+                        border: `2px solid ${carPickerSelected?.id === car.id ? '#dc3545' : '#e9ecef'}`,
+                        background: carPickerSelected?.id === car.id ? '#fff5f5' : '#f8f9fa',
+                        transition:'all 0.15s'
+                      }}
+                    >
+                      {getBrandLogo(car.brand) ? (
+                        <img src={getBrandLogo(car.brand)} alt={car.brand} style={{width:'38px', height:'38px', objectFit:'contain'}} />
+                      ) : (
+                        <i className="bi bi-car-front-fill" style={{fontSize:'1.8rem', color:'#6c757d'}}></i>
+                      )}
+                      <div style={{flex:1}}>
+                        <div style={{fontWeight:700, color:'#1a1a1a'}}>{car.brand} {car.model}</div>
+                        <div style={{fontSize:'0.82rem', color:'#6c757d'}}>{car.year} г. · {car.licensePlate}</div>
+                      </div>
+                      {carPickerSelected?.id === car.id && (
+                        <i className="bi bi-check-circle-fill" style={{color:'#dc3545', fontSize:'1.2rem'}}></i>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="modal-footer" style={{border:'none'}}>
+                <button className="btn btn-outline-secondary" onClick={() => setShowCarPicker(false)}>Отказ</button>
+                <button className="btn btn-danger" disabled={!carPickerSelected} onClick={handleCarPickerConfirm}>
+                  {carPickerMode === 'service' ? '➕ Добави услуга' : '📄 Генерирай отчет'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
