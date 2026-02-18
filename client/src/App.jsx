@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import DashboardStaging from './pages/DashboardStaging';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AuthCallback from './pages/AuthCallback';
@@ -28,14 +27,6 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/dashboard-staging"
-            element={
-              <PrivateRoute>
-                <DashboardStaging />
               </PrivateRoute>
             }
           />

@@ -11,14 +11,18 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.8.0",
-    "react-scripts": "5.0.1",
     "recharts": "^3.6.0"
   },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.2.0"
+  },
   "scripts": {
-    "start": "set NODE_ENV=development && react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "eslintConfig": {
     "extends": [
