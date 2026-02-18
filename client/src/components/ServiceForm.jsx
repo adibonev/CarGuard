@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 
 const SERVICE_OPTIONS = [
-  { value: 'repair',            icon: '🛠️', label: 'Ремонт' },
-  { value: 'maintenance',       icon: '🛢️', label: 'Поддръжка' },
-  { value: 'inspection',        icon: '🔧', label: 'Техн. преглед' },
-  { value: 'civil_liability',   icon: '🛡️', label: 'Гражданска' },
-  { value: 'casco',             icon: '💎', label: 'КАСКО' },
-  { value: 'vignette',          icon: '🛣️', label: 'Винетка' },
-  { value: 'tax',               icon: '💰', label: 'Данък МПС' },
-  { value: 'fire_extinguisher', icon: '🔴', label: 'Пожарогасител' },
-  { value: 'tires',             icon: '🛞', label: 'Гуми' },
-  { value: 'refuel',            icon: '⛽', label: 'Зареждане' },
-  { value: 'other',             icon: '📝', label: 'Друго' },
+  { value: 'repair',            icon: '🛠️', label: 'Repair' },
+  { value: 'maintenance',       icon: '🛢️', label: 'Maintenance' },
+  { value: 'inspection',        icon: '🔧', label: 'Yearly Inspection' },
+  { value: 'civil_liability',   icon: '🛡️', label: 'Civil liability' },
+  { value: 'casco',             icon: '💎', label: 'Casco Insurance' },
+  { value: 'vignette',          icon: '🛣️', label: 'Vignette' },
+  { value: 'tax',               icon: '💰', label: 'Vehicle tax' },
+  { value: 'fire_extinguisher', icon: '🔴', label: 'Fire extinguisher' },
+  { value: 'tires',             icon: 'svg-tire', label: 'Tires' },
+  { value: 'refuel',            icon: '⛽', label: 'Refuel' },
+  { value: 'other',             icon: '📝', label: 'Other' },
 ];
 
 const FUEL_OPTIONS = [
-  { value: 'Benzin',   icon: '🔴', label: 'Бензин' },
-  { value: 'Diesel',   icon: '⚫', label: 'Дизел' },
-  { value: 'LPG',      icon: '🟡', label: 'Газ (LPG)' },
-  { value: 'Electric', icon: '⚡', label: 'Ток' },
-  { value: 'Methane',  icon: '🔵', label: 'Метан' },
+  { value: 'Benzin',   icon: '🔴', label: 'Petrol' },
+  { value: 'Diesel',   icon: '⚫', label: 'Diesel' },
+  { value: 'LPG',      icon: '🟡', label: 'LPG' },
+  { value: 'Electric', icon: '⚡', label: 'Electric' },
+  { value: 'Methane',  icon: '🔵', label: 'Methane' },
 ];
 
 const inputStyle = {
@@ -87,9 +87,9 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
 
   const validateFile = (file) => {
     if (!file) return false;
-    if (file.size > 50 * 1024 * 1024) { alert('Файлът е твърде голям. Максимален размер: 50MB'); return false; }
+    if (file.size > 50 * 1024 * 1024) { alert('File too large. Max 50MB.'); return false; }
     const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowed.includes(file.type)) { alert('Невалиден формат. Позволени: PDF, JPG, PNG, WEBP'); return false; }
+    if (!allowed.includes(file.type)) { alert('Invalid format. Allowed: PDF, JPG, PNG, WEBP'); return false; }
     return true;
   };
 
@@ -108,10 +108,10 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.expiryDate) { alert('Моля, изберете дата'); return; }
-    if (!selectedCarId) { alert('Моля, изберете автомобил'); return; }
+    if (!formData.expiryDate) { alert('Please select a date'); return; }
+    if (!selectedCarId) { alert('Please select a vehicle'); return; }
     if (formData.serviceType === 'refuel' && (!formData.liters || !formData.fuelType)) {
-      alert('Моля, въведете литри и вид гориво.');
+      alert('Please enter liters and fuel type.');
       return;
     }
     onSubmit({
@@ -135,7 +135,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
 
       {/* Vehicle selector */}
       {cars && cars.length > 0 && (
-        <FancyInput label="Автомобил" icon="🚗">
+        <FancyInput label="Vehicle" icon="🚗">
           <select
             style={{ ...inputStyle, cursor: 'pointer' }}
             value={selectedCarId || ''}
@@ -144,7 +144,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
             onFocus={e => Object.assign(e.target.style, focusBorder)}
             onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })}
           >
-            <option value="">— Избери автомобил —</option>
+            <option value="">— Select vehicle —</option>
             {cars.map(car => (
               <option key={car.id} value={car.id}>
                 {car.brand} {car.model} ({car.year})
@@ -156,7 +156,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
 
       {/* Service type — visual card grid */}
       <div style={{ marginBottom: '1.4rem' }}>
-        <label style={labelStyle}>🔧 Вид услуга</label>
+        <label style={labelStyle}>🔧 Service Type</label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
           {SERVICE_OPTIONS.map(opt => {
             const active = formData.serviceType === opt.value;
@@ -185,7 +185,20 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                   boxShadow: active ? '0 2px 8px rgba(220,53,69,0.18)' : 'none',
                 }}
               >
-                <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{opt.icon}</span>
+                <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>
+                  {opt.icon === 'svg-tire'
+                    ? <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="10"/>
+                        <circle cx="50" cy="50" r="22" stroke="currentColor" strokeWidth="8"/>
+                        <line x1="50" y1="28" x2="50" y2="72" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
+                        <line x1="28" y1="50" x2="72" y2="50" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
+                        <line x1="35" y1="35" x2="65" y2="65" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
+                        <line x1="65" y1="35" x2="35" y2="65" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
+                      </svg>
+                    : opt.icon.startsWith('bi-')
+                    ? <i className={`bi ${opt.icon}`} style={{ fontSize: '1.4rem' }}></i>
+                    : opt.icon}
+                </span>
                 <span>{opt.label}</span>
               </button>
             );
@@ -194,25 +207,32 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       </div>
 
       {/* Date & Mileage */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
-        <FancyInput label="Дата" icon="📅" style={{ marginBottom: 0 }}>
-          <input type="date" name="expiryDate" value={formData.expiryDate} onChange={handleChange} required
-            style={inputStyle}
-            onFocus={e => Object.assign(e.target.style, focusBorder)}
-            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
-        </FancyInput>
-        <FancyInput label="Пробег (км)" icon="🛣️" style={{ marginBottom: 0 }}>
-          <input type="number" name="mileage" value={formData.mileage} onChange={handleChange}
-            placeholder="125000" min="0" style={inputStyle}
-            onFocus={e => Object.assign(e.target.style, focusBorder)}
-            onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
-        </FancyInput>
-      </div>
+      {(() => {
+        const hideMileage = ['vignette', 'tax', 'fire_extinguisher', 'refuel'].includes(formData.serviceType);
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: hideMileage ? '1fr' : '1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
+            <FancyInput label="Date" icon="📅" style={{ marginBottom: 0 }}>
+              <input type="date" name="expiryDate" value={formData.expiryDate} onChange={handleChange} required
+                style={inputStyle}
+                onFocus={e => Object.assign(e.target.style, focusBorder)}
+                onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+            </FancyInput>
+            {!hideMileage && (
+              <FancyInput label="Mileage (km)" icon="🛣️" style={{ marginBottom: 0 }}>
+                <input type="number" name="mileage" value={formData.mileage} onChange={handleChange}
+                  placeholder="125000" min="0" style={inputStyle}
+                  onFocus={e => Object.assign(e.target.style, focusBorder)}
+                  onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+              </FancyInput>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Refuel fields */}
       {formData.serviceType === 'refuel' ? (
         <>
-          <FancyInput label="Вид гориво" icon="⛽">
+          <FancyInput label="Fuel Type" icon="⛽">
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {FUEL_OPTIONS.map(opt => {
                 const active = formData.fuelType === opt.value;
@@ -237,30 +257,40 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
               })}
             </div>
           </FancyInput>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
-            <FancyInput label="Литри (L)" icon="💧" style={{ marginBottom: 0 }}>
-              <input type="number" name="liters" value={formData.liters} onChange={handleChange}
-                placeholder="0.00" step="0.01" style={inputStyle}
-                onFocus={e => Object.assign(e.target.style, focusBorder)}
-                onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
-            </FancyInput>
-            <FancyInput label="Цена / л (€)" icon="💶" style={{ marginBottom: 0 }}>
-              <input type="number" name="pricePerLiter" value={formData.pricePerLiter} onChange={handleChange}
-                placeholder="0.00" step="0.01" style={inputStyle}
-                onFocus={e => Object.assign(e.target.style, focusBorder)}
-                onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
-            </FancyInput>
-            <FancyInput label="Обща сума (€)" icon="🧾" style={{ marginBottom: 0 }}>
+          {formData.fuelType === 'Electric' ? (
+            <FancyInput label="Cost kW (€)" icon="⚡" style={{ marginBottom: '1.1rem' }}>
               <input type="number" name="cost" value={formData.cost} onChange={handleChange}
                 placeholder="0.00" step="0.01" required
                 style={{ ...inputStyle, background: '#fff5f5', fontWeight: 700, color: '#dc3545' }}
                 onFocus={e => Object.assign(e.target.style, { ...focusBorder, background: '#fff5f5' })}
                 onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
             </FancyInput>
-          </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
+              <FancyInput label="Liters (L)" icon="💧" style={{ marginBottom: 0 }}>
+                <input type="number" name="liters" value={formData.liters} onChange={handleChange}
+                  placeholder="0.00" step="0.01" style={inputStyle}
+                  onFocus={e => Object.assign(e.target.style, focusBorder)}
+                  onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+              </FancyInput>
+              <FancyInput label="Price / L (€)" icon="💶" style={{ marginBottom: 0 }}>
+                <input type="number" name="pricePerLiter" value={formData.pricePerLiter} onChange={handleChange}
+                  placeholder="0.00" step="0.01" style={inputStyle}
+                  onFocus={e => Object.assign(e.target.style, focusBorder)}
+                  onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+              </FancyInput>
+              <FancyInput label="Total (€)" icon="🧾" style={{ marginBottom: 0 }}>
+                <input type="number" name="cost" value={formData.cost} onChange={handleChange}
+                  placeholder="0.00" step="0.01" required
+                  style={{ ...inputStyle, background: '#fff5f5', fontWeight: 700, color: '#dc3545' }}
+                  onFocus={e => Object.assign(e.target.style, { ...focusBorder, background: '#fff5f5' })}
+                  onBlur={e => Object.assign(e.target.style, { borderColor: '#e9ecef', boxShadow: 'none' })} />
+              </FancyInput>
+            </div>
+          )}
         </>
       ) : (
-        <FancyInput label="Цена (€)" icon="💶">
+        <FancyInput label="Cost (€)" icon="💶">
           <input type="number" name="cost" value={formData.cost} onChange={handleChange}
             placeholder="0.00" min="0" step="0.01" style={inputStyle}
             onFocus={e => Object.assign(e.target.style, focusBorder)}
@@ -271,11 +301,11 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       {/* Notes */}
       {['repair', 'other', 'maintenance'].includes(formData.serviceType) && (
         <FancyInput
-          label={formData.serviceType === 'repair' ? 'Описание на ремонта' : 'Бележки'}
+          label={formData.serviceType === 'repair' ? 'Repair description' : 'Notes'}
           icon="📋"
         >
           <textarea name="notes" value={formData.notes} onChange={handleChange}
-            placeholder={formData.serviceType === 'repair' ? 'Какво е сменено/ремонтирано?' : 'Бележки...'}
+            placeholder={formData.serviceType === 'repair' ? 'What was replaced/repaired?' : 'Notes...'}
             rows={3}
             style={{ ...inputStyle, resize: 'vertical', minHeight: '80px' }}
             onFocus={e => Object.assign(e.target.style, { ...focusBorder, resize: 'vertical', minHeight: '80px' })}
@@ -287,8 +317,8 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
       {/* File upload — drag & drop */}
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={labelStyle}>
-          📎 Прикачи документ{' '}
-          <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#adb5bd' }}>– незадължително</span>
+          Attach document{' '}
+          <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#adb5bd' }}>– optional</span>
         </label>
         <div
           onClick={() => fileInputRef.current?.click()}
@@ -309,13 +339,13 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
             <div>
               <span style={{ fontSize: '1.5rem' }}>✅</span>
               <div style={{ fontWeight: 600, color: '#198754', marginTop: '0.3rem' }}>{formData.file.name}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6c757d' }}>({(formData.file.size / 1024).toFixed(0)} KB) — Кликни за смяна</div>
+              <div style={{ fontSize: '0.78rem', color: '#6c757d' }}>({(formData.file.size / 1024).toFixed(0)} KB) — Click to change</div>
             </div>
           ) : (
             <div>
               <span style={{ fontSize: '1.8rem' }}>📂</span>
-              <div style={{ fontWeight: 600, color: '#495057', marginTop: '0.3rem' }}>Плъзни файл тук или кликни</div>
-              <div style={{ fontSize: '0.78rem', color: '#adb5bd', marginTop: '0.2rem' }}>PDF, JPG, PNG, WEBP · макс. 50MB</div>
+              <div style={{ fontWeight: 600, color: '#495057', marginTop: '0.3rem' }}>Drag file here or click</div>
+              <div style={{ fontSize: '0.78rem', color: '#adb5bd', marginTop: '0.2rem' }}>PDF, JPG, PNG, WEBP · max 50MB</div>
             </div>
           )}
         </div>
@@ -341,7 +371,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
           onMouseEnter={e => e.target.style.borderColor = '#adb5bd'}
           onMouseLeave={e => e.target.style.borderColor = '#dee2e6'}
         >
-          Отказ
+          Cancel
         </button>
         <button
           type="submit"
@@ -359,7 +389,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
           onMouseEnter={e => e.target.style.boxShadow = '0 6px 16px rgba(220,53,69,0.45)'}
           onMouseLeave={e => e.target.style.boxShadow = '0 4px 12px rgba(220,53,69,0.3)'}
         >
-          ➕ Добави услуга
+          ➕ Add Service
         </button>
       </div>
     </form>
