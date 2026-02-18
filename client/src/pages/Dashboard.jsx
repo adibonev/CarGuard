@@ -1079,7 +1079,7 @@ const Dashboard = () => {
               </div>
               <div className="modal-body">
                 <ServiceForm 
-                  carId={selectedCar.id}
+                  selectedCarId={selectedCar.id}
                   onSubmit={handleAddService} 
                   onCancel={() => setShowServiceForm(false)}
                 />

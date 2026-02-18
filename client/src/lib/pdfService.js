@@ -77,11 +77,13 @@ export const generateCarReport = async (car, services) => {
   // Brand name
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
   doc.text('CarGuard', 45, 20);
   
   // Tagline
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 200, 200);
   doc.text('Your Digital Car Assistant', 45, 28);
   
   // Report Title with red accent (#dc3545)
@@ -99,6 +101,7 @@ export const generateCarReport = async (car, services) => {
   let yPos = 50;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(45, 45, 45);
   doc.text(`Generated: ${formatDate(new Date())}`, 20, yPos);
   
   // Car Title
