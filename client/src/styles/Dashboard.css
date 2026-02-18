@@ -325,32 +325,26 @@ body {
 }
 
 .car-card {
-  background: var(--gradient);
-  color: rgba(220, 53, 69, 0.25);
+  background: #ffffff;
+  color: #1a1a1a;
   padding: 2rem;
   border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.25);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   transition: all 0.3s;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  border: 3px solid transparent;
+  border: 3px solid #e9ecef;
 }
 
 .car-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 200px;
-  height: 200px;
-  background: rgba(220, 53, 69, 0.35);
-  border-radius: 50%;
+  display: none;
 }
 
 .car-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 35px rgba(220, 53, 69, 0.35);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
 }
 
 .car-card.selected {
@@ -383,6 +377,7 @@ body {
   font-weight: 800;
   margin-bottom: 0.5rem;
   position: relative;
+  color: #1a1a1a;
 }
 
 .car-info-item {
@@ -393,6 +388,7 @@ body {
   font-size: 0.95rem;
   opacity: 0.9;
   position: relative;
+  color: #495057;
 }
 
 .car-info-item i {
