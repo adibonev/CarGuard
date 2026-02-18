@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { getBrands, getModels } from '../data/carBrands';
 import carsService from '../lib/supabaseCars';
 import '../styles/CarForm.css';
-import { Button, Form, Row, Col, Nav, Tabs, Tab, Spinner, Alert } from 'react-bootstrap';
 
 const CarForm = ({ onSubmit, onCancel, initialData }) => {
   const [inputMode, setInputMode] = useState('manual'); // 'manual' or 'vin'
@@ -176,56 +175,65 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
   };
 
   return (
-    <>
+    <div className="car-form-container">
       {/* Mode selection - manual or VIN */}
       {!initialData && (
-        <Nav variant="pills" activeKey={inputMode} onSelect={(k) => setInputMode(k)} className="mb-3">
-          <Nav.Item>
-            <Nav.Link eventKey="manual">✏️ Manual entry</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="vin">🔍 By VIN number</Nav.Link>
-          </Nav.Item>
-        </Nav>
+        <div className="input-mode-selector">
+          <button 
+            type="button"
+            className={`mode-btn ${inputMode === 'manual' ? 'active' : ''}`}
+            onClick={() => setInputMode('manual')}
+          >
+            ✏️ Manual entry
+          </button>
+          <button 
+            type="button"
+            className={`mode-btn ${inputMode === 'vin' ? 'active' : ''}`}
+            onClick={() => setInputMode('vin')}
+          >
+            🔍 By VIN number
+          </button>
+        </div>
       )}
 
       {/* VIN section */}
       {inputMode === 'vin' && !initialData && (
-        <div className="vin-section mb-3">
-          <Form.Group>
-            <Form.Label>VIN number (17 characters)</Form.Label>
-            <Row>
-              <Col>
-                <Form.Control
-                  type="text"
-                  value={vinInput}
-                  onChange={(e) => setVinInput(e.target.value.toUpperCase())}
-                  placeholder="Enter VIN"
-                  maxLength={17}
-                />
-                <Form.Text className="text-muted">{vinInput.length}/17</Form.Text>
-              </Col>
-              <Col xs="auto">
-                <Button 
-                  variant="primary"
-                  onClick={handleVinDecode}
-                  disabled={vinLoading || vinInput.length !== 17}
-                >
-                  {vinLoading ? <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Loading...</> : '🔍 Check'}
-                </Button>
-              </Col>
-            </Row>
-          </Form.Group>
-          {vinError && <Alert variant="danger" className="mt-2">⚠️ {vinError}</Alert>}
+        <div className="vin-section">
+          <div className="vin-input-group">
+            <label>VIN number (17 characters)</label>
+            <div className="vin-input-row">
+              <input
+                type="text"
+                value={vinInput}
+                onChange={(e) => setVinInput(e.target.value.toUpperCase())}
+                placeholder="Enter VIN"
+                maxLength={17}
+                className="form-control vin-input"
+              />
+              <button 
+                type="button" 
+                className="btn vin-decode-btn"
+                onClick={handleVinDecode}
+                disabled={vinLoading || vinInput.length !== 17}
+              >
+                {vinLoading ? '⏳ Loading...' : '🔍 Check'}
+              </button>
+            </div>
+            <div className="vin-counter">{vinInput.length}/17</div>
+            {vinError && <div className="vin-error">⚠️ {vinError}</div>}
+          </div>
 
           {vinData && (
-            <div className="vin-result mt-3">
+            <div className="vin-result">
+              {/* Warning for European VIN */}
               {vinData.isEuropean && (
-                <Alert variant="warning">
+                <div className="vin-warning">
                   ⚠️ <strong>European VIN</strong> - Data may be incomplete. 
                   Please verify and correct the form below.
-                </Alert>
+                </div>
               )}
+
+              {/* Show found information */}
               <div className="vin-found-info">
                 <h4>✅ Found information:</h4>
                 <div className="vin-found-grid">
@@ -234,228 +242,266 @@ const CarForm = ({ onSubmit, onCancel, initialData }) => {
                   {vinData.plantCountry && <span><strong>Made in:</strong> {vinData.plantCountry}</span>}
                 </div>
               </div>
-              <p className="vin-hint mt-2">💡 The form below is prefilled. Adjust if needed.</p>
+
+              <p className="vin-hint">💡 The form below is prefilled. Adjust if needed.</p>
             </div>
           )}
         </div>
       )}
 
-      <Form onSubmit={handleSubmit}>
-        <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} id="car-form-tabs" className="mb-3" fill>
-          <Tab eventKey="basic" title="ℹ️ Basic information">
-            <div className="form-section">
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Brand *</Form.Label>
-                    <Form.Select
-                      name="brand"
-                      value={formData.brand}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">-- Select brand --</option>
-                      {brands.map(brand => (
-                        <option key={brand} value={brand}>{brand}</option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Model *</Form.Label>
-                    <Form.Select
-                      name="model"
-                      value={formData.model}
-                      onChange={handleChange}
-                      required
-                      disabled={!formData.brand}
-                    >
-                      <option value="">-- Select model --</option>
-                      {availableModels.map(model => (
-                        <option key={model} value={model}>{model}</option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Year *</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="year"
-                      value={formData.year}
-                      onChange={handleChange}
-                      required
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>License Plate</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="licensePlate"
-                      value={formData.licensePlate}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Form.Group className="mb-3">
-                <Form.Label>VIN (Chassis)</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="vin"
-                  value={formData.vin}
-                  onChange={handleChange}
-                  maxLength={17}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Mileage (km)</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="mileage"
-                  placeholder="e.g. 150000"
-                  value={formData.mileage}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </div>
-          </Tab>
-          <Tab eventKey="tech" title="⚙️ Technical data">
-            <div className="form-section">
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Engine Type</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="engineType"
-                      value={formData.engineType}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Horsepower</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="horsepower"
-                      value={formData.horsepower}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Transmission</Form.Label>
-                    <Form.Select
-                      name="transmission"
-                      value={formData.transmission}
-                      onChange={handleChange}
-                    >
-                      <option value="">-- Select --</option>
-                      <option value="Automatic">Automatic</option>
-                      <option value="Manual">Manual</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Fuel Type</Form.Label>
-                    <Form.Select
-                      name="fuelType"
-                      value={formData.fuelType}
-                      onChange={handleChange}
-                    >
-                      <option value="">-- Select --</option>
-                      <option value="Gasoline">Gasoline</option>
-                      <option value="Diesel">Diesel</option>
-                      <option value="LPG">LPG</option>
-                      <option value="Electric">Electric</option>
-                      <option value="Hybrid">Hybrid</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Form.Group className="mb-3">
-                <Form.Label>Euro Standard</Form.Label>
-                <Form.Select
-                  name="euroStandard"
-                  value={formData.euroStandard}
-                  onChange={handleChange}
-                >
-                  <option value="">-- Select --</option>
-                  <option value="EURO 1">EURO 1</option>
-                  <option value="EURO 2">EURO 2</option>
-                  <option value="EURO 3">EURO 3</option>
-                  <option value="EURO 4">EURO 4</option>
-                  <option value="EURO 5">EURO 5</option>
-                  <option value="EURO 6">EURO 6</option>
-                </Form.Select>
-              </Form.Group>
-            </div>
-          </Tab>
-          <Tab eventKey="tires" title="🔘 Tires">
-            <div className="form-section">
-              <Row>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Width</Form.Label>
-                    <Form.Control type="number" name="tireWidth" value={formData.tireWidth} onChange={handleChange} />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Height</Form.Label>
-                    <Form.Control type="number" name="tireHeight" value={formData.tireHeight} onChange={handleChange} />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Diameter</Form.Label>
-                    <Form.Control type="number" name="tireDiameter" value={formData.tireDiameter} onChange={handleChange} />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Form.Group className="mb-3">
-                <Form.Label>Season</Form.Label>
-                <Form.Select name="tireSeason" value={formData.tireSeason} onChange={handleChange}>
-                  <option value="">-- Select --</option>
-                  <option value="Summer">Summer</option>
-                  <option value="Winter">Winter</option>
-                  <option value="All-Season">All-Season</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Tire Brand</Form.Label>
-                <Form.Control type="text" name="tireBrand" value={formData.tireBrand} onChange={handleChange} />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>DOT</Form.Label>
-                <Form.Control type="text" name="tireDot" value={formData.tireDot} onChange={handleChange} />
-              </Form.Group>
-            </div>
-          </Tab>
-        </Tabs>
+      <div className="car-form-tabs">
+        <button 
+          type="button" 
+          className={`form-tab-btn ${activeTab === 'basic' ? 'active' : ''}`}
+          onClick={() => setActiveTab('basic')}
+        >
+          ℹ️ Basic information
+        </button>
+        <button 
+          type="button" 
+          className={`form-tab-btn ${activeTab === 'tech' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tech')}
+        >
+          ⚙️ Technical data
+        </button>
+        <button 
+          type="button" 
+          className={`form-tab-btn ${activeTab === 'tires' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tires')}
+        >
+          🔘 Tires
+        </button>
+      </div>
 
-        <div className="d-flex justify-content-end mt-4">
-          <Button variant="secondary" onClick={onCancel} className="me-2">
-            Cancel
-          </Button>
-          <Button variant="primary" type="submit">
-            {initialData ? 'Save Changes' : 'Add Vehicle'}
-          </Button>
+      <form className="car-form" onSubmit={handleSubmit}>
+        <div className="form-content">
+          {activeTab === 'basic' && (
+            <div className="form-section fade-in">
+              <div className="form-row">
+                <div className="form-group half">
+                  <label>Brand *</label>
+                  <select
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleChange}
+                    required
+                    className="form-select"
+                  >
+                    <option value="">-- Select brand --</option>
+                    {brands.map(brand => (
+                      <option key={brand} value={brand}>{brand}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group half">
+                  <label>Model *</label>
+                  <select
+                    name="model"
+                    value={formData.model}
+                    onChange={handleChange}
+                    required
+                    disabled={!formData.brand}
+                    className="form-select"
+                  >
+                    <option value="">-- Select model --</option>
+                    {availableModels.map(model => (
+                      <option key={model} value={model}>{model}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group half">
+                  <label>Year *</label>
+                  <select
+                    name="year"
+                    value={formData.year}
+                    onChange={handleChange}
+                    required
+                    className="form-select"
+                  >
+                    {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group half">
+                  <label>License plate</label>
+                  <input 
+                    type="text" 
+                    name="licensePlate" 
+                    value={formData.licensePlate} 
+                    onChange={handleChange}
+                    placeholder="CB 1234 AB"
+                    className="form-control"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>VIN (Chassis)</label>
+                <input 
+                  type="text" 
+                  name="vin" 
+                  value={formData.vin} 
+                  onChange={handleChange}
+                  placeholder="Enter VIN"
+                  className="form-control"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Mileage (km)</label>
+                <input 
+                  type="number" 
+                  name="mileage" 
+                  value={formData.mileage} 
+                  onChange={handleChange}
+                  placeholder="e.g. 150000"
+                  className="form-control"
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'tech' && (
+            <div className="form-section fade-in">
+              <div className="form-row">
+                <div className="form-group half">
+                  <label>Engine type</label>
+                  <select name="engineType" value={formData.engineType} onChange={handleChange} className="form-select">
+                    <option value="">-- Select --</option>
+                    <option value="Benzin">Gasoline</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="LPG">LPG/Gasoline</option>
+                    <option value="CNG">CNG/Gasoline</option>
+                  </select>
+                </div>
+                <div className="form-group half">
+                  <label>Horsepower (HP)</label>
+                  <input 
+                    type="number" 
+                    name="horsepower" 
+                    value={formData.horsepower} 
+                    onChange={handleChange}
+                    placeholder="e.g. 150"
+                    className="form-control"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group half">
+                  <label>Transmission</label>
+                  <select name="transmission" value={formData.transmission} onChange={handleChange} className="form-select">
+                    <option value="">-- Select --</option>
+                    <option value="Manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                    <option value="Semi-Auto">Semi-automatic</option>
+                  </select>
+                </div>
+                <div className="form-group half">
+                  <label>Euro standard</label>
+                  <select name="euroStandard" value={formData.euroStandard} onChange={handleChange} className="form-select">
+                    <option value="">-- Select --</option>
+                    <option value="Euro 1">Euro 1</option>
+                    <option value="Euro 2">Euro 2</option>
+                    <option value="Euro 3">Euro 3</option>
+                    <option value="Euro 4">Euro 4</option>
+                    <option value="Euro 5">Euro 5</option>
+                    <option value="Euro 6">Euro 6</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'tires' && (
+            <div className="form-section fade-in">
+              <div className="tire-visual-hint">
+                <div className="tire-diagram">
+                   <span>{formData.tireWidth || '205'} / {formData.tireHeight || '55'} R{formData.tireDiameter || '16'}</span>
+                </div>
+                <small className="tire-hint-text">Enter tire sizes</small>
+              </div>
+
+              <div className="form-row three-cols">
+                <div className="form-group">
+                  <label>Width</label>
+                     <select name="tireWidth" value={formData.tireWidth} onChange={handleChange} className="form-select">
+                     <option value="">--</option>
+                     {[135,145,155,165,175,185,195,205,215,225,235,245,255,265,275,285,295,305,315].map(w => (
+                       <option key={w} value={w}>{w}</option>
+                     ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Height</label>
+                     <select name="tireHeight" value={formData.tireHeight} onChange={handleChange} className="form-select">
+                     <option value="">--</option>
+                     {[30,35,40,45,50,55,60,65,70,75,80,85].map(h => (
+                       <option key={h} value={h}>{h}</option>
+                     ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Diameter (R)</label>
+                     <select name="tireDiameter" value={formData.tireDiameter} onChange={handleChange} className="form-select">
+                     <option value="">--</option>
+                     {[13,14,15,16,17,18,19,20,21,22].map(d => (
+                       <option key={d} value={d}>R{d}</option>
+                     ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group half">
+                  <label>Season</label>
+                  <select name="tireSeason" value={formData.tireSeason} onChange={handleChange} className="form-select">
+                    <option value="">-- Select --</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Winter">Winter</option>
+                    <option value="AllSeasons">All-season</option>
+                  </select>
+                </div>
+                <div className="form-group half">
+                  <label>DOT</label>
+                  <input 
+                    type="text" 
+                    name="tireDot" 
+                    value={formData.tireDot} 
+                    onChange={handleChange}
+                    placeholder="e.g. 2423"
+                    className="form-control"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Tire brand</label>
+                <input 
+                  type="text" 
+                  name="tireBrand" 
+                  value={formData.tireBrand} 
+                  onChange={handleChange}
+                  placeholder="e.g. Michelin, Continental..."
+                  className="form-control"
+                />
+              </div>
+            </div>
+          )}
         </div>
-      </Form>
-    </>
+
+        <div className="form-actions">
+          <button type="button" className="btn cancel-btn" onClick={onCancel}>Cancel</button>
+          <button type="submit" className="btn submit-btn">{initialData ? 'Save changes' : 'Add vehicle'}</button>
+        </div>
+      </form>
+    </div>
   );
 };
 
