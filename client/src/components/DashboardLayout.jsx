@@ -7,6 +7,26 @@ import ServiceForm from './ServiceForm';
 import { getBrandLogo } from '../data/brandLogos';
 import '../styles/Dashboard.css';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: '2rem', color: 'red', fontFamily: 'monospace', background: '#fff1f1', minHeight: '100vh' }}>
+          <h2>🚨 Dashboard Error</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+            {this.state.error?.message}
+            {'\n\n'}
+            {this.state.error?.stack}
+          </pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const DashboardModals = () => {
   const {
     cars, selectedCar, setSelectedCar,
@@ -187,9 +207,11 @@ const DashboardLayoutInner = () => {
 };
 
 const DashboardLayout = () => (
-  <DashboardProvider>
-    <DashboardLayoutInner />
-  </DashboardProvider>
+  <ErrorBoundary>
+    <DashboardProvider>
+      <DashboardLayoutInner />
+    </DashboardProvider>
+  </ErrorBoundary>
 );
 
 export default DashboardLayout;
