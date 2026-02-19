@@ -99,4 +99,33 @@ export const signOut = async () => {
   }
 };
 
+// Upload user avatar to Supabase Storage and update avatar_url in users table
+export const uploadAvatar = async (file, userId) => {
+  if (!supabaseConfigured || !supabase) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  const ext = file.name.split('.').pop();
+  const filePath = `${userId}/${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, file, { upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ avatar_url: publicUrl })
+    .eq('auth_user_id', userId);
+
+  if (updateError) throw updateError;
+
+  return publicUrl;
+};
+
 export { supabase, supabaseConfigured };

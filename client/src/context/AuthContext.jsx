@@ -260,6 +260,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         session,
         token: session?.access_token,
         login,
