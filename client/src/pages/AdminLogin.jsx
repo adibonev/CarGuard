@@ -41,9 +41,10 @@ const AdminLogin = () => {
         .from('users')
         .select('*')
         .eq('auth_user_id', authData.user.id)
-        .single();
+        .maybeSingle();
 
       if (userError) throw userError;
+      if (!userData) throw new Error('User profile not found');
 
       // Check if user is admin
       if (!userData.is_admin) {
