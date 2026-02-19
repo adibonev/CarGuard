@@ -25,13 +25,14 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (session?.user) {
+      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
         loadUserProfile(session.user.id);
-      } else {
+      } else if (!session) {
         setUser(null);
         setLoading(false);
+        setIsInitialized(true);
       }
     });
 
@@ -83,7 +84,7 @@ export const AuthProvider = ({ children }) => {
           email_verified: false
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (userError) throw userError;
 
@@ -146,7 +147,7 @@ export const AuthProvider = ({ children }) => {
         .update({ reminder_days: reminderDays })
         .eq('id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -165,7 +166,7 @@ export const AuthProvider = ({ children }) => {
         .update({ reminder_enabled: reminderEnabled })
         .eq('id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -184,7 +185,7 @@ export const AuthProvider = ({ children }) => {
         .update({ reminder_settings: reminderSettings })
         .eq('id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
