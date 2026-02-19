@@ -15,7 +15,6 @@ import Vehicles from './pages/Vehicles';
 import Services from './pages/Services';
 import Documents from './pages/Documents';
 import Settings from './pages/Settings';
-import './App.css';
 
 function App() {
   return (

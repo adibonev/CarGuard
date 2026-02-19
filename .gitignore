@@ -1,6 +1,8 @@
 .env
+.env.local
 node_modules/
 dist/
 build/
 *.log
+*.sqlite
 .DS_Store
