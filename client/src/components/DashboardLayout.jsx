@@ -184,7 +184,6 @@ const DashboardNav = () => {
 
 const DashboardLayoutInner = () => {
   const { loading } = useDashboard();
-  const location = useLocation();
 
   if (loading) {
     return (
@@ -198,10 +197,6 @@ const DashboardLayoutInner = () => {
     <>
       <div className="dashboard-staging">
         <DashboardNav />
-        {/* DEBUG: remove after confirming routing works */}
-        <div style={{ background: '#ffe0e0', padding: '8px 16px', fontSize: '14px', fontFamily: 'monospace' }}>
-          DEBUG Route: <strong>{location.pathname}</strong>
-        </div>
         <div className="dashboard-container">
           <Outlet />
         </div>
