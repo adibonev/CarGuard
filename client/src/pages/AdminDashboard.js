@@ -14,7 +14,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [admin, setAdmin] = useState(null);
   const navigate = useNavigate();
-  const logoUrl = `${process.env.PUBLIC_URL || ''}/logo.png`;
+  const logoUrl = '/logo.png';
 
   useEffect(() => {
     const checkAdmin = async () => {
