@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
   const loadingProfileRef = React.useRef(false);
+  const profileLoadedForRef = React.useRef(null); // tracks which auth user id was last loaded
 
   // Initialize Supabase session — use ONLY onAuthStateChange, not getSession()
   useEffect(() => {
@@ -16,13 +17,33 @@ export const AuthProvider = ({ children }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setLoading(false);
+        setIsInitialized(true);
+        profileLoadedForRef.current = null;
+        return;
+      }
+
       if (session?.user) {
-        if (event === 'SIGNED_OUT') return;
-        loadUserProfile(session.user);
+        // Only load profile on sign-in events or if it's a different user
+        if (
+          event === 'SIGNED_IN' ||
+          event === 'INITIAL_SESSION' ||
+          profileLoadedForRef.current !== session.user.id
+        ) {
+          loadUserProfile(session.user);
+        } else {
+          // TOKEN_REFRESHED or USER_UPDATED for same user — just update session, don't reload profile
+          setLoading(false);
+          setIsInitialized(true);
+        }
       } else {
         setUser(null);
         setLoading(false);
         setIsInitialized(true);
+        profileLoadedForRef.current = null;
       }
     });
 
@@ -45,6 +66,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       } else if (data) {
         setUser(data);
+        profileLoadedForRef.current = authUser.id;
       } else {
         // Profile doesn't exist by auth_user_id — try to find by email and link it
         const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
@@ -66,8 +88,8 @@ export const AuthProvider = ({ children }) => {
             .eq('id', existing.id)
             .select()
             .maybeSingle();
-          if (!linkError && linked) setUser(linked);
-          else setUser(existing);
+          if (!linkError && linked) { setUser(linked); profileLoadedForRef.current = authUser.id; }
+          else { setUser(existing); profileLoadedForRef.current = authUser.id; }
         } else {
           // Create a brand new profile
           const { data: newUser, error: insertError } = await supabase
@@ -82,7 +104,7 @@ export const AuthProvider = ({ children }) => {
             })
             .select()
             .maybeSingle();
-          if (!insertError && newUser) setUser(newUser);
+          if (!insertError && newUser) { setUser(newUser); profileLoadedForRef.current = authUser.id; }
           else setUser(null);
         }
       }
