@@ -177,6 +177,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateReminderSettings = async (reminderSettings) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ reminder_settings: reminderSettings })
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setUser(data);
+      return { success: true, reminderSettings: data.reminder_settings };
+    } catch (error) {
+      console.error('Error updating reminder settings:', error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -188,6 +207,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateReminderDays,
         updateReminderEnabled,
+        updateReminderSettings,
         isInitialized,
         loading,
       }}

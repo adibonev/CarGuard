@@ -53,6 +53,7 @@ body {
   gap: 0.5rem;
   white-space: nowrap;
   font-size: 1rem;
+  text-decoration: none;
 }
 
 .tab-btn i {
@@ -658,7 +659,8 @@ body {
   width: 100%;
 }
 
-.mobile-bottom-nav button {
+.mobile-bottom-nav button,
+.mobile-bottom-nav a {
   flex: 1;
   background: none;
   border: none;
@@ -675,18 +677,22 @@ body {
   transition: color 0.2s;
   min-width: 0;
   -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
 }
 
-.mobile-bottom-nav button i {
+.mobile-bottom-nav button i,
+.mobile-bottom-nav a i {
   font-size: 1.25rem;
   line-height: 1;
 }
 
-.mobile-bottom-nav button.active {
+.mobile-bottom-nav button.active,
+.mobile-bottom-nav a.active {
   color: #dc3545;
 }
 
-.mobile-bottom-nav button.active i {
+.mobile-bottom-nav button.active i,
+.mobile-bottom-nav a.active i {
   color: #dc3545;
 }
 

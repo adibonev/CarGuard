@@ -33,31 +33,58 @@ const AuthCallback = () => {
           .eq('auth_user_id', authUser.id)
           .single();
 
-        if (!existingUser) {
-          // Create user profile for Google sign-in
-          const { data: newUser, error: createError } = await supabase
+        if (existingUser) {
+          // Mark email as verified if not already
+          if (!existingUser.email_verified) {
+            await supabase
+              .from('users')
+              .update({ email_verified: true })
+              .eq('id', existingUser.id);
+          }
+        } else {
+          // Check if user already exists by email (e.g. created during registration
+          // but auth_user_id was not yet linked, or a retry of the same sign-up)
+          const { data: userByEmail } = await supabase
             .from('users')
-            .insert({
-              name: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
-              email: authUser.email.toLowerCase(),
-              auth_user_id: authUser.id,
-              reminder_days: 30,
-              reminder_enabled: true,
-              email_verified: authUser.email_confirmed_at !== null,
-              google_id: authUser.id
-            })
-            .select()
-            .single();
+            .select('*')
+            .eq('email', authUser.email.toLowerCase())
+            .maybeSingle();
 
-          if (createError) throw createError;
+          if (userByEmail) {
+            // Link the auth_user_id and mark as verified
+            await supabase
+              .from('users')
+              .update({
+                auth_user_id: authUser.id,
+                email_verified: true
+              })
+              .eq('id', userByEmail.id);
+          } else {
+            // Create a brand-new user profile (e.g. Google OAuth first sign-in)
+            const { data: newUser, error: createError } = await supabase
+              .from('users')
+              .insert({
+                name: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
+                email: authUser.email.toLowerCase(),
+                auth_user_id: authUser.id,
+                reminder_days: 30,
+                reminder_enabled: true,
+                email_verified: authUser.email_confirmed_at !== null,
+                google_id: authUser.id
+              })
+              .select()
+              .single();
 
-          // Create account record
-          await supabase.from('accounts').insert({
-            user_id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-            phone: null
-          });
+            if (createError) throw createError;
+
+            // Create account record
+            await supabase.from('accounts').insert({
+              user_id: newUser.id,
+              name: newUser.name,
+              email: newUser.email,
+              phone: null
+            });
+          }
         }
 
         navigate('/dashboard');
