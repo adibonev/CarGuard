@@ -8,28 +8,18 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
+  const loadingProfileRef = React.useRef(false);
 
-  // Initialize Supabase session
+  // Initialize Supabase session — use ONLY onAuthStateChange, not getSession()
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        loadUserProfile(session.user.id);
-      } else {
-        setLoading(false);
-        setIsInitialized(true);
-      }
-    });
-
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED')) {
-        loadUserProfile(session.user.id);
-      } else if (!session) {
+      if (session?.user) {
+        if (event === 'SIGNED_OUT') return;
+        loadUserProfile(session.user);
+      } else {
         setUser(null);
         setLoading(false);
         setIsInitialized(true);
@@ -39,23 +29,47 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadUserProfile = async (authUserId) => {
+  const loadUserProfile = async (authUser) => {
+    // Prevent concurrent calls
+    if (loadingProfileRef.current) return;
+    loadingProfileRef.current = true;
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('auth_user_id', authUserId)
+        .eq('auth_user_id', authUser.id)
         .maybeSingle();
 
-      if (error) throw error;
-      
-      setUser(data || null);
-    } catch (error) {
-      console.error('Error loading user profile:', error);
+      if (error) {
+        console.error('Error loading user profile:', error);
+        setUser(null);
+      } else if (data) {
+        setUser(data);
+      } else {
+        // Profile doesn't exist yet — create it from auth metadata
+        const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert({
+            name,
+            email: authUser.email?.toLowerCase(),
+            auth_user_id: authUser.id,
+            reminder_days: 30,
+            reminder_enabled: true,
+            email_verified: true,
+          })
+          .select()
+          .maybeSingle();
+        if (!insertError && newUser) setUser(newUser);
+        else setUser(null);
+      }
+    } catch (err) {
+      console.error('loadUserProfile error:', err);
       setUser(null);
     } finally {
       setLoading(false);
       setIsInitialized(true);
+      loadingProfileRef.current = false;
     }
   };
 
@@ -121,7 +135,7 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
 
-      await loadUserProfile(data.user.id);
+      await loadUserProfile(data.user);
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
