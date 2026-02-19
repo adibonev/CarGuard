@@ -46,22 +46,45 @@ export const AuthProvider = ({ children }) => {
       } else if (data) {
         setUser(data);
       } else {
-        // Profile doesn't exist yet — create it from auth metadata
+        // Profile doesn't exist by auth_user_id — try to find by email and link it
         const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
-        const { data: newUser, error: insertError } = await supabase
+        const email = authUser.email?.toLowerCase();
+
+        // First try to link an existing profile that has a matching email but null auth_user_id
+        const { data: existing } = await supabase
           .from('users')
-          .insert({
-            name,
-            email: authUser.email?.toLowerCase(),
-            auth_user_id: authUser.id,
-            reminder_days: 30,
-            reminder_enabled: true,
-            email_verified: true,
-          })
-          .select()
+          .select('*')
+          .eq('email', email)
+          .is('auth_user_id', null)
           .maybeSingle();
-        if (!insertError && newUser) setUser(newUser);
-        else setUser(null);
+
+        if (existing) {
+          // Link the existing profile to this auth user
+          const { data: linked, error: linkError } = await supabase
+            .from('users')
+            .update({ auth_user_id: authUser.id, email_verified: true })
+            .eq('id', existing.id)
+            .select()
+            .maybeSingle();
+          if (!linkError && linked) setUser(linked);
+          else setUser(existing);
+        } else {
+          // Create a brand new profile
+          const { data: newUser, error: insertError } = await supabase
+            .from('users')
+            .insert({
+              name,
+              email,
+              auth_user_id: authUser.id,
+              reminder_days: 30,
+              reminder_enabled: true,
+              email_verified: true,
+            })
+            .select()
+            .maybeSingle();
+          if (!insertError && newUser) setUser(newUser);
+          else setUser(null);
+        }
       }
     } catch (err) {
       console.error('loadUserProfile error:', err);
