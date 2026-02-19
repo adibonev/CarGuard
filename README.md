@@ -1,4 +1,4 @@
-# CarGuard 🚗
+﻿# CarGuard 🚗
 
 **CarGuard** is a full-stack web application for tracking vehicle service history, managing car documents, and receiving automated email reminders before key services expire (insurance, vignette, inspection, etc.).
 
@@ -63,7 +63,7 @@ The frontend is a **Single-Page Application** deployed on **Netlify**. All data 
 | **pg_cron** | Cron scheduler that triggers the reminder Edge Function hourly |
 | **Row Level Security (RLS)** | Database-level access control per user |
 
-A lightweight **Express.js** server (`server.js`) exists for local development utilities only; it is not used in production.
+A lightweight **Express.js** server (`server/server.js`) exists for local development utilities only; it is not used in production.
 
 ### Deployment
 
@@ -214,8 +214,8 @@ cd car-checker
 ### 2. Install dependencies
 
 ```bash
-# Root (Express dev server)
-npm install
+# Server (Express dev server — optional)
+cd server && npm install && cd ..
 
 # Frontend (React + Vite)
 cd client && npm install && cd ..
@@ -253,7 +253,7 @@ Open the Command Palette → `Tasks: Run Task` → `▶️ Start Both (Server + 
 
 ```bash
 # Terminal 1 — Express dev server (optional, not needed for most features)
-node server.js
+node server/server.js
 
 # Terminal 2 — React/Vite dev server
 cd client && npm start
@@ -263,7 +263,7 @@ The React app will be available at `http://localhost:5173`.
 
 ### 6. Google OAuth (optional)
 
-Follow [GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md) to enable Google sign-in for local development.
+Follow [docs/GOOGLE_OAUTH_SETUP.md](./docs/GOOGLE_OAUTH_SETUP.md) to enable Google sign-in for local development.
 
 ---
 
@@ -324,30 +324,40 @@ car-checker/
 │           ├── CarForm.css
 │           └── ...
 │
+├── server/                          # Express dev server (local only, not deployed)
+│   ├── server.js                    # Express entry point
+│   ├── package.json                 # Server dependencies
+│   ├── config/
+│   │   └── supabase.js              # Supabase client (service role key)
+│   ├── middleware/
+│   │   └── auth.js                  # JWT verification middleware
+│   ├── models/
+│   │   ├── Admin.js, Car.js, Service.js, User.js
+│   ├── routes/
+│   │   ├── auth.js                  # Auth endpoints (/api/auth/*)
+│   │   ├── cars.js                  # Car CRUD endpoints (/api/cars/*)
+│   │   ├── services.js              # Service CRUD endpoints (/api/services/*)
+│   │   └── admin.js                 # Admin endpoints (/api/admin/*)
+│   └── services/
+│       ├── emailService.js          # Email sending via Resend
+│       └── reminderService.js       # Reminder scheduling logic
+│
 ├── supabase/
 │   └── migrations/                  # Ordered SQL migration files (12 total)
 │       ├── 20260208000000_initial_schema.sql
-│       ├── 20260209000000_add_email_verified.sql
 │       └── ... (12 files total)
 │
-├── config/
-│   └── supabase.js                  # Server-side Supabase client (dev only)
+├── docs/                            # Setup guides and documentation
+│   ├── GOOGLE_OAUTH_SETUP.md        # Google OAuth configuration guide
+│   ├── SUPABASE_SETUP.md            # Supabase project setup guide
+│   └── STORAGE_SETUP.md             # Storage bucket configuration guide
 │
-├── routes/                          # Express routes (local dev only)
-│   ├── auth.js
-│   ├── cars.js
-│   ├── services.js
-│   └── admin.js
+├── .github/
+│   └── copilot-instructions.md      # Copilot coding guidelines
 │
-├── services/
-│   ├── emailService.js              # Nodemailer email sending (dev only)
-│   └── reminderService.js           # Reminder scheduling logic (dev only)
-│
-├── server.js                        # Express dev server entry point
-├── netlify.toml                     # Netlify deploy config (redirects SPA routes)
-├── GOOGLE_OAUTH_SETUP.md            # Guide for setting up Google OAuth
-├── SUPABASE_SETUP.md                # Guide for setting up Supabase project
-└── STORAGE_SETUP.md                 # Guide for configuring Storage buckets
+├── netlify.toml                     # Netlify deploy config (SPA redirects)
+├── package.json                     # Root package.json (orchestrates server + client)
+└── README.md                        # This file
 ```
 
 ---
@@ -375,157 +385,3 @@ car-checker/
 
 MIT
 
-
-- 📝 **Регистрация и вход** - Безопасна аутентификация на потребители
-- 🚗 **Управление на автомобили** - Добавяне, редактиране и изтриване на автомобили
-- 🛡️ **Управление на услуги**:
-  - Гражданска отговорност
-  - Винетка
-  - Технически преглед
-  - КАСКО
-  - Данък
-- 📧 **Автоматични напомени** - Email напомени 1 месец преди изтичане на услуга
-- 📊 **Статус панел** - Визуално показване на статуса на всяка услуга
-
-## Технологии
-
-### Backend
-- **Node.js** + Express.js
-- **MongoDB** - База данни
-- **JWT** - Аутентификация
-- **Nodemailer** - Email услуга
-- **bcryptjs** - Криптография на пароли
-
-### Frontend
-- **React 18** - UI библиотека
-- **React Router** - Маршрутизация
-- **Axios** - HTTP клиент
-- **CSS3** - Стилизиране
-
-## Инсталация
-
-### Требования
-- Node.js (v14 или по-нова)
-- MongoDB (локална или cloud)
-
-### Стъпки
-
-1. **Клониране на проекта**
-```bash
-cd "Car Checker"
-```
-
-2. **Инсталиране на backend依存性**
-```bash
-npm install
-```
-
-3. **Конфигуриране на .env файл**
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/car-checker
-JWT_SECRET=your_jwt_secret_key_here
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password_here
-NODE_ENV=development
-```
-
-4. **Инсталиране на frontend依存性**
-```bash
-cd client
-npm install
-cd ..
-```
-
-5. **Стартиране на приложението**
-
-**Терминал 1 - Backend:**
-```bash
-npm start
-```
-
-**Терминал 2 - Frontend:**
-```bash
-npm run client
-```
-
-Приложението ще бъде достъпно на `http://localhost:3000`
-
-## Конфигуриране на Email
-
-За включване на email напомините, следвай тези стъпки:
-
-1. **Gmail:**
-   - Включи 2-факторната аутентификация в твоя Gmail акаунт
-   - Генерирай App Password за специално приложение
-   - Постави Email_USER и EMAIL_PASSWORD в .env файла
-
-2. **Други email провайдери:**
-   - Модифицирай emailService.js със съответния SMTP сервер
-
-## Как работи системата
-
-1. Потребителят се регистрира и влиза в системата
-2. Добавя своите автомобили (марка, модел, година)
-3. За всеки автомобил добавя услуги и датите на изтичане
-4. Системата проверява всеки час за услуги, които ще изтекат в следващите 30 дни
-5. Отпраща email напомена 1 месец преди изтичане на услугата
-6. Потребителят може да подновява услугите чрез платформата
-
-## Структура на проекта
-
-```
-Car Checker/
-├── server.js              # Главен серверен файл
-├── package.json          # Backend依存性
-├── .env                  # Конфигурация
-├── models/               # MongoDB модели
-│   ├── User.js
-│   ├── Car.js
-│   └── Service.js
-├── routes/               # API маршрути
-│   ├── auth.js
-│   ├── cars.js
-│   └── services.js
-├── middleware/           # Express middleware
-│   └── auth.js          # JWT проверка
-├── services/             # Бизнес логика
-│   ├── emailService.js   # Email функции
-│   └── reminderService.js # Проверка и изпращане на напомени
-└── client/               # React приложение
-    ├── public/
-    ├── src/
-    │   ├── pages/        # Страници
-    │   ├── components/   # React компоненти
-    │   ├── context/      # React контекст
-    │   ├── styles/       # CSS файлове
-    │   ├── api.js        # API функции
-    │   └── App.js
-    └── package.json
-```
-
-## API Endpoints
-
-### Аутентификация
-- `POST /api/auth/register` - Регистрация
-- `POST /api/auth/login` - Вход
-
-### Автомобили
-- `GET /api/cars` - Всички автомобили на потребителя
-- `POST /api/cars` - Добавяне на нов автомобил
-- `PUT /api/cars/:id` - Редактиране на автомобил
-- `DELETE /api/cars/:id` - Изтриване на автомобил
-
-### Услуги
-- `GET /api/services/car/:carId` - Услуги за конкретна кола
-- `POST /api/services` - Добавяне на услуга
-- `PUT /api/services/:id` - Редактиране на услуга
-- `DELETE /api/services/:id` - Изтриване на услуга
-
-## Лицензия
-
-MIT
-
-## Контакт
-
-За въпроси и предложения, свържи се с разработчика.

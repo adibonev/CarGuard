@@ -1,15 +1,18 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
+
+// Load .env from project root (one level up from server/)
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+
 const supabase = require('./config/supabase');
 const authRoutes = require('./routes/auth');
 const carRoutes = require('./routes/cars');
 const serviceRoutes = require('./routes/services');
 const adminRoutes = require('./routes/admin');
 const reminderService = require('./services/reminderService');
-
-dotenv.config();
 
 const app = express();
 

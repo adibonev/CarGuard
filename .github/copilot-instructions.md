@@ -14,7 +14,7 @@ An admin panel allows oversight of all users and vehicles.
 - **Backend:** Supabase (PostgreSQL database, Auth, Storage, REST API)
 - **Build tools:** Node.js, npm, Vite
 - **Communication:** All data access goes through the Supabase JS client (`@supabase/supabase-js`), which calls the Supabase REST API directly from the browser.
-- **No custom backend API** — there is a `server.js` (Express) only for local dev/admin utilities; production relies fully on Supabase.
+- **No custom backend API** — there is a `server/server.js` (Express) only for local dev/admin utilities; production relies fully on Supabase.
 
 ---
 
@@ -25,18 +25,25 @@ client/
   src/
     pages/          # One file per page/route (Home, Login, Register, Dashboard, ...)
     components/     # Reusable UI components (CarForm, CarList, ServiceForm, ...)
-    context/        # React context for global state (AuthContext)
+    context/        # React context for global state (AuthContext, DashboardContext)
     lib/            # Supabase service modules (supabaseCars, supabaseServices, supabaseAuth, ...)
     styles/         # One CSS file per page/component
     data/           # Static data (car brands, logos)
     App.jsx         # Router + AuthProvider
     index.jsx       # Entry point
 
-config/             # Supabase server-side config
-middleware/         # Express auth middleware (local dev only)
-models/             # Data models (local dev only)
-routes/             # Express routes (local dev only)
-services/           # Email + reminder services (local dev only)
+server/
+  server.js         # Express entry point (local dev only)
+  config/           # Supabase server-side config
+  middleware/       # Express auth middleware
+  models/           # Data models
+  routes/           # Express routes
+  services/         # Email + reminder services
+
+supabase/
+  migrations/       # Ordered SQL migration files
+
+docs/               # Setup guides (OAuth, Supabase, Storage)
 ```
 
 ---

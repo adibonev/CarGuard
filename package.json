@@ -2,10 +2,10 @@
   "name": "car-checker",
   "version": "1.0.0",
   "description": "Car service reminder application",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
     "postinstall": "cd client && npm install && npm run build"
