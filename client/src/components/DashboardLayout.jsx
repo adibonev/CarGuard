@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { DashboardProvider, useDashboard } from '../context/DashboardContext';
 import CarForm from './CarForm';
@@ -184,6 +184,7 @@ const DashboardNav = () => {
 
 const DashboardLayoutInner = () => {
   const { loading } = useDashboard();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -197,6 +198,10 @@ const DashboardLayoutInner = () => {
     <>
       <div className="dashboard-staging">
         <DashboardNav />
+        {/* DEBUG: remove after confirming routing works */}
+        <div style={{ background: '#ffe0e0', padding: '8px 16px', fontSize: '14px', fontFamily: 'monospace' }}>
+          DEBUG Route: <strong>{location.pathname}</strong>
+        </div>
         <div className="dashboard-container">
           <Outlet />
         </div>
