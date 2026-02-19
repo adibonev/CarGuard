@@ -44,11 +44,11 @@ export const AuthProvider = ({ children }) => {
         .from('users')
         .select('*')
         .eq('auth_user_id', authUserId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       
-      setUser(data);
+      setUser(data || null);
     } catch (error) {
       console.error('Error loading user profile:', error);
       setUser(null);

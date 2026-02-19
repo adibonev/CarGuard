@@ -31,7 +31,7 @@ const AuthCallback = () => {
           .from('users')
           .select('*')
           .eq('auth_user_id', authUser.id)
-          .single();
+          .maybeSingle();
 
         if (existingUser) {
           // Mark email as verified if not already
