@@ -87,13 +87,23 @@ export const adminService = {
 
   // Get all users
   async getUsers() {
+    // Get users with car and service counts
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, name, email, created_at, auth_user_id, cars(id), services(id)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    // Map to flat structure for AdminDashboard
+    return data.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      createdAt: u.created_at,
+      auth_user_id: u.auth_user_id,
+      carCount: u.cars ? u.cars.length : 0,
+      serviceCount: u.services ? u.services.length : 0
+    }));
   },
 
   // Get brand distribution
