@@ -47,45 +47,26 @@ export const signInWithGoogle = async () => {
   }
 };
 
-// Send verification email
+// Send verification email via Supabase Auth
 export const sendVerificationEmail = async (email) => {
   try {
-    // This should be handled by your backend after user registration
-    const response = await fetch('/api/auth/send-verification-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to send verification email');
-    }
-
-    return await response.json();
+    if (error) throw error;
+    return { success: true };
   } catch (err) {
     console.error('Error sending verification email:', err);
     throw err;
   }
 };
 
-// Verify email token
-export const verifyEmail = async (token) => {
-  try {
-    const response = await fetch('/api/auth/verify-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to verify email');
-    }
-
-    return await response.json();
-  } catch (err) {
-    console.error('Error verifying email:', err);
-    throw err;
-  }
+// Verify email token — handled automatically by Supabase via /auth/callback
+export const verifyEmail = async () => {
+  // Supabase handles email verification automatically via the magic link redirect.
+  // No manual token verification needed.
+  return { success: true };
 };
 
 // Get current session
