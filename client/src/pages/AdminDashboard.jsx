@@ -222,13 +222,27 @@ const AdminDashboard = () => {
     </div>
   );
 
+  const [deletingUserId, setDeletingUserId] = useState(null);
+
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`Are you sure you want to delete user ${user.name} (${user.email})? This cannot be undone.`)) return;
+    setDeletingUserId(user.id);
+    try {
+      await adminService.deleteUser({ userId: user.id, authUserId: user.auth_user_id });
+      await loadData();
+    } catch (err) {
+      alert('Failed to delete user: ' + (err.message || err));
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   const renderUsers = () => (
     <div className="admin-users">
       <div className="users-header">
         <h3>👥 All users ({users.length})</h3>
         <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
       </div>
-      
       <div className="users-table-container">
         <table className="users-table">
           <thead>
@@ -239,6 +253,7 @@ const AdminDashboard = () => {
               <th>Registered</th>
               <th>Cars</th>
               <th>Services</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -256,6 +271,15 @@ const AdminDashboard = () => {
                 </td>
                 <td className="user-stat">
                   <span className="stat-badge services">{user.serviceCount} 📋</span>
+                </td>
+                <td>
+                  <button
+                    className="delete-user-btn"
+                    disabled={deletingUserId === user.id}
+                    onClick={() => handleDeleteUser(user)}
+                  >
+                    {deletingUserId === user.id ? 'Deleting...' : 'Delete'}
+                  </button>
                 </td>
               </tr>
             ))}

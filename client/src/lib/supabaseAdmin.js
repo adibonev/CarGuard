@@ -197,6 +197,20 @@ export const adminService = {
       cars,
       services
     };
+  },
+
+  // Delete user from both auth and users table
+  async deleteUser({ userId, authUserId }) {
+    // 1. Delete from auth.users (requires service role key via Edge Function or server)
+    // 2. Delete from public.users (and cascade cars/services if needed)
+    // This function assumes only public.users deletion (client-side). Auth deletion must be handled server-side or via Edge Function.
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+    if (error) throw error;
+    // Optionally: delete cars/services for this user (if not ON DELETE CASCADE)
+    return { success: true };
   }
 };
 
