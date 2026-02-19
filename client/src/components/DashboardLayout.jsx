@@ -128,11 +128,11 @@ const DashboardNav = () => {
   const handleLogout = () => { logout(); navigate('/'); };
 
   const navLinks = [
-    { to: '/dashboard', label: 'Overview', icon: 'bi-speedometer2', end: true },
-    { to: '/dashboard/vehicles', label: 'My Vehicles', icon: 'bi-car-front' },
-    { to: '/dashboard/services', label: 'Services', icon: 'bi-wrench' },
-    { to: '/dashboard/documents', label: 'Documents', icon: 'bi-folder' },
-    { to: '/dashboard/settings', label: 'Settings', icon: 'bi-gear' },
+    { to: '.', label: 'Overview', icon: 'bi-speedometer2', end: true },
+    { to: 'vehicles', label: 'My Vehicles', icon: 'bi-car-front' },
+    { to: 'services', label: 'Services', icon: 'bi-wrench' },
+    { to: 'documents', label: 'Documents', icon: 'bi-folder' },
+    { to: 'settings', label: 'Settings', icon: 'bi-gear' },
   ];
 
   return (
