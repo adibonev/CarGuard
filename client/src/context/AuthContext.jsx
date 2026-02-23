@@ -104,8 +104,20 @@ export const AuthProvider = ({ children }) => {
             })
             .select()
             .maybeSingle();
-          if (!insertError && newUser) { setUser(newUser); profileLoadedForRef.current = authUser.id; }
-          else setUser(null);
+          if (!insertError && newUser) {
+            setUser(newUser);
+            profileLoadedForRef.current = authUser.id;
+          } else {
+            // Insert failed — possible race with register() which already inserted the user.
+            // Re-fetch by auth_user_id to recover.
+            const { data: raceUser } = await supabase
+              .from('users')
+              .select('*')
+              .eq('auth_user_id', authUser.id)
+              .maybeSingle();
+            if (raceUser) { setUser(raceUser); profileLoadedForRef.current = authUser.id; }
+            else setUser(null);
+          }
         }
       }
     } catch (err) {
@@ -131,11 +143,36 @@ export const AuthProvider = ({ children }) => {
 
       if (authError) throw authError;
 
-      // Check if email confirmation is required (no active session yet)
-      const emailConfirmationRequired = authData.user && !authData.session;
+      // If signUp returned a session directly, email confirmation is disabled
+      let activeSession = authData.session;
+      let emailConfirmationRequired = false;
 
-      if (!emailConfirmationRequired && authData.user) {
-        // We have an active session — safe to insert into users table (RLS will pass)
+      if (!activeSession && authData.user) {
+        // No session from signUp — could be: (a) email confirmation required,
+        // or (b) Supabase returned null session even though confirmation is OFF.
+        // Probe by attempting sign-in immediately.
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInData?.session) {
+          // Sign-in succeeded — confirmation is OFF, we now have a valid session
+          activeSession = signInData.session;
+        } else if (signInError?.message?.toLowerCase().includes('email not confirmed')) {
+          // Supabase explicitly says confirmation is required
+          emailConfirmationRequired = true;
+        }
+        // Any other sign-in error — treat as confirmation required
+        if (!activeSession && !emailConfirmationRequired) {
+          emailConfirmationRequired = true;
+        }
+      }
+
+      if (activeSession && authData.user) {
+        // We have an active session — insert into users table.
+        // loadUserProfile may also be running due to onAuthStateChange(SIGNED_IN).
+        // Insert first; loadUserProfile will re-fetch on conflict instead of setting null.
         const { data: userData, error: userError } = await supabase
           .from('users')
           .insert({
@@ -158,6 +195,18 @@ export const AuthProvider = ({ children }) => {
             phone: null
           });
           setUser(userData);
+          profileLoadedForRef.current = authData.user.id;
+        } else {
+          // Insert failed — loadUserProfile already inserted it. Fetch and set.
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('auth_user_id', authData.user.id)
+            .maybeSingle();
+          if (existingUser) {
+            setUser(existingUser);
+            profileLoadedForRef.current = authData.user.id;
+          }
         }
       }
       // If email confirmation is required, loadUserProfile will create the profile
