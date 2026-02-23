@@ -136,6 +136,40 @@ body {
   font-weight: 500;
 }
 
+.success-message {
+  background: #eafbe7;
+  color: #217a3e;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-left: 4px solid #28a745;
+  font-weight: 500;
+}
+
+.resend-btn {
+  display: block;
+  margin: 10px auto 0;
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.resend-btn:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.resend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .auth-box p {
   text-align: center;
   margin-top: 25px;

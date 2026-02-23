@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { signInWithGoogle } from '../lib/supabaseAuth';
+import { signInWithGoogle, sendVerificationEmail } from '../lib/supabaseAuth';
 import '../styles/Auth.css';
 
 const Register = () => {
@@ -15,6 +15,8 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [rateLimitedEmail, setRateLimitedEmail] = useState('');
+  const [resending, setResending] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -60,17 +62,18 @@ const Register = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      const msg = err.message || '';
+      const msg = (err.message || '').toLowerCase();
       if (msg.includes('over_email_send_rate_limit') || msg.includes('email rate limit') || msg.includes('rate limit')) {
-        setError('Registration email could not be sent right now. Please try again in a few minutes.');
-      } else if (msg.includes('User already registered') || msg.includes('already been registered')) {
+        setRateLimitedEmail(formData.email);
+        setError('Your account was created, but the confirmation email could not be sent due to a rate limit. Please click "Resend" below or try again in a few minutes.');
+      } else if (msg.includes('user already registered') || msg.includes('already been registered')) {
         setError('An account with this email already exists. Please log in instead.');
       } else if (msg.includes('row-level security') || msg.includes('violates row-level')) {
         setError('Account created! Please check your email to confirm your registration.');
-      } else if (msg.includes('weak_password') || msg.includes('Password should')) {
+      } else if (msg.includes('weak_password') || msg.includes('password should')) {
         setError('Password is too weak. Please use at least 6 characters.');
       } else {
-        setError(msg || 'Registration failed. Please try again.');
+        setError(err.message || 'Registration failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -93,7 +96,37 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-box">
         <h2>Sign up</h2>
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className={error.startsWith('✅') ? 'success-message' : 'error-message'}>
+            {error}
+            {rateLimitedEmail && (
+              <button
+                type="button"
+                className="resend-btn"
+                disabled={resending}
+                onClick={async () => {
+                  setResending(true);
+                  try {
+                    await sendVerificationEmail(rateLimitedEmail);
+                    setError('✅ Confirmation email sent! Please check your inbox.');
+                    setRateLimitedEmail('');
+                  } catch (e) {
+                    const m = (e.message || '').toLowerCase();
+                    if (m.includes('rate limit')) {
+                      setError('Still rate limited. Please wait a few minutes and try again.');
+                    } else {
+                      setError('Could not resend email. Please try again later.');
+                    }
+                  } finally {
+                    setResending(false);
+                  }
+                }}
+              >
+                {resending ? 'Sending...' : '📧 Resend confirmation email'}
+              </button>
+            )}
+          </div>
+        )}
         <form onSubmit={handleSubmit} ref={formRef}>
           <div className="form-group">
             <label>Name</label>
