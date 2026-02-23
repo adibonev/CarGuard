@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { signInWithGoogle } from '../lib/supabaseAuth';
@@ -8,8 +8,10 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
+  const formRef = useRef(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -24,14 +26,32 @@ const Register = () => {
     }));
   };
 
+  // Auto-scroll input into view on focus (for mobile/embedded browsers)
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    const handleFocus = (e) => {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    };
+    const inputs = form.querySelectorAll('input');
+    inputs.forEach(input => input.addEventListener('focus', handleFocus));
+    return () => {
+      inputs.forEach(input => input.removeEventListener('focus', handleFocus));
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     setLoading(true);
-
     try {
       const result = await register(formData.name, formData.email, formData.password);
-      
       // Check if email confirmation is required
       if (result.emailConfirmationRequired) {
         setError('✅ Registration successful! Please check your email to confirm.');
@@ -40,7 +60,14 @@ const Register = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      // Show more user-friendly error messages for common Supabase errors
+      if (err.message && err.message.includes('rate limit')) {
+        setError('Too many attempts. Please wait a minute and try again.');
+      } else if (err.message && err.message.includes('row-level security')) {
+        setError('Registration failed due to a server error. Please contact support.');
+      } else {
+        setError(err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +90,7 @@ const Register = () => {
       <div className="auth-box">
         <h2>Sign up</h2>
         {error && <div className="error-message">{error}</div>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} ref={formRef}>
           <div className="form-group">
             <label>Name</label>
             <input
@@ -90,6 +117,16 @@ const Register = () => {
               type="password"
               name="password"
               value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
               onChange={handleChange}
               required
             />
