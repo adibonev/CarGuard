@@ -131,38 +131,41 @@ export const AuthProvider = ({ children }) => {
 
       if (authError) throw authError;
 
-      // Create user profile
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .insert({
-          name,
-          email: email.toLowerCase(),
-          auth_user_id: authData.user.id,
-          reminder_days: 30,
-          reminder_enabled: true,
-          email_verified: false
-        })
-        .select()
-        .maybeSingle();
+      // Check if email confirmation is required (no active session yet)
+      const emailConfirmationRequired = authData.user && !authData.session;
 
-      if (userError) throw userError;
+      if (!emailConfirmationRequired && authData.user) {
+        // We have an active session — safe to insert into users table (RLS will pass)
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .insert({
+            name,
+            email: email.toLowerCase(),
+            auth_user_id: authData.user.id,
+            reminder_days: 30,
+            reminder_enabled: true,
+            email_verified: true
+          })
+          .select()
+          .maybeSingle();
 
-      // Create account record
-      await supabase.from('accounts').insert({
-        user_id: userData.id,
-        name: userData.name,
-        email: userData.email,
-        phone: null
-      });
+        if (!userError && userData) {
+          // Create account record
+          await supabase.from('accounts').insert({
+            user_id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            phone: null
+          });
+          setUser(userData);
+        }
+      }
+      // If email confirmation is required, loadUserProfile will create the profile
+      // automatically after the user confirms their email and logs in.
 
-      setUser(userData);
-      
-      // Check if email confirmation is required
-      const emailConfirmationRequired = authData.user && !authData.user.confirmed_at;
-      
       return { 
         success: true, 
-        user: userData,
+        user: authData.user,
         emailConfirmationRequired 
       };
     } catch (error) {

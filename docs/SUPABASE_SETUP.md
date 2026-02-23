@@ -68,58 +68,147 @@ npm start
 
 ## 📊 Структура на таблиците
 
-### users
+> Всички таблици са в schema `public`. Row Level Security (RLS) е активиран за всички потребителски таблици.
+
+---
+
+### `users`
+Профили на потребителите, свързани с `auth.users` чрез `auth_user_id`.
+
 | Колона | Тип | Описание |
 |--------|-----|----------|
 | id | SERIAL | Първичен ключ |
-| name | VARCHAR(255) | Име на потребителя |
-| email | VARCHAR(255) | Email (уникален) |
-| password | VARCHAR(255) | Хеширана парола |
+| name | VARCHAR | Пълно име |
+| email | VARCHAR | Email (уникален, NOT NULL) |
+| auth_user_id | UUID | FK към `auth.users.id` (Supabase Auth) |
 | reminder_days | INTEGER | Дни преди напомняне (по подразбиране 30) |
-| created_at | TIMESTAMP | Дата на създаване |
-| updated_at | TIMESTAMP | Дата на обновяване |
+| reminder_enabled | BOOLEAN | Включени ли са напомняния |
+| reminder_settings | JSONB | Детайлни настройки за напомняния |
+| email_verified | BOOLEAN | Потвърден ли е email-ът |
+| google_id | VARCHAR | Google OAuth ID (ако е логнат с Google) |
+| password | VARCHAR | Хеширана парола (legacy, за server-side auth) |
+| is_admin | BOOLEAN | Дали потребителят е администратор |
+| created_at | TIMESTAMPTZ | Дата на създаване |
+| updated_at | TIMESTAMPTZ | Дата на обновяване |
 
-### cars
+**RLS политики:**
+- `INSERT` — разрешено за всички (`WITH CHECK (true)`)
+- `SELECT` — само собственият профил (`auth.uid() = auth_user_id`)
+- `UPDATE` — само собственият профил
+
+**Индекси:** `email`, `auth_user_id`
+
+---
+
+### `cars`
+Автомобили, принадлежащи на потребител.
+
 | Колона | Тип | Описание |
 |--------|-----|----------|
 | id | SERIAL | Първичен ключ |
-| user_id | INTEGER | FK към users |
-| brand | VARCHAR(255) | Марка |
-| model | VARCHAR(255) | Модел |
-| year | INTEGER | Година |
-| license_plate | VARCHAR(50) | Регистрационен номер |
-| vin | VARCHAR(50) | VIN номер |
-| engine_type | VARCHAR(100) | Тип двигател |
-| horsepower | INTEGER | Конски сили |
-| transmission | VARCHAR(50) | Скоростна кутия |
-| euro_standard | VARCHAR(20) | Евро стандарт |
-| mileage | INTEGER | Километраж |
-| fuel_type | VARCHAR(50) | Тип гориво |
-| tire_* | - | Информация за гумите |
-
-### services
-| Колона | Тип | Описание |
-|--------|-----|----------|
-| id | SERIAL | Първичен ключ |
-| car_id | INTEGER | FK към cars |
-| user_id | INTEGER | FK към users |
-| service_type | VARCHAR(100) | Тип услуга |
-| expiry_date | TIMESTAMP | Дата на изтичане |
-| cost | DECIMAL(10,2) | Цена |
+| user_id | INTEGER | FK към `users.id` (CASCADE DELETE) |
+| brand | VARCHAR | Марка (NOT NULL) |
+| model | VARCHAR | Модел (NOT NULL) |
+| year | INTEGER | Година на производство |
+| license_plate | VARCHAR | Регистрационен номер |
+| vin | VARCHAR | VIN номер |
+| color | VARCHAR | Цвят |
+| engine_type | VARCHAR | Тип двигател |
+| euro_standard | VARCHAR | Евро стандарт |
+| fuel_type | VARCHAR | Тип гориво |
+| tire_width | INTEGER | Ширина на гумата |
+| tire_height | INTEGER | Профил на гумата |
+| tire_diameter | INTEGER | Диаметър на гумата |
+| tire_season | VARCHAR | Сезон на гумата |
+| tire_brand | VARCHAR | Марка на гумата |
+| tire_dot | VARCHAR | DOT код на гумата |
 | notes | TEXT | Бележки |
-| liters | DECIMAL(10,2) | Литри (за гориво) |
-| price_per_liter | DECIMAL(10,2) | Цена на литър |
-| fuel_type | VARCHAR(50) | Тип гориво |
-| reminder_sent | BOOLEAN | Изпратено ли е напомняне |
+| created_at | TIMESTAMPTZ | Дата на създаване |
+| updated_at | TIMESTAMPTZ | Дата на обновяване |
 
-### admins
+**RLS политики:** Потребителят вижда/редактира само колите си (чрез `user_id` JOIN).
+
+**Индекси:** `user_id`
+
+---
+
+### `services`
+Сервизни записи и документи, свързани с автомобил.
+
 | Колона | Тип | Описание |
 |--------|-----|----------|
 | id | SERIAL | Първичен ключ |
-| username | VARCHAR(255) | Потребителско име |
-| password | VARCHAR(255) | Хеширана парола |
-| name | VARCHAR(255) | Име |
-| last_login | TIMESTAMP | Последен вход |
+| car_id | INTEGER | FK към `cars.id` (CASCADE DELETE) |
+| user_id | INTEGER | FK към `users.id` (CASCADE DELETE) |
+| service_type | VARCHAR | Тип услуга (напр. `oil_change`, `vignette`, `civil_liability`) |
+| expiry_date | DATE | Дата на изтичане |
+| cost | NUMERIC(10,2) | Цена в лева |
+| liters | NUMERIC(10,2) | Литри (само за зареждане с гориво) |
+| price_per_liter | NUMERIC(10,4) | Цена на литър (само за гориво) |
+| fuel_type | VARCHAR | Тип гориво (само за зареждане) |
+| notes | TEXT | Бележки |
+| mileage | INTEGER | Километраж при услугата |
+| file_url | TEXT | URL на прикачен документ (Supabase Storage) |
+| reminder_sent | BOOLEAN | Изпратено ли е имейл напомняне |
+| created_at | TIMESTAMPTZ | Дата на запис |
+| updated_at | TIMESTAMPTZ | Дата на обновяване |
+
+**Поддържани типове услуги:** `oil_change`, `civil_liability`, `vignette`, `technical_inspection`, `fuel`, `tires`, `brakes`, `battery`, `air_filter`, `timing_belt`, `coolant`, `spark_plugs`, `transmission`, `other`
+
+**RLS политики:** Потребителят вижда/редактира само сервизите за собствените си коли.
+
+**Индекси:** `car_id`, `user_id`, `expiry_date`
+
+---
+
+### `accounts`
+Допълнителни данни за акаунта на потребителя (телефон и др.).
+
+| Колона | Тип | Описание |
+|--------|-----|----------|
+| id | SERIAL | Първичен ключ |
+| user_id | INTEGER | FK към `users.id` (CASCADE DELETE) |
+| name | VARCHAR | Имe |
+| email | VARCHAR | Email |
+| phone | VARCHAR | Телефонен номер |
+| created_at | TIMESTAMPTZ | Дата на създаване |
+| updated_at | TIMESTAMPTZ | Дата на обновяване |
+
+**Индекси:** `user_id`
+
+---
+
+### `service_logs`
+Лог на изпратените имейл напомняния.
+
+| Колона | Тип | Описание |
+|--------|-----|----------|
+| id | SERIAL | Първичен ключ |
+| user_id | INTEGER | FK към `users.id` |
+| car_id | INTEGER | FK към `cars.id` |
+| email | VARCHAR | Email на получателя |
+| service_type | VARCHAR | Тип на услугата |
+| expiry_date | DATE | Дата на изтичане |
+| sent_at | TIMESTAMPTZ | Кога е изпратено напомнянето |
+| created_at | TIMESTAMPTZ | Дата на запис |
+
+**Индекси:** `user_id`, `email`, `service_type`, `created_at`
+
+---
+
+### `admins` (legacy)
+Запазена за съвместимост. Администраторите се управляват чрез `users.is_admin = true`.
+
+| Колона | Тип | Описание |
+|--------|-----|----------|
+| id | SERIAL | Първичен ключ |
+| username | VARCHAR | Потребителско име (уникален) |
+| email | VARCHAR | Email |
+| password | VARCHAR | Хеширана парола |
+| created_at | TIMESTAMPTZ | Дата на създаване |
+| updated_at | TIMESTAMPTZ | Дата на обновяване |
+
+> ⚠️ **Забележка:** Тази таблица не се използва активно. Adminите се идентифицират чрез `users.is_admin = true` и Supabase Auth.
 
 ---
 

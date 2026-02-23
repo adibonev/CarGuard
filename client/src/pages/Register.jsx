@@ -60,13 +60,17 @@ const Register = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      // Show more user-friendly error messages for common Supabase errors
-      if (err.message && err.message.includes('rate limit')) {
-        setError('Too many attempts. Please wait a minute and try again.');
-      } else if (err.message && err.message.includes('row-level security')) {
-        setError('Registration failed due to a server error. Please contact support.');
+      const msg = err.message || '';
+      if (msg.includes('over_email_send_rate_limit') || msg.includes('email rate limit') || msg.includes('rate limit')) {
+        setError('Registration email could not be sent right now. Please try again in a few minutes.');
+      } else if (msg.includes('User already registered') || msg.includes('already been registered')) {
+        setError('An account with this email already exists. Please log in instead.');
+      } else if (msg.includes('row-level security') || msg.includes('violates row-level')) {
+        setError('Account created! Please check your email to confirm your registration.');
+      } else if (msg.includes('weak_password') || msg.includes('Password should')) {
+        setError('Password is too weak. Please use at least 6 characters.');
       } else {
-        setError(err.message || 'Registration failed');
+        setError(msg || 'Registration failed. Please try again.');
       }
     } finally {
       setLoading(false);
