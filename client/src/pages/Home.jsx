@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, signInWithGoogle } from '../lib/supabaseAuth';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [activeSection, setActiveSection] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -82,36 +84,23 @@ const Home = () => {
     }
     setLoading(true);
     try {
-      // 1. Create Supabase auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: registerData.email,
-        password: registerData.password
-      });
-
-      if (authError) throw authError;
-
-      // 2. Create user profile in users table
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert([{
-          name: registerData.name,
-          email: registerData.email,
-          auth_user_id: authData.user.id
-        }]);
-
-      if (profileError) throw profileError;
-
-      // Check if email confirmation is required
-      if (authData.user && !authData.user.confirmed_at) {
-        setShowRegisterModal(false);
+      const result = await register(registerData.name, registerData.email, registerData.password);
+      setShowRegisterModal(false);
+      if (result.emailConfirmationRequired) {
         alert('✅ Registration successful!\n\nPlease check your email (' + registerData.email + ') to confirm.');
       } else {
-        // Auto login if no confirmation needed
-        setShowRegisterModal(false);
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+        setError('Registration email could not be sent right now. Account created — try logging in in a few minutes.');
+        setShowRegisterModal(false);
+      } else if (msg.includes('user already registered') || msg.includes('already been registered')) {
+        setError('An account with this email already exists. Please log in instead.');
+      } else {
+        setError(err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
