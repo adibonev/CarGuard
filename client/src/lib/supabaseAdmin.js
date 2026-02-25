@@ -148,32 +148,36 @@ export const adminService = {
     }));
   },
 
-  // Get registration chart (last 6 months)
+  // Get registration chart (last 30 days, grouped by day)
   async getRegistrationChart() {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
 
     const { data, error } = await supabase
       .from('users')
       .select('created_at')
-      .gte('created_at', sixMonthsAgo.toISOString())
+      .gte('created_at', thirtyDaysAgo.toISOString())
       .order('created_at', { ascending: true });
 
     if (error) throw error;
 
-    // Group by month
-    const monthCounts = {};
+    // Build a map of all 30 days initialised to 0
+    const dayCounts = {};
+    for (let i = 0; i < 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (29 - i));
+      const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+      dayCounts[key] = 0;
+    }
+
+    // Fill in actual registrations
     data.forEach(user => {
-      const date = new Date(user.created_at);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      monthCounts[monthKey] = (monthCounts[monthKey] || 0) + 1;
+      const key = new Date(user.created_at).toISOString().slice(0, 10);
+      if (key in dayCounts) dayCounts[key]++;
     });
 
-    // Convert to array format
-    return Object.entries(monthCounts).map(([month, registrations]) => ({
-      month,
-      registrations
-    }));
+    return Object.entries(dayCounts).map(([date, count]) => ({ date, count }));
   },
 
   // Get user details with their cars and services
