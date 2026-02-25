@@ -9,7 +9,7 @@ const SERVICE_OPTIONS = [
   { value: 'vignette',          icon: '🛣️', label: 'Vignette' },
   { value: 'tax',               icon: '💰', label: 'Vehicle tax' },
   { value: 'fire_extinguisher', icon: '🔴', label: 'Fire extinguisher' },
-  { value: 'tires',             icon: 'svg-tire', label: 'Tires' },
+  { value: 'tires',             icon: '🛞', label: 'Tires' },
   { value: 'refuel',            icon: '⛽', label: 'Refuel' },
   { value: 'other',             icon: '📝', label: 'Other' },
 ];
@@ -186,16 +186,7 @@ const ServiceForm = ({ onSubmit, onCancel, cars, selectedCarId, onCarChange }) =
                 }}
               >
                 <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>
-                  {opt.icon === 'svg-tire'
-                    ? <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="10"/>
-                        <circle cx="50" cy="50" r="22" stroke="currentColor" strokeWidth="8"/>
-                        <line x1="50" y1="28" x2="50" y2="72" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
-                        <line x1="28" y1="50" x2="72" y2="50" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
-                        <line x1="35" y1="35" x2="65" y2="65" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
-                        <line x1="65" y1="35" x2="35" y2="65" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/>
-                      </svg>
-                    : opt.icon.startsWith('bi-')
+                  {opt.icon.startsWith('bi-')
                     ? <i className={`bi ${opt.icon}`} style={{ fontSize: '1.4rem' }}></i>
                     : opt.icon}
                 </span>

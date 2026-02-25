@@ -253,9 +253,8 @@ export const DashboardProvider = ({ children }) => {
     const icons = {
       civil_liability: '🛡️', vignette: '🛣️', inspection: '🔧',
       casco: '💎', tax: '💰', fire_extinguisher: '🔴',
-      repair: '🛠️', maintenance: '🛢️', refuel: '⛽', other: '📝'
+      repair: '🛠️', maintenance: '🛢️', tires: '🛞', refuel: '⛽', other: '📝'
     };
-    if (type === 'tires') return <svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display:'inline',verticalAlign:'middle',marginRight:'2px'}}><circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="10"/><circle cx="50" cy="50" r="22" stroke="currentColor" strokeWidth="8"/><line x1="50" y1="28" x2="50" y2="72" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/><line x1="28" y1="50" x2="72" y2="50" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/><line x1="35" y1="35" x2="65" y2="65" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/><line x1="65" y1="35" x2="35" y2="65" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/></svg>;
     return icons[type] || '📋';
   };
 
